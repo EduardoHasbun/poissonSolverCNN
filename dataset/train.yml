@@ -1,5 +1,5 @@
 n_it: 1000
-output_dir: 'C:\Codigos\CNN_Solver\dataset\generated\'
+output_dir: 'C:\Codigos\poissonSolverCNN\dataset\generated\'
 
 domain:
   geom: 'cartesian'
