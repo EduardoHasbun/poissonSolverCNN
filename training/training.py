@@ -13,10 +13,9 @@ import numpy as np
 import os
 import yaml
 import argparse
-
+import torch.nn.functional as F
 
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
-
 
 args = argparse.ArgumentParser(description='Training')
 args.add_argument('-c', '--cfg', type=str, default=None,
@@ -26,9 +25,52 @@ args = args.parse_args()
 with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
 
-nnx = cfg['globals']['nnx']
-nny = cfg['globals']['nny']
-epoch = cfg['trainer']['epochs']
+
+#Define Laplacian
+def laplacian(field, dx, dy, b=0): 
+
+    # Create laplacian tensor with shape (batch_size, 1, h, w)
+    laplacian = torch.zeros_like(field).type(field.type())
+
+    # Check sizes
+    assert field.dim() == 4 and laplacian.dim() == 4, 'Dimension mismatch'
+
+    assert field.is_contiguous() and laplacian.is_contiguous(), 'Input is not contiguous'
+
+    laplacian[:, 0, 1:-1, 1:-1] = \
+        (1 - b) * ((field[:, 0, 2:, 1:-1] + field[:, 0, :-2, 1:-1] - 2 * field[:, 0, 1:-1, 1:-1]) / dy**2 +
+        (field[:, 0, 1:-1, 2:] + field[:, 0, 1:-1, :-2] - 2 * field[:, 0, 1:-1, 1:-1]) / dx**2) + \
+        b * (field[:, 0, 2:, 2:] + field[:, 0, 2:, :-2] + field[:, 0, :-2, :-2] + field[:, 0, :-2, 2:] - 4 * field[:, 0, 1:-1, 1:-1]) \
+        / (2 * dx**2)
+
+    laplacian[:, 0, 0, 1:-1] = \
+            (2 * field[:, 0, 0, 1:-1] - 5 * field[:, 0, 1, 1:-1] + 4 * field[:, 0, 2, 1:-1] - field[:, 0, 3, 1:-1]) / dy**2 + \
+            (field[:, 0, 0, 2:] + field[:, 0, 0, :-2] - 2 * field[:, 0, 0, 1:-1]) / dx**2
+    laplacian[:, 0, -1, 1:-1] = \
+        (2 * field[:, 0, -1, 1:-1] - 5 * field[:, 0, -2, 1:-1] + 4 * field[:, 0, -3, 1:-1] - field[:, 0, -4, 1:-1]) / dy**2 + \
+        (field[:, 0, -1, 2:] + field[:, 0, -1, :-2] - 2 * field[:, 0, -1, 1:-1]) / dx**2
+    laplacian[:, 0, 1:-1, 0] = \
+        (field[:, 0, 2:, 0] + field[:, 0, :-2, 0] - 2 * field[:, 0, 1:-1, 0]) / dy**2 + \
+        (2 * field[:, 0, 1:-1, 0] - 5 * field[:, 0, 1:-1, 1] + 4 * field[:, 0, 1:-1, 2] - field[:, 0, 1:-1, 3]) / dx**2
+    laplacian[:, 0, 1:-1, -1] = \
+        (field[:, 0, 2:, -1] + field[:, 0, :-2, -1] - 2 * field[:, 0, 1:-1, -1]) / dy**2 + \
+        (2 * field[:, 0, 1:-1, -1] - 5 * field[:, 0, 1:-1, -2] + 4 * field[:, 0, 1:-1, -3] - field[:, 0, 1:-1, -4]) / dx**2
+
+    laplacian[:, 0, 0, 0] = \
+            (2 * field[:, 0, 0, 0] - 5 * field[:, 0, 1, 0] + 4 * field[:, 0, 2, 0] - field[:, 0, 3, 0]) / dy**2 + \
+            (2 * field[:, 0, 0, 0] - 5 * field[:, 0, 0, 1] + 4 * field[:, 0, 0, 2] - field[:, 0, 0, 3]) / dx**2
+    laplacian[:, 0, 0, -1] = \
+            (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 1, -1] + 4 * field[:, 0, 2, -1] - field[:, 0, 3, -1]) / dy**2 + \
+            (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
+    
+    laplacian[:, 0, -1, 0] = \
+        (2 * field[:, 0, -1, 0] - 5 * field[:, 0, -2, 0] + 4 * field[:, 0, -3, 0] - field[:, 0, -4, 0]) / dy**2 + \
+        (2 * field[:, 0, -1, 0] - 5 * field[:, 0, -1, 1] + 4 * field[:, 0, -1, 2] - field[:, 0, -1, 3]) / dx**2
+    laplacian[:, 0, -1, -1] = \
+        (2 * field[:, 0, -1, -1] - 5 * field[:, 0, -2, -1] + 4 * field[:, 0, -3, -1] - field[:, 0, -4, -1]) / dy**2 + \
+        (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
+
+    return laplacian
 
 
 # Define the U-Net architecture
@@ -42,64 +84,82 @@ class UNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(64, 64, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2)
-        )
-
-        # Middle
-        self.middle = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(128, 128, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2)
-        )
-
-        # Decoder (expansive path)
-        self.decoder = nn.Sequential(
-            nn.Conv2d(128, 64, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(64, 64, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(64, out_channels, kernel_size=2, stride=2)
+            nn.Conv2d(64, out_channels, kernel_size=1)  
         )
 
     def forward(self, x):
         x1 = self.encoder(x)
-        x2 = self.middle(x1)
-        x3 = self.decoder(x2)
-        return x3
+        return x1    
 
-# Generate example data
-num_samples = 100
-in_channels = 3
+#Define Losses Functions
+class laplacianLoss(nn.Module):
+    def __init__(self, weigth, b=0):
+        super().__init__()
+        self.weight = weigth
+        xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
+            cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['nnx'], cfg['globals']['nny']
+        self.Lx = xmax-xmin
+        self.Ly = ymax-ymin
+        self.dx = self.Lx/nnx
+        self.dy = self.Ly/nny
+        self.b = b
+
+    def forward(self, output, data=None, target_norm=1., data_norm=1.):
+        lapl = laplacian(output * target_norm / data_norm, self.dx, self.dy)
+        return self.Lx**2 * self.Ly**2 * F.mse_loss(lapl[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
+    
+class DirichletLoss(nn.Module):
+    def __init__(self, bound_weight):
+        super().__init__()
+        self.weight = bound_weight
+        self.base_weight = self.weight
+
+    def forward(self, output):
+        bnd_loss = F.mse_loss(output[:, 0, -1, :], torch.zeros_like(output[:, 0, -1, :]))
+        bnd_loss += F.mse_loss(output[:, 0, :, 0], torch.zeros_like(output[:, 0, :, 0]))
+        bnd_loss += F.mse_loss(output[:, 0, :, -1], torch.zeros_like(output[:, 0, :, -1]))
+        bnd_loss += F.mse_loss(output[:, 0, 0, :], torch.zeros_like(output[:, 0, 0, :]))
+        return bnd_loss * self.weight
+
+# Import dataset
+data = np.load(cfg['data_loader']['data_dir'])
+input_data = torch.from_numpy(data)
+num_samples, nnx, nny = input_data.shape
+in_channels = 1
 out_channels = 1
-input_data = torch.randn(num_samples, in_channels, nnx, nny)
-target_data = torch.randint(0, 2, (num_samples, out_channels, nnx, nny), dtype=torch.float32)
+input_data = input_data.reshape(num_samples, in_channels, nnx, nny)
+lapl_weight = cfg['loss']['args']['lapl_weight']
+bound_weight = cfg['loss']['args']['bound_weight']
+batch_size = cfg['data_loader']['batch_size']
 
-# Create DataLoader for your data
-dataset = TensorDataset(input_data, target_data)
-dataloader = DataLoader(dataset, batch_size=16, shuffle=True)
+# Create DataLoader 
+dataset = TensorDataset(input_data)
+dataloader = DataLoader(dataset, batch_size, shuffle=True)
 
 # Create U-Net model
 model = UNet(in_channels, out_channels)
 
 # Define loss function and optimizer
-criterion = nn.BCEWithLogitsLoss()
+laplacian_loss = laplacianLoss(lapl_weight)
+dirichlet_loss = DirichletLoss(bound_weight)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # Training loop
-num_epochs = 10
+num_epochs = cfg['trainer']['epochs']
 for epoch in range(num_epochs):
     total_loss = 0
-    for inputs, targets in dataloader:
+    for batch in dataloader: 
+        inputs = batch[0].float() 
         optimizer.zero_grad()
         outputs = model(inputs)
-        targets = nn.functional.interpolate(targets, size=outputs.shape[-2:], mode='bilinear', align_corners=False)
-        loss = criterion(outputs, targets)
+        lapl_loss = laplacian_loss(outputs, inputs)
+        dir_loss = dirichlet_loss(outputs)
+        loss = lapl_loss + dir_loss
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
     print(f"Epoch [{epoch+1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
+
 
 # Save the trained model
 torch.save(model.state_dict(), 'unet_model.pth')

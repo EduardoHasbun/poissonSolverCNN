@@ -1,6 +1,6 @@
 #############################################################################################################
 #                                                                                                           #
-#                             RUN:    python 2d_random.py -c train.yml                                      #
+#                             RUN:    python 2d_random.py -c dataset.yml                                    #
 #                                                                                                           #
 #############################################################################################################
 
@@ -49,7 +49,7 @@ if __name__ == '__main__':
             f = interpolate.interp2d(x_lower, y_lower, z_lower, kind='cubic')
             yield f(x, y)
 
-    # Create a directory for saving data (if needed)
+    # Create a directory for saving data 
     data_dir = cfg['output_dir']
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
