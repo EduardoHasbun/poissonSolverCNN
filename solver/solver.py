@@ -39,18 +39,34 @@ class UNet(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(UNet, self).__init__()
 
-        # Encoder (contracting path)
+        # Define the encoder part
         self.encoder = nn.Sequential(
-            nn.Conv2d(in_channels, 64, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(64, 64, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(64, out_channels, kernel_size=1)  # Output has the same number of channels as input
+            nn.Conv2d(in_channels, 24, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(24, 24, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(24, 24, kernel_size=3, padding=1),
+            nn.ReLU()
+        )
+
+        # Define the decoder part
+        self.decoder = nn.Sequential(
+            nn.Conv2d(24, 24, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Upsample(scale_factor=2, mode='nearest'),
+            nn.Conv2d(24, 24, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Upsample(scale_factor=2, mode='nearest'),
+            nn.Conv2d(24, out_channels, kernel_size=3, padding=1),
+            nn.Sigmoid()  # Adjust activation function based on your task
         )
 
     def forward(self, x):
-        x1 = self.encoder(x)
-        return x1
+        x = self.encoder(x)
+        x = self.decoder(x)
+        return x
 
 #Define Gaussians's Functions
 def gaussian(x, y, amplitude, x0, y0, sigma_x, sigma_y):
@@ -72,7 +88,7 @@ input_tensor = torch.nn.functional.interpolate(input_tensor, size=desired_input_
 
 # Load the pretrained model
 model = UNet(1, 1) 
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/training/unet_model.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/training/model_best.pth'))
 model.eval() 
 
 

@@ -7,10 +7,14 @@ globals:                                    # Domain sizes and others, used to c
     ymax: 1.0e-2
 
 arch:
-    db_file: 'unets_ks3_rf100.yml'          # Database file
-    name: 'UNet5'                           # Name of the network in the database file
-    args:
-        input_res: 101                      # Required argument to define the input res of the network
+    scales:
+        scale_0: [[1, 30, 20], [40, 30, 1]]
+        scale_1: [[20, 20, 20], [40, 20, 20]]
+        scale_2: [[20, 16, 16, 20], [40, 16, 16, 20]]
+        scale_3: [[20, 20, 20], [40, 20, 20]]
+        scale_4: [[20, 60, 20]]
+    kernel_sizes: 3
+        
 
 data_loader:
     data_dir: 'C:\Codigos\poissonSolverCNN\dataset\generated\random_data.npy'   # Dataset path

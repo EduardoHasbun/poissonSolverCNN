@@ -14,6 +14,7 @@ import os
 import yaml
 import argparse
 import torch.nn.functional as F
+from unet import UNet
 
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
@@ -72,25 +73,6 @@ def laplacian(field, dx, dy, b=0):
 
     return laplacian
 
-
-# Define the U-Net architecture
-class UNet(nn.Module):
-    def __init__(self, in_channels, out_channels):
-        super(UNet, self).__init__()
-
-        # Encoder (contracting path)
-        self.encoder = nn.Sequential(
-            nn.Conv2d(in_channels, 64, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(64, 64, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(64, out_channels, kernel_size=1)  
-        )
-
-    def forward(self, x):
-        x1 = self.encoder(x)
-        return x1    
-
 #Define Losses Functions
 class laplacianLoss(nn.Module):
     def __init__(self, weigth, b=0):
@@ -125,19 +107,22 @@ class DirichletLoss(nn.Module):
 data = np.load(cfg['data_loader']['data_dir'])
 input_data = torch.from_numpy(data)
 num_samples, nnx, nny = input_data.shape
-in_channels = 1
-out_channels = 1
-input_data = input_data.reshape(num_samples, in_channels, nnx, nny)
+input_data = input_data.reshape(num_samples, nnx, nny)
 lapl_weight = cfg['loss']['args']['lapl_weight']
 bound_weight = cfg['loss']['args']['bound_weight']
 batch_size = cfg['data_loader']['batch_size']
+scales = cfg['arch']['scales']
+kernel_sizes = cfg['arch']['kernel_sizes']
+if not isinstance(kernel_sizes, list):
+    kernel_sizes_unet3 = [kernel_sizes]
 
 # Create DataLoader 
 dataset = TensorDataset(input_data)
 dataloader = DataLoader(dataset, batch_size, shuffle=True)
 
 # Create U-Net model
-model = UNet(in_channels, out_channels)
+model = UNet(scales=scales, kernel_sizes = kernel_sizes)
+print(model)
 
 # Define loss function and optimizer
 laplacian_loss = laplacianLoss(lapl_weight)
