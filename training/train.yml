@@ -25,9 +25,10 @@ loss:
     args:
         bound_weight: 1.0                   # Weighting of the loss on the boundaries (float)
         lapl_weight: 2.0e+7                 # Weighting of the loss on the Laplacian (float)
+        optimizer_lr: 4.e-4    
 
 trainer:
-    epochs: 30                              # Number of epochs
+    epochs: 20                              # Number of epochs
     save_dir: 'debug/'                      # Output directory
     save_period: 10                         # Output period
     plot_period: 10                         # Period to send plots to TensorBoard

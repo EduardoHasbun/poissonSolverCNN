@@ -1,150 +1,73 @@
-#############################################################################################################
-#                                                                                                           #
-#                           RUN:    python training.py -c train.yml                                         #
-#                                                                                                           #
-#############################################################################################################
-
-
 import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
-import numpy as np
-import os
-import yaml
-import argparse
-import torch.nn.functional as F
 from unet import UNet
+import yaml
+from torch.utils.data import DataLoader
+import numpy as np
+from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss
+import torch.optim as optim
 
-os.environ['OPENBLAS_NUM_THREADS'] = '1'
-
-args = argparse.ArgumentParser(description='Training')
-args.add_argument('-c', '--cfg', type=str, default=None,
-                help='Config filename')
-args.add_argument('--case', type=str, default=None, help='Case name')
-args = args.parse_args()
-with open(args.cfg, 'r') as yaml_stream:
-    cfg = yaml.safe_load(yaml_stream)
-
-
-#Define Laplacian
-def laplacian(field, dx, dy, b=0): 
-
-    # Create laplacian tensor with shape (batch_size, 1, h, w)
-    laplacian = torch.zeros_like(field).type(field.type())
-
-    # Check sizes
-    assert field.dim() == 4 and laplacian.dim() == 4, 'Dimension mismatch'
-
-    assert field.is_contiguous() and laplacian.is_contiguous(), 'Input is not contiguous'
-
-    laplacian[:, 0, 1:-1, 1:-1] = \
-        (1 - b) * ((field[:, 0, 2:, 1:-1] + field[:, 0, :-2, 1:-1] - 2 * field[:, 0, 1:-1, 1:-1]) / dy**2 +
-        (field[:, 0, 1:-1, 2:] + field[:, 0, 1:-1, :-2] - 2 * field[:, 0, 1:-1, 1:-1]) / dx**2) + \
-        b * (field[:, 0, 2:, 2:] + field[:, 0, 2:, :-2] + field[:, 0, :-2, :-2] + field[:, 0, :-2, 2:] - 4 * field[:, 0, 1:-1, 1:-1]) \
-        / (2 * dx**2)
-
-    laplacian[:, 0, 0, 1:-1] = \
-            (2 * field[:, 0, 0, 1:-1] - 5 * field[:, 0, 1, 1:-1] + 4 * field[:, 0, 2, 1:-1] - field[:, 0, 3, 1:-1]) / dy**2 + \
-            (field[:, 0, 0, 2:] + field[:, 0, 0, :-2] - 2 * field[:, 0, 0, 1:-1]) / dx**2
-    laplacian[:, 0, -1, 1:-1] = \
-        (2 * field[:, 0, -1, 1:-1] - 5 * field[:, 0, -2, 1:-1] + 4 * field[:, 0, -3, 1:-1] - field[:, 0, -4, 1:-1]) / dy**2 + \
-        (field[:, 0, -1, 2:] + field[:, 0, -1, :-2] - 2 * field[:, 0, -1, 1:-1]) / dx**2
-    laplacian[:, 0, 1:-1, 0] = \
-        (field[:, 0, 2:, 0] + field[:, 0, :-2, 0] - 2 * field[:, 0, 1:-1, 0]) / dy**2 + \
-        (2 * field[:, 0, 1:-1, 0] - 5 * field[:, 0, 1:-1, 1] + 4 * field[:, 0, 1:-1, 2] - field[:, 0, 1:-1, 3]) / dx**2
-    laplacian[:, 0, 1:-1, -1] = \
-        (field[:, 0, 2:, -1] + field[:, 0, :-2, -1] - 2 * field[:, 0, 1:-1, -1]) / dy**2 + \
-        (2 * field[:, 0, 1:-1, -1] - 5 * field[:, 0, 1:-1, -2] + 4 * field[:, 0, 1:-1, -3] - field[:, 0, 1:-1, -4]) / dx**2
-
-    laplacian[:, 0, 0, 0] = \
-            (2 * field[:, 0, 0, 0] - 5 * field[:, 0, 1, 0] + 4 * field[:, 0, 2, 0] - field[:, 0, 3, 0]) / dy**2 + \
-            (2 * field[:, 0, 0, 0] - 5 * field[:, 0, 0, 1] + 4 * field[:, 0, 0, 2] - field[:, 0, 0, 3]) / dx**2
-    laplacian[:, 0, 0, -1] = \
-            (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 1, -1] + 4 * field[:, 0, 2, -1] - field[:, 0, 3, -1]) / dy**2 + \
-            (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
-    
-    laplacian[:, 0, -1, 0] = \
-        (2 * field[:, 0, -1, 0] - 5 * field[:, 0, -2, 0] + 4 * field[:, 0, -3, 0] - field[:, 0, -4, 0]) / dy**2 + \
-        (2 * field[:, 0, -1, 0] - 5 * field[:, 0, -1, 1] + 4 * field[:, 0, -1, 2] - field[:, 0, -1, 3]) / dx**2
-    laplacian[:, 0, -1, -1] = \
-        (2 * field[:, 0, -1, -1] - 5 * field[:, 0, -2, -1] + 4 * field[:, 0, -3, -1] - field[:, 0, -4, -1]) / dy**2 + \
-        (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
-
-    return laplacian
-
-#Define Losses Functions
-class laplacianLoss(nn.Module):
-    def __init__(self, weigth, b=0):
-        super().__init__()
-        self.weight = weigth
-        xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
-            cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['nnx'], cfg['globals']['nny']
-        self.Lx = xmax-xmin
-        self.Ly = ymax-ymin
-        self.dx = self.Lx/nnx
-        self.dy = self.Ly/nny
-        self.b = b
-
-    def forward(self, output, data=None, target_norm=1., data_norm=1.):
-        lapl = laplacian(output * target_norm / data_norm, self.dx, self.dy)
-        return self.Lx**2 * self.Ly**2 * F.mse_loss(lapl[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
-    
-class DirichletLoss(nn.Module):
-    def __init__(self, bound_weight):
-        super().__init__()
-        self.weight = bound_weight
-        self.base_weight = self.weight
-
-    def forward(self, output):
-        bnd_loss = F.mse_loss(output[:, 0, -1, :], torch.zeros_like(output[:, 0, -1, :]))
-        bnd_loss += F.mse_loss(output[:, 0, :, 0], torch.zeros_like(output[:, 0, :, 0]))
-        bnd_loss += F.mse_loss(output[:, 0, :, -1], torch.zeros_like(output[:, 0, :, -1]))
-        bnd_loss += F.mse_loss(output[:, 0, 0, :], torch.zeros_like(output[:, 0, 0, :]))
-        return bnd_loss * self.weight
-
-# Import dataset
-data = np.load(cfg['data_loader']['data_dir'])
-input_data = torch.from_numpy(data)
-num_samples, nnx, nny = input_data.shape
-input_data = input_data.reshape(num_samples, nnx, nny)
+#Import external parameteres
+with open('C:\Codigos/poissonSolverCNN/training/train.yml', 'r') as file:
+    cfg = yaml.load(file, Loader=yaml.FullLoader)
+scales_data = cfg.get('arch', {}).get('scales', {})
+scales = [value for key, value in sorted(scales_data.items())]
+kernel_size = cfg['arch']['kernel_sizes']
+data_dir = cfg['data_loader']['data_dir']
+batch_size = cfg['data_loader']['batch_size']
+num_epochs = cfg['trainer']['epochs']
 lapl_weight = cfg['loss']['args']['lapl_weight']
 bound_weight = cfg['loss']['args']['bound_weight']
-batch_size = cfg['data_loader']['batch_size']
-scales = cfg['arch']['scales']
+lr = cfg['loss']['args']['optimizer_lr']
+scales_data = cfg.get('arch', {}).get('scales', {})
+scales = [value for key, value in sorted(scales_data.items())]
 kernel_sizes = cfg['arch']['kernel_sizes']
-if not isinstance(kernel_sizes, list):
-    kernel_sizes_unet3 = [kernel_sizes]
+xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
+            cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['nnx'], cfg['globals']['nny']
+Lx = xmax-xmin
+Ly = ymax-ymin
 
-# Create DataLoader 
-dataset = TensorDataset(input_data)
-dataloader = DataLoader(dataset, batch_size, shuffle=True)
 
-# Create U-Net model
-model = UNet(scales=scales, kernel_sizes = kernel_sizes)
-print(model)
 
-# Define loss function and optimizer
-laplacian_loss = laplacianLoss(lapl_weight)
-dirichlet_loss = DirichletLoss(bound_weight)
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+#Create Data
+dataset = np.load(data_dir)
+dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+#Parameters to Nomalize
+alpha = 0.1
+ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
-# Training loop
-num_epochs = cfg['trainer']['epochs']
-for epoch in range(num_epochs):
+
+
+#Create model and losses
+model = UNet(scales, kernel=kernel_size)
+model = model.double()
+laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
+dirichlet_loss = DirichletBoundaryLoss(bound_weight)
+optimizer = optim.Adam(model.parameters(), lr = lr)
+
+#Train loop
+for epoch in range (num_epochs):
     total_loss = 0
-    for batch in dataloader: 
-        inputs = batch[0].float() 
+    for batch_idx, batch in enumerate(dataloader):
+        data = batch[:, np.newaxis, :, :]
         optimizer.zero_grad()
-        outputs = model(inputs)
-        lapl_loss = laplacian_loss(outputs, inputs)
-        dir_loss = dirichlet_loss(outputs)
-        loss = lapl_loss + dir_loss
+        data = torch.DoubleTensor(data) 
+        optimizer.zero_grad()
+        data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
+
+        output = model(data)
+        
+        loss = laplacian_loss(output, data = data, data_norm = data_norm)
+        loss += dirichlet_loss(output)
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
-    print(f"Epoch [{epoch+1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
+        if batch_idx % 20 ==0:
+            print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
+    print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
 
 
 # Save the trained model
 torch.save(model.state_dict(), 'unet_model.pth')
+
+
+
