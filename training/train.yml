@@ -28,8 +28,8 @@ loss:
         optimizer_lr: 4.e-4    
 
 trainer:
-    epochs: 20                              # Number of epochs
-    save_dir: 'debug/'                      # Output directory
+    epochs: 300                              # Number of epochs
+    save_dir: 'C:\Codigos\poissonSolverCNN\training\'      # Output directory
     save_period: 10                         # Output period
     plot_period: 10                         # Period to send plots to TensorBoard
 

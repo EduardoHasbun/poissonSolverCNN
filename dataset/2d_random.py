@@ -1,31 +1,17 @@
-#############################################################################################################
-#                                                                                                           #
-#                             RUN:    python 2d_random.py -c dataset.yml                                    #
-#                                                                                                           #
-#############################################################################################################
 
 import numpy as np
 import os
 from multiprocessing import get_context
-import argparse
 import yaml
 from scipy import interpolate
 import matplotlib.pyplot as plt
 
-os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
-args = argparse.ArgumentParser(description='RHS random dataset')
-args.add_argument('-c', '--cfg', type=str, default=None,
-                help='Config filename')
-args.add_argument('--case', type=str, default=None, help='Case name')
 
 # Specific arguments
-args.add_argument('-nr', '--n_res_factor', default=16, type=int,
-                    help='grid of npts/nres on which the random set is taken')
-args = args.parse_args()
-
-with open(args.cfg, 'r') as yaml_stream:
-    cfg = yaml.safe_load(yaml_stream)
+#Import external parameteres
+with open('C:\Codigos/poissonSolverCNN/dataset/dataset.yml', 'r') as file:
+    cfg = yaml.load(file, Loader=yaml.FullLoader)
 
 nits = cfg['n_it']
 
@@ -33,7 +19,7 @@ if __name__ == '__main__':
     # Parameters for data generation
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
     nny, ymin, ymax = cfg['domain']['nny'], cfg['domain']['ymin'], cfg['domain']['ymax']
-    n_res_factor = args.n_res_factor
+    n_res_factor = 16
     # Create a grid
     x, y= np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
 
@@ -61,7 +47,7 @@ if __name__ == '__main__':
     # Generate random data samples
     random_data_array = np.empty((nits, nnx, nny))
     for idx, random_data in enumerate(generate_random_data(nits)):
-        random_data_array[idx] = random_data
+        random_data_array[idx] = random_data * 1.5e3
 
         if idx%100==0:
             plt.figure(figsize=(8, 6))

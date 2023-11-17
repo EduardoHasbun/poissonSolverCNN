@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 import numpy as np
 from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss
 import torch.optim as optim
+import os
 
 #Import external parameteres
 with open('C:\Codigos/poissonSolverCNN/training/train.yml', 'r') as file:
@@ -13,6 +14,7 @@ scales_data = cfg.get('arch', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
 kernel_size = cfg['arch']['kernel_sizes']
 data_dir = cfg['data_loader']['data_dir']
+save_dir = cfg['trainer']['save_dir']
 batch_size = cfg['data_loader']['batch_size']
 num_epochs = cfg['trainer']['epochs']
 lapl_weight = cfg['loss']['args']['lapl_weight']
@@ -67,7 +69,7 @@ for epoch in range (num_epochs):
 
 
 # Save the trained model
-torch.save(model.state_dict(), 'unet_model.pth')
+torch.save(model.state_dict(), os.path.join(save_dir, 'unet_model.pth'))
 
 
 

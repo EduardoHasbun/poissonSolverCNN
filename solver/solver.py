@@ -40,7 +40,7 @@ input_data = torch.from_numpy(input_data).float()
 
 #Create Model
 model = UNet(scales=scales, kernel=kernel_size)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/unet_model.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/training/unet_model.pth'))
 model = model.float()
 for param in model.parameters():
     param.data = param.data.float()
@@ -48,12 +48,12 @@ model.eval()
 
 #Solver
 output = model(input_data)
-output_array = output.detach().numpy()[0, 0, :, :]
-
+output_array = output.detach().numpy()[0, 0, :, :] / 1e6
+print(np.max(output_array))
 
 
 # Plots
-fig, axs = plt.subplots(1, 2, figsize=(10, 5))  # 1 row, 2 columns
+fig, axs = plt.subplots(1, 2, figsize=(10, 5))  
 
 # Plot Input
 img_input = axs[0].imshow(input_data.numpy()[0, 0, :, :], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
@@ -61,21 +61,14 @@ axs[0].set_title('Input')
 axs[0].set_xlabel('X')
 axs[0].set_ylabel('Y')
 cbar_input = plt.colorbar(img_input, ax=axs[0], label='Magnitude')
-cbar_input.formatter.set_scientific(True)
-cbar_input.update_ticks()
 
 # Plot Output
-output_array = output.detach().numpy()[0, 0, :, :]
 img_output = axs[1].imshow(output_array, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[1].set_title('Output')
 axs[1].set_xlabel('X')
 axs[1].set_ylabel('Y')
 cbar_output = plt.colorbar(img_output, ax=axs[1], label='Magnitude')
-cbar_output.formatter.set_scientific(True)
-cbar_output.update_ticks()
 
-
-# Adjust layout to prevent clipping of titles
 plt.tight_layout()
 
 plt.show()
