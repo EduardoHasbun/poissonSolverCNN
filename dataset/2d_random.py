@@ -16,7 +16,7 @@ args = parser.parse_args()
 with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
 nits = cfg['n_it']
-ploting = True
+ploting = False
 
 
 if __name__ == '__main__':
