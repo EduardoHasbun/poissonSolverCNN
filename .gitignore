@@ -1,4 +1,3 @@
 env/
 dataset/generated/
 training/unet_model.pth
-CNN.pdf

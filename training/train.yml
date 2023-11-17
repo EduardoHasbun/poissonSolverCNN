@@ -17,7 +17,6 @@ arch:
         
 
 data_loader:
-    data_dir: 'C:\Codigos\poissonSolverCNN\dataset\generated\random_data.npy'   # Dataset path
     batch_size: 64
 
 
@@ -29,7 +28,6 @@ loss:
 
 trainer:
     epochs: 300                              # Number of epochs
-    save_dir: 'C:\Codigos\poissonSolverCNN\training\'      # Output directory
     save_period: 10                         # Output period
     plot_period: 10                         # Period to send plots to TensorBoard
 

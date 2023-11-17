@@ -6,15 +6,17 @@ import numpy as np
 from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss
 import torch.optim as optim
 import os
+import argparse
 
 #Import external parameteres
-with open('C:\Codigos/poissonSolverCNN/training/train.yml', 'r') as file:
-    cfg = yaml.load(file, Loader=yaml.FullLoader)
+parser = argparse.ArgumentParser(description='Training')
+parser.add_argument('-c', '--cfg', type=str, default=None, help='Config filename')
+args = parser.parse_args()
+with open(args.cfg, 'r') as yaml_stream:
+    cfg = yaml.safe_load(yaml_stream)
 scales_data = cfg.get('arch', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
 kernel_size = cfg['arch']['kernel_sizes']
-data_dir = cfg['data_loader']['data_dir']
-save_dir = cfg['trainer']['save_dir']
 batch_size = cfg['data_loader']['batch_size']
 num_epochs = cfg['trainer']['epochs']
 lapl_weight = cfg['loss']['args']['lapl_weight']
@@ -27,7 +29,8 @@ xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'
             cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['nnx'], cfg['globals']['nny']
 Lx = xmax-xmin
 Ly = ymax-ymin
-
+save_dir = os.getcwd()
+data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data.npy')
 
 
 #Create Data
