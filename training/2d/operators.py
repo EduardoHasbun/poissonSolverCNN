@@ -38,7 +38,7 @@ class DirichletBoundaryLoss(nn.Module):
 
 
 
-def lapl(field, dx, dy, b=0, r=None):
+def lapl(field, dx, dy, b=0):
 
     # Create laplacian tensor with shape (batch_size, 1, h, w)
     laplacian = torch.zeros_like(field).type(field.type())
@@ -54,8 +54,8 @@ def lapl(field, dx, dy, b=0, r=None):
         b * (field[:, 0, 2:, 2:] + field[:, 0, 2:, :-2] + field[:, 0, :-2, :-2] + field[:, 0, :-2, 2:] - 4 * field[:, 0, 1:-1, 1:-1]) \
         / (2 * dx**2)
 
-    if r is None:
-        laplacian[:, 0, 0, 1:-1] = \
+    
+    laplacian[:, 0, 0, 1:-1] = \
             (2 * field[:, 0, 0, 1:-1] - 5 * field[:, 0, 1, 1:-1] + 4 * field[:, 0, 2, 1:-1] - field[:, 0, 3, 1:-1]) / dy**2 + \
             (field[:, 0, 0, 2:] + field[:, 0, 0, :-2] - 2 * field[:, 0, 0, 1:-1]) / dx**2
         
@@ -69,11 +69,11 @@ def lapl(field, dx, dy, b=0, r=None):
         (field[:, 0, 2:, -1] + field[:, 0, :-2, -1] - 2 * field[:, 0, 1:-1, -1]) / dy**2 + \
         (2 * field[:, 0, 1:-1, -1] - 5 * field[:, 0, 1:-1, -2] + 4 * field[:, 0, 1:-1, -3] - field[:, 0, 1:-1, -4]) / dx**2
 
-    if r is None:
-        laplacian[:, 0, 0, 0] = \
+    
+    laplacian[:, 0, 0, 0] = \
             (2 * field[:, 0, 0, 0] - 5 * field[:, 0, 1, 0] + 4 * field[:, 0, 2, 0] - field[:, 0, 3, 0]) / dy**2 + \
             (2 * field[:, 0, 0, 0] - 5 * field[:, 0, 0, 1] + 4 * field[:, 0, 0, 2] - field[:, 0, 0, 3]) / dx**2
-        laplacian[:, 0, 0, -1] = \
+    laplacian[:, 0, 0, -1] = \
             (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 1, -1] + 4 * field[:, 0, 2, -1] - field[:, 0, 3, -1]) / dy**2 + \
             (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
 

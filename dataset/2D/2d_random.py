@@ -1,4 +1,7 @@
 
+#RUN: python 2d_random.py -c dataset.yml
+
+
 import numpy as np
 import os
 from multiprocessing import get_context
@@ -33,7 +36,6 @@ if __name__ == '__main__':
     x_lower, y_lower = np.linspace(xmin, xmax, nnx_lower), np.linspace(ymin, ymax, nny_lower)
 
     def generate_random_data(nits):
-        """ Generate random data samples """
         for i in range(nits):
             z_lower = 2 * np.random.random((nny_lower, nnx_lower)) - 1
             f = interpolate.interp2d(x_lower, y_lower, z_lower, kind='cubic')
@@ -49,18 +51,16 @@ if __name__ == '__main__':
     for idx, random_data in enumerate(generate_random_data(nits)):
         random_data_array[idx] = random_data * 1.5e3
         
-        if ploting == True:
-            if idx%100==0:
-                plt.figure(figsize=(8, 6))
-                plt.imshow(random_data, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-                plt.colorbar(label='Random Data')
-                plt.title(f'Random Data Sample {idx}')
-                plt.xlabel('X')
-                plt.ylabel('Y')
-                plt.savefig(os.path.join(plots_dir, f'random_data_plot_{idx}.png'))
-                plt.close()
+        if ploting and idx%100==0:
+            plt.figure(figsize=(8, 6))
+            plt.imshow(random_data, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+            plt.colorbar(label='Random Data')
+            plt.title(f'Random Data Sample {idx}')
+            plt.xlabel('X')
+            plt.ylabel('Y') 
+            plt.savefig(os.path.join(plots_dir, f'random_data_plot_{idx}.png'))
+            plt.close()
 
-    # Save the 3D numpy array as a single .npy file
     file_path = os.path.join('generated', 'random_data.npy')
     os.makedirs('generated', exist_ok=True)
     np.save(file_path, random_data_array)

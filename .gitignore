@@ -1,3 +1,4 @@
 env/
-dataset/generated/
+dataset/2D/generated/
+dataset/3D/generated/
 training/unet_model.pth
