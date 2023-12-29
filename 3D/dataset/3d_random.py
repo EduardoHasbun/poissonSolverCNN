@@ -5,6 +5,7 @@ import yaml
 from scipy.interpolate import RegularGridInterpolator as rgi
 import matplotlib.pyplot as plt
 import argparse
+from tqdm import tqdm as log_progress
 
 # Specific arguments
 parser = argparse.ArgumentParser(description='RHS random dataset')
@@ -13,14 +14,14 @@ args = parser.parse_args()
 with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
 nits = cfg['n_it']
-plotting = True
+plotting = False
 
 if __name__ == '__main__':
     # Parameters for data generation
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
     ymin, ymax, nny = cfg['domain']['ymin'], cfg['domain']['ymax'], cfg['domain']['nny']
     zmin, zmax, nnz = cfg['domain']['zmin'], cfg['domain']['zmax'], cfg['domain']['nnz']
-    n_res_factor = 16
+    n_res_factor = 10
 
     # Create a 1D grid for each axis
     x, y, z = np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny), np.linspace(zmin, zmax, nnz)
@@ -44,7 +45,7 @@ if __name__ == '__main__':
 
     # Generate random data samples
     random_data_array = np.empty((nits, nnx, nny, nnz))
-    for idx, random_data in enumerate(generate_random(nits)):
+    for idx, random_data in log_progress(enumerate(generate_random(nits)), total=nits, desc="Processing"):
         random_data_array[idx] = random_data * 1.5e3
 
         if plotting and idx % 10 == 0:

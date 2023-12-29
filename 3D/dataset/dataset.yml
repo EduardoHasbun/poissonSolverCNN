@@ -1,4 +1,4 @@
-n_it: 1000
+n_it: 200
 output_dir: 'C:\Codigos\poissonSolverCNN\3D\dataset\generated\'
 
 domain:
@@ -7,10 +7,10 @@ domain:
   bcs: 'dirichlet'
   xmin: 0.0
   xmax: 1.0e-2
-  nnx: 101
+  nnx: 50
   ymin: 0.0
   ymax: 1.0e-2
-  nny: 101
+  nny: 50
   zmin: 0.0
   zmax: 1.0e-2
-  nnz: 101
+  nnz: 50
