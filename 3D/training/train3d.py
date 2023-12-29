@@ -57,7 +57,7 @@ for epoch in range (num_epochs):
     for batch_idx, batch in enumerate(dataloader):
         data = batch[:, np.newaxis, :, :]
         optimizer.zero_grad()
-        data = torch.DoubleTensor(data) 
+        data = torch.FloatTensor(data)
         optimizer.zero_grad()
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
 
