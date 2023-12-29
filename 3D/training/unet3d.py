@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import numpy as np
 
 class _ConvBlock3D(nn.Module):
     def __init__(self, scales, kernel_size, pool=False, upsample_size=None, last_one=False):
@@ -12,7 +13,7 @@ class _ConvBlock3D(nn.Module):
         for i in range(len(scales) - 1):
             layers.append(nn.Conv3d(scales[i], scales[i + 1], kernel_size=kernel_size,
                                     stride=1, padding=1))
-            # layers[-1].bias.data = layers[-1].bias.data.to(torch.double)
+            layers[-1].bias.data = layers[-1].bias.data.to(torch.double)
 
             if not last_one:
                 layers.append(nn.ReLU())
@@ -57,6 +58,7 @@ class UNet3D(nn.Module):
         for ConvDown in self.ConvsDown:
             x = ConvDown(x)
             inputs_down.append(x)
+        print(np.shape(inputs_down))
 
         # Bottom part of the U
         x = self.ConvBottom(x)
