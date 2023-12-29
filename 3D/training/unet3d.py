@@ -12,7 +12,7 @@ class _ConvBlock3D(nn.Module):
         for i in range(len(scales) - 1):
             layers.append(nn.Conv3d(scales[i], scales[i + 1], kernel_size=kernel_size,
                                     stride=1, padding=1))
-            layers[-1].bias.data = layers[-1].bias.data.to(torch.double)
+            # layers[-1].bias.data = layers[-1].bias.data.to(torch.double)
 
             if not last_one:
                 layers.append(nn.ReLU())
