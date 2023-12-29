@@ -58,15 +58,15 @@ class UNet3D(nn.Module):
         for ConvDown in self.ConvsDown:
             x = ConvDown(x)
             inputs_down.append(x)
-        for tensor in inputs_down:
-            print(tensor.shape)
 
         # Bottom part of the U
         x = self.ConvBottom(x)
 
         # Apply the up loop
-        for ConvUp in self.ConvsUp:
+        for i, ConvUp in self.ConvsUp:
             input_tmp = inputs_down.pop()
             x = ConvUp(torch.cat((x, input_tmp), dim=1))
+            print(f"Up {i + 1} Size: {x.size()}")
+
 
         return x
