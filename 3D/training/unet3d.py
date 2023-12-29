@@ -63,10 +63,10 @@ class UNet3D(nn.Module):
         x = self.ConvBottom(x)
 
         # Apply the up loop
-        for i, ConvUp in self.ConvsUp:
+        for ConvUp in self.ConvsUp:
             input_tmp = inputs_down.pop()
             x = ConvUp(torch.cat((x, input_tmp), dim=1))
-            print(f"Up {i + 1} Size: {x.size()}")
+            print(x.size(), input_tmp.size())
 
 
         return x
