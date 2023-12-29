@@ -46,7 +46,7 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 #Create model and losses
 model = UNet3D(scales, kernel=kernel_size)
-model = model.double()
+model = model.float() 
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 optimizer = optim.Adam(model.parameters(), lr = lr)
