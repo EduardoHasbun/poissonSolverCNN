@@ -58,7 +58,8 @@ class UNet3D(nn.Module):
         for ConvDown in self.ConvsDown:
             x = ConvDown(x)
             inputs_down.append(x)
-        print(inputs_down.shape)
+        for tensor in inputs_down:
+            print(tensor.shape)
 
         # Bottom part of the U
         x = self.ConvBottom(x)
