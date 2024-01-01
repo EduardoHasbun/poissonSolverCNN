@@ -43,6 +43,8 @@ if __name__ == '__main__':
     if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
 
+    print('nnx: ', nnx, 'nny: ', nny, "nnz: ", nnz)
+
     # Generate random data samples
     random_data_array = np.empty((nits, nnx, nny, nnz))
     for idx, random_data in log_progress(enumerate(generate_random(nits)), total=nits, desc="Processing"):
