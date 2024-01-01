@@ -1,7 +1,7 @@
 globals:                                    # Domain sizes and others, used to compute global attributes
-    nnx: 50                                # Number of points in x direction
-    nny: 50                                # Number of points in y direction
-    nnz: 50
+    nnx: 60                                # Number of points in x direction
+    nny: 60                                # Number of points in y direction
+    nnz: 60
     xmin: 0.0
     xmax: 1.0e-2
     ymin: 0.0
@@ -21,7 +21,7 @@ arch:
         
 
 data_loader:
-    batch_size: 32
+    batch_size: 64
 
 
 loss:
@@ -31,7 +31,6 @@ loss:
         optimizer_lr: 4.e-4    
 
 trainer:
-    epochs: 30                              # Number of epochs
-    save_period: 10                         # Output period
-    plot_period: 10                         # Period to send plots to TensorBoard
+    epochs: 100                              # Number of epochs
+
 
