@@ -45,7 +45,6 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 
 #Create model and losses
-print(nnx)
 model = UNet3D(scales, kernel=kernel_size, input_res=nnx)
 model = model.float() 
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
