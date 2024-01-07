@@ -41,10 +41,10 @@ class UNet3D(nn.Module):
             _ConvBlock3D(scales[3][0], kernel, pool=True),
         ])
 
-        self.ConvBottom = _ConvBlock3D(scales[4][0], kernel, pool=True, upsample_size=7)
+        self.ConvBottom = _ConvBlock3D(scales[4][0], kernel, pool=True, upsample_size=6)
 
         self.ConvsUp = nn.ModuleList([
-            _ConvBlock3D(scales[1][1], kernel, upsample_size=15),
+            _ConvBlock3D(scales[1][1], kernel, upsample_size=12),
             _ConvBlock3D(scales[2][1], kernel, upsample_size=int(input_res/2)),
             _ConvBlock3D(scales[3][1], kernel, upsample_size=int(input_res)),
             _ConvBlock3D(scales[0][1], kernel, last_one=True),
