@@ -4,7 +4,7 @@ import torch.nn as nn
 import numpy as np
 import yaml
 import matplotlib.pyplot as plt
-from unet3d import UNet3D as UNet
+from ..training.unet3d import UNet3D as UNet
 from matplotlib.colors import ListedColormap
 
 
@@ -43,7 +43,7 @@ input_data = input_data[np.newaxis, np.newaxis, :, :, :]
 input_data = torch.from_numpy(input_data).float()
 
 #Create Model
-model = UNet(scales=scales, kernel=kernel_size)
+model = UNet(scales=scales, kernel=kernel_size, input_res=60)
 model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/3D/training/unet_model.pth'))
 model = model.float()
 for param in model.parameters():
@@ -54,6 +54,7 @@ model.eval()
 output = model(input_data)
 output_array = output.detach().numpy()[0, 0, :, :, :] 
 input_plot = input_data.detach().numpy()[0, 0, :, :, :]
+print(np.max(output_array))
 
 fig = plt.figure(figsize=(8, 6))
 ax = fig.add_subplot(111, projection='3d')
@@ -69,7 +70,7 @@ plt.show()
 
 
 #2d
-ouptut_slice = output_array[25,:,:]
+ouptut_slice = output_array[0,:,:]
 plt.figure(figsize=(8, 6))
 plt.imshow(ouptut_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 plt.show()
