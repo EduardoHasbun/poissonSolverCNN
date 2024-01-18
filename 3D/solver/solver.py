@@ -4,7 +4,7 @@ import torch.nn as nn
 import numpy as np
 import yaml
 import matplotlib.pyplot as plt
-from ..training.unet3d import UNet3D as UNet
+from unet3d import UNet3D as UNet
 from matplotlib.colors import ListedColormap
 
 
