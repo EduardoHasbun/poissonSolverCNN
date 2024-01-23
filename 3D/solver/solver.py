@@ -43,7 +43,7 @@ input_data = input_data[np.newaxis, np.newaxis, :, :, :]
 input_data = torch.from_numpy(input_data).float()
 
 #Create Model
-model = UNet(scales=scales, kernel=kernel_size, input_res=60)
+model = UNet(scales=scales, kernel=kernel_size, input_res=nnx)
 model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/3D/training/unet_model.pth'))
 model = model.float()
 for param in model.parameters():
