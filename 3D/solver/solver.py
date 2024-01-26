@@ -41,6 +41,7 @@ def gaussians(x, y, z, params):
 input_data = gaussians(X, Y, Z, cfg['init']['args'])
 input_data = input_data[np.newaxis, np.newaxis, :, :, :]
 input_data = torch.from_numpy(input_data).float()
+input_array = input_data[0, 0, :, :, :]
 
 #Create Model
 model = UNet(scales=scales, kernel=kernel_size, input_res=nnx)
@@ -69,8 +70,8 @@ plt.show()
 
 
 
-#2d
-ouptut_slice = output_array[0,:,:]
+# 2d
+ouptut_slice = output_array[25,:,:]
 plt.figure(figsize=(8, 6))
 plt.imshow(ouptut_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 plt.show()

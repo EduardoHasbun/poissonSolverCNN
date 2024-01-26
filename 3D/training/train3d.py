@@ -59,12 +59,13 @@ for epoch in range (num_epochs):
         optimizer.zero_grad()
         data = data.to(model.parameters().__next__().dtype)
         optimizer.zero_grad()
-        data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
+        data_norm = torch.ones((data.size(0), data.size(1), 1, 1))# / ratio_max
 
         output = model(data)
         
-        loss = laplacian_loss(output, data = data, data_norm = data_norm)
-        loss += dirichlet_loss(output)
+        # loss = laplacian_loss(output, data = data, data_norm = data_norm)
+        # loss += dirichlet_loss(output)
+        loss = 0.0001
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
