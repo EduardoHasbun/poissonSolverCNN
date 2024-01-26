@@ -64,7 +64,7 @@ for epoch in range (num_epochs):
         output = model(data)
         
         # loss = laplacian_loss(output, data = data, data_norm = data_norm)
-        loss += dirichlet_loss(output)
+        loss = dirichlet_loss(output)
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
