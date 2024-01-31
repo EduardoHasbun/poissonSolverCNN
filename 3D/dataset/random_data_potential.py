@@ -6,7 +6,8 @@ from scipy.interpolate import RegularGridInterpolator as rgi
 import matplotlib.pyplot as plt
 import argparse
 from tqdm import tqdm as log_progress
-
+from scipy.sparse import diags
+from scipy.sparse.linalg import spsolve
 # Specific arguments
 parser = argparse.ArgumentParser(description='RHS random dataset')
 parser.add_argument('-c', '--cfg', type=str, default=None, help='Config filename')
@@ -53,20 +54,27 @@ if __name__ == '__main__':
         random_data_array[idx] = random_data * 1.5e3
 
         # Solve Poisson equation: Laplacian(potential) = random_data
-        potential = np.zeros_like(random_data)
+
         laplacian = np.zeros_like(random_data)
-
         laplacian[1:-1, 1:-1, 1:-1] = (
-        random_data[:-2, 1:-1, 1:-1] + random_data[2:, 1:-1, 1:-1] +
-        random_data[1:-1, :-2, 1:-1] + random_data[1:-1, 2:, 1:-1] +
-        random_data[1:-1, 1:-1, :-2] + random_data[1:-1, 1:-1, 2:]) / 6.0
+            random_data[:-2, 1:-1, 1:-1] + random_data[2:, 1:-1, 1:-1] +
+            random_data[1:-1, :-2, 1:-1] + random_data[1:-1, 2:, 1:-1] +
+            random_data[1:-1, 1:-1, :-2] + random_data[1:-1, 1:-1, 2:]
+        ) / 6.0
 
-        laplacian_reshape = laplacian[1:-1, 1:-1, 1:-1].reshape((-1, 1))
-        identity_matrix = -6 * np.eye(laplacian_reshape.shape[0])
+        # Create a sparse matrix for the Laplacian
+        diag = np.ones(laplacian.size)
+        offsets = [-nnx * nny, -nnx, -1, 0, 1, nnx, nnx * nny]
+        laplacian_matrix = diags([diag, diag, diag, diag, diag, diag, diag], offsets, shape=(nnx * nny * nnz, nnx * nny * nnz))
 
-        potential[1:-1, 1:-1, 1:-1] = np.linalg.solve(identity_matrix, laplacian_reshape).reshape((nnx-2, nny-2, nnz-2))
+        laplacian_reshape = laplacian[1:-1, 1:-1, 1:-1].ravel()
+
+        # Solve for potential using a sparse solver
+        potential_reshape = spsolve(laplacian_matrix, laplacian_reshape)
+        potential = potential_reshape.reshape((nnx-2, nny-2, nnz-2))
 
         potential_array[idx] = potential
+
 
 
     file_path_random = os.path.join('generated', 'random_data2.npy')
