@@ -53,20 +53,23 @@ if __name__ == '__main__':
         random_data_array[idx] = random_data * 1.5e3
 
         # Solve Poisson equation: Laplacian(potential) = random_data
-        laplacian = np.zeros_like(random_data)
-        laplacian[1:-1, 1:-1, 1:-1] = (
-            random_data[:-2, 1:-1, 1:-1] + random_data[2:, 1:-1, 1:-1] +
-            random_data[1:-1, :-2, 1:-1] + random_data[1:-1, 2:, 1:-1] +
-            random_data[1:-1, 1:-1, :-2] + random_data[1:-1, 1:-1, 2:]
-        ) / 6.0
-
         potential = np.zeros_like(random_data)
-        potential[1:-1, 1:-1, 1:-1] = np.linalg.solve(-6 * np.eye(3), laplacian[1:-1, 1:-1, 1:-1].reshape((-1, 1))).reshape((nnx-2, nny-2, nnz-2))
+        laplacian = np.zeros_like(random_data)
+
+        laplacian[1:-1, 1:-1, 1:-1] = (
+        random_data[:-2, 1:-1, 1:-1] + random_data[2:, 1:-1, 1:-1] +
+        random_data[1:-1, :-2, 1:-1] + random_data[1:-1, 2:, 1:-1] +
+        random_data[1:-1, 1:-1, :-2] + random_data[1:-1, 1:-1, 2:]) / 6.0
+
+        laplacian_reshape = laplacian[1:-1, 1:-1, 1:-1].reshape((-1, 1))
+        identity_matrix = -6 * np.eye(laplacian_reshape.shape[0])
+
+        potential[1:-1, 1:-1, 1:-1] = np.linalg.solve(identity_matrix, laplacian_reshape).reshape((nnx-2, nny-2, nnz-2))
 
         potential_array[idx] = potential
 
 
-    file_path_random = os.path.join('generated', 'random_data.npy')
+    file_path_random = os.path.join('generated', 'random_data2.npy')
     file_path_potential = os.path.join('generated', 'potential_data.npy')
     print(np.shape(random_data_array))
     os.makedirs('generated', exist_ok=True)
