@@ -70,7 +70,8 @@ if __name__ == '__main__':
 
         # Solve for potential using a sparse solver
         potential_reshape = spsolve(laplacian_matrix, laplacian_reshape)
-        potential = potential_reshape.reshape((nnx-2, nny-2, nnz-2))
+        potential = potential_reshape.reshape((nnx-2*n_res_factor, nny-2*n_res_factor, nnz-2*n_res_factor))
+
 
         potential_array[idx] = potential
 
