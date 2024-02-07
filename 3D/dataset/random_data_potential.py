@@ -67,8 +67,7 @@ if __name__ == '__main__':
         offsets = [-nnx * nny * nnz, -nnx * nny, -nnx, -1, 0, 1, nnx, nnx * nny, nnx * nny * nnz]
         laplacian_matrix = diags([diag, diag, diag, diag, diag, diag, diag, diag, diag], offsets, shape=(nnx * nny * nnz, nnx * nny * nnz))
 
-        # Reshape the Laplacian matrix
-        laplacian_reshape = laplacian.ravel()
+        laplacian_reshape = laplacian[1:-1, 1:-1, 1:-1].ravel()
 
         # Solve for potential using a sparse solver
         potential_reshape = spsolve(laplacian_matrix, laplacian_reshape)
