@@ -52,16 +52,15 @@ if __name__ == '__main__':
 
     for idx, random_data in log_progress(enumerate(generate_random(nits)), total=nits, desc="Processing"):
         random_data_array[idx] = random_data * 1.5e3
-        print(np.shape(random_data))
 
         # Solve Poisson equation: Laplacian(potential) = random_data
-
         laplacian = np.zeros_like(random_data)
         laplacian[1:-1, 1:-1, 1:-1] = (
             random_data[:-2, 1:-1, 1:-1] + random_data[2:, 1:-1, 1:-1] +
             random_data[1:-1, :-2, 1:-1] + random_data[1:-1, 2:, 1:-1] +
             random_data[1:-1, 1:-1, :-2] + random_data[1:-1, 1:-1, 2:]
         ) / 6.0
+        print(np.shape(laplacian))
 
         # Create a sparse matrix for the Laplacian
         diag = np.ones(laplacian.size)
