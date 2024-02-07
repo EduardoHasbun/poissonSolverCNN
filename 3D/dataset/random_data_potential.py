@@ -37,7 +37,7 @@ if __name__ == '__main__':
     def generate_random(nits):
         for i in range(nits):
             data_lower = 2 * np.random.random((nnx_lower, nny_lower, nnz_lower)) - 1
-            f = rgi((x_lower, y_lower, z_lower), data_lower, method='cubic')
+            f = rgi((x_lower, y_lower, z_lower), data_lower)
             yield f(points).reshape((nnx, nny, nnz))
 
     plots_dir = os.path.join('generated', 'plots')
