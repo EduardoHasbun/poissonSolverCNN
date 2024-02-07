@@ -62,12 +62,15 @@ if __name__ == '__main__':
             random_data[1:-1, 1:-1, :-2] + random_data[1:-1, 1:-1, 2:]
         ) / 6.0
 
+        # Reshape the Laplacian matrix
+        laplacian_reshape = laplacian.ravel()
+
         # Create a sparse matrix for the Laplacian
         diag = np.ones(laplacian.size)
-        offsets = [-nnx * nny, -nnx, -1, 0, 1, nnx, nnx * nny]
-        laplacian_matrix = diags([diag, diag, diag, diag, diag, diag, diag], offsets, shape=(nnx * nny * nnz, nnx * nny * nnz))
+        offsets = [-nnx * nny * nnz, -nnx * nny, -nnx, -1, 0, 1, nnx, nnx * nny, nnx * nny * nnz]
+        laplacian_matrix = diags([diag, diag, diag, diag, diag, diag, diag, diag, diag], offsets, shape=(nnx * nny * nnz, nnx * nny * nnz))
 
-        laplacian_reshape = laplacian[1:-1, 1:-1, 1:-1].ravel()
+        # laplacian_reshape = laplacian[1:-1, 1:-1, 1:-1].ravel()
 
         # Solve for potential using a sparse solver
         potential_reshape = spsolve(laplacian_matrix, laplacian_reshape)
