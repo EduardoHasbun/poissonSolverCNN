@@ -60,7 +60,6 @@ if __name__ == '__main__':
             random_data[1:-1, :-2, 1:-1] + random_data[1:-1, 2:, 1:-1] +
             random_data[1:-1, 1:-1, :-2] + random_data[1:-1, 1:-1, 2:]
         ) / 6.0
-        print(np.shape(laplacian))
 
         # Create a sparse matrix for the Laplacian
         diag = np.ones(laplacian.size)
