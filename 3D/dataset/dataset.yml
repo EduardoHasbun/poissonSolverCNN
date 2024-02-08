@@ -7,10 +7,10 @@ domain:
   bcs: 'dirichlet'
   xmin: 0.0
   xmax: 1.0e-2
-  nnx: 40
+  nnx: 30
   ymin: 0.0
   ymax: 1.0e-2
-  nny: 40
+  nny: 30
   zmin: 0.0
   zmax: 1.0e-2
-  nnz: 40
+  nnz: 30
