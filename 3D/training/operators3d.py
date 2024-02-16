@@ -38,6 +38,16 @@ class DirichletBoundaryLoss(nn.Module):
         bnd_loss += F.mse_loss(output[:, 0, :, :, 0], torch.zeros_like(output[:, 0, :, :, 0]))
         bnd_loss += F.mse_loss(output[:, 0, :, :, -1], torch.zeros_like(output[:, 0, :, :, -1]))
         return bnd_loss * self.weight
+    
+
+class InsideLoss(nn.module):
+    def __init__(self, cfg, inside_weight):
+        self.nnx, self.nny, self.nnz = cfg['globals']['nnx'], cfg['globals']['nny'], cfg['globals']['nnz']
+        self.weight = inside_weight
+
+    def forward(self, output, target):
+        return F.mse_loss(output[:, 0, 1:-1, 1:-1, 1:-1], target[:, 0, 1:-1, 1:-1, 1:-1]) * self.weight
+
 
 
 

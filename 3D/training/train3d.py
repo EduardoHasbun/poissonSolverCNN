@@ -3,7 +3,7 @@ from unet3d import UNet3D
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
-from operators3d import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss
+from operators3d import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, InsideLoss
 import torch.optim as optim
 import os
 import argparse
@@ -20,6 +20,7 @@ kernel_size = cfg['arch']['kernel_sizes']
 batch_size = cfg['data_loader']['batch_size']
 num_epochs = cfg['trainer']['epochs']
 lapl_weight = cfg['loss']['args']['lapl_weight']
+inside_weight = cfg['loss']['args']['inside_weight']
 bound_weight = cfg['loss']['args']['bound_weight']
 lr = cfg['loss']['args']['optimizer_lr']
 scales_data = cfg.get('arch', {}).get('scales', {})
@@ -32,11 +33,13 @@ Lx = xmax-xmin
 Ly = ymax-ymin
 Lz = zmax-zmin
 save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data.npy')
+data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data2.npy')
+target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potential_data.npy')
 
 
 #Create Data
 dataset = np.load(data_dir)
+target  = np.load(target_dir)
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 #Parameters to Nomalize
 alpha = 0.1
@@ -49,6 +52,7 @@ model = UNet3D(scales, kernel=kernel_size, input_res=nnx)
 model = model.float() 
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
+inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
 #Train loop
@@ -60,10 +64,9 @@ for epoch in range (num_epochs):
         data = data.to(model.parameters().__next__().dtype)
         optimizer.zero_grad()
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1))# / ratio_max
-
         output = model(data)
-        
-        loss = laplacian_loss(output, data = data, data_norm = data_norm)
+        # loss = laplacian_loss(output, data = data, data_norm = data_norm)
+        loss = inside_loss(output, target[batch_idx, :, :, :])
         loss += dirichlet_loss(output)
         loss.backward()
         optimizer.step()
