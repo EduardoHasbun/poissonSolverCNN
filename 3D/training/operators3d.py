@@ -42,12 +42,12 @@ class DirichletBoundaryLoss(nn.Module):
 
 class InsideLoss(nn.Module):
     def __init__(self, cfg, inside_weight):
+        super(InsideLoss, self).__init__()  # Call the parent class constructor
         self.nnx, self.nny, self.nnz = cfg['globals']['nnx'], cfg['globals']['nny'], cfg['globals']['nnz']
         self.weight = inside_weight
 
     def forward(self, output, target):
         return F.mse_loss(output[:, 0, 1:-1, 1:-1, 1:-1], target[:, 0, 1:-1, 1:-1, 1:-1]) * self.weight
-
 
 
 

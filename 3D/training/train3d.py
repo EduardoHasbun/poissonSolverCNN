@@ -78,7 +78,3 @@ for epoch in range (num_epochs):
     torch.save(model.state_dict(), os.path.join(save_dir, 'unet_model.pth'))
 
 
-# Save the trained model
-
-
-
