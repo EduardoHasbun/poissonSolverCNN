@@ -40,7 +40,7 @@ class DirichletBoundaryLoss(nn.Module):
         return bnd_loss * self.weight
     
 
-class InsideLoss(nn.module):
+class InsideLoss(nn.Module):
     def __init__(self, cfg, inside_weight):
         self.nnx, self.nny, self.nnz = cfg['globals']['nnx'], cfg['globals']['nny'], cfg['globals']['nnz']
         self.weight = inside_weight
