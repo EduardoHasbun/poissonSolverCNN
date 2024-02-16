@@ -40,6 +40,7 @@ target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potential_dat
 #Create Data
 dataset = np.load(data_dir)
 target  = np.load(target_dir)
+print(np.shape(target))
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 #Parameters to Nomalize
 alpha = 0.1
