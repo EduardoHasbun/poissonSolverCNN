@@ -64,10 +64,10 @@ optimizer = optim.Adam(model.parameters(), lr = lr)
 for epoch in range (num_epochs):
     total_loss = 0
     for batch_idx, (batch, target) in enumerate(dataloader):
-        data = batch[:, np.newaxis, :, :]
-        target = target[:, np.newaxis, :, :]
+        data = batch[:, np.newaxis, :, :].float()
+        target = target[:, np.newaxis, :, :].float()
         optimizer.zero_grad()
-        data = data.to(model.parameters().__next__().dtype)
+        # data = data.to(model.parameters().__next__().dtype)
         optimizer.zero_grad()
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1))# / ratio_max
         output = model(data)
