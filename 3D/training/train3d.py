@@ -66,6 +66,7 @@ for epoch in range (num_epochs):
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1))# / ratio_max
         output = model(data)
         # loss = laplacian_loss(output, data = data, data_norm = data_norm)
+        print(np.shape(target[batch_idx, :, :, :]))
         loss = inside_loss(output, target[batch_idx, :, :, :])
         loss += dirichlet_loss(output)
         loss.backward()
