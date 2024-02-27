@@ -47,7 +47,7 @@ class InsideLoss(nn.Module):
         self.weight = inside_weight
 
     def forward(self, output, target):
-        return F.mse_loss(output[:, 0, 1:-1, 1:-1, 1:-1], target) * self.weight
+        return F.mse_loss(output[:, 0, 1:-1, 1:-1, 1:-1], target[:, 1:-1, 1:-1, 1:-1]) * self.weight
 
 
 
