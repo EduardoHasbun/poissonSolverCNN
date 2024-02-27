@@ -40,7 +40,7 @@ target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potential_dat
 #Create Data
 dataset = np.load(data_dir)
 target  = np.load(target_dir)
-dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+dataloader = DataLoader(dataset, target, batch_size=batch_size, shuffle=True)
 #Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
@@ -58,15 +58,16 @@ optimizer = optim.Adam(model.parameters(), lr = lr)
 #Train loop
 for epoch in range (num_epochs):
     total_loss = 0
-    for batch_idx, batch in enumerate(dataloader):
+    for batch_idx, (batch, target) in enumerate(dataloader):
         data = batch[:, np.newaxis, :, :]
+        target = target[:, np.newaxis, :, :]
         optimizer.zero_grad()
         data = data.to(model.parameters().__next__().dtype)
         optimizer.zero_grad()
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1))# / ratio_max
         output = model(data)
         # loss = laplacian_loss(output, data = data, data_norm = data_norm)
-        loss = inside_loss(output, target[batch_idx, :, :, :])
+        loss = inside_loss(output, target)
         loss += dirichlet_loss(output)
         loss.backward()
         optimizer.step()
