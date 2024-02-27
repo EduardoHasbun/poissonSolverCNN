@@ -7,6 +7,7 @@ from operators3d import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, Insi
 import torch.optim as optim
 import os
 import argparse
+from torch.utils.data import TensorDataset
 
 #Import external parameteres
 parser = argparse.ArgumentParser(description='Training')
@@ -40,7 +41,9 @@ target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potential_dat
 #Create Data
 dataset = np.load(data_dir)
 target  = np.load(target_dir)
-dataloader = DataLoader(dataset, target, batch_size=batch_size, shuffle=True)
+data_set = TensorDataset(dataset, target)
+dataloader = DataLoader(data_set, batch_size=batch_size, shuffle=True)
+
 #Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
