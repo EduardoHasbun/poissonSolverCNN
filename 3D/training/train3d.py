@@ -41,6 +41,8 @@ target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potential_dat
 #Create Data
 dataset = np.load(data_dir)
 target  = np.load(target_dir)
+dataset = torch.tensor(dataset)
+target = torch.tensor(target)
 data_set = TensorDataset(dataset, target)
 dataloader = DataLoader(data_set, batch_size=batch_size, shuffle=True)
 
