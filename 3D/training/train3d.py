@@ -1,5 +1,6 @@
 import torch
 from unet3d import UNet3D
+from msnet3d import MSNet3D
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
@@ -18,6 +19,7 @@ with open(args.cfg, 'r') as yaml_stream:
 scales_data = cfg.get('arch', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
 kernel_size = cfg['arch']['kernel_sizes']
+model_type = cfg['arch']['type']
 batch_size = cfg['data_loader']['batch_size']
 num_epochs = cfg['trainer']['epochs']
 lapl_weight = cfg['loss']['args']['lapl_weight']
@@ -53,7 +55,12 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 
 #Create model and losses
-model = UNet3D(scales, kernel=kernel_size, input_res=nnx)
+if model_type == 'UNet':
+    model = UNet3D(scales, kernel=kernel_size, input_res=nnx)
+elif model_type == 'MSNet':
+    model = MSNet3D(scales, kernels=kernel_size, input_res=nnx)
+else:
+    print('No model found')
 model = model.float() 
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
