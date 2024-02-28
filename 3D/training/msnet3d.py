@@ -30,7 +30,7 @@ class _ConvBlock3D(nn.Module):
 
 class MSNet3D(nn.Module):
 
-    def __init__(self, scales, kernel_sizes, input_res):
+    def __init__(self, scales, kernel, input_res):
         super(MSNet3D, self).__init__()
 
         self.down_blocks = nn.ModuleList()
@@ -39,13 +39,13 @@ class MSNet3D(nn.Module):
         # Create down_blocks and up_blocks
         for i in range(len(scales)):
             print(scales)
-            self.down_blocks.append(_ConvBlock3D(scales[i][0], scales[i][1], kernel_sizes[i], pool=True))
+            self.down_blocks.append(_ConvBlock3D(scales[i][0], scales[i][1], kernel, pool=True))
 
             if i != len(scales) - 1:
-                self.up_blocks.append(_ConvBlock3D(scales[i][1], scales[i][0], kernel_sizes[i], upsample_size=(int(input_res / 2 ** (len(scales) - i - 1)), int(input_res / 2 ** (len(scales) - i - 1)), int(input_res / 2 ** (len(scales) - i - 1)))))
+                self.up_blocks.append(_ConvBlock3D(scales[i][1], scales[i][0], kernel, upsample_size=(int(input_res / 2 ** (len(scales) - i - 1)), int(input_res / 2 ** (len(scales) - i - 1)), int(input_res / 2 ** (len(scales) - i - 1)))))
 
         # Out layer
-        self.up_blocks.append(_ConvBlock3D(scales[-1][1], scales[-1][0], kernel_sizes[-1]))
+        self.up_blocks.append(_ConvBlock3D(scales[-1][1], scales[-1][0], kernel))
 
     def forward(self, x):
         down_outputs = []
