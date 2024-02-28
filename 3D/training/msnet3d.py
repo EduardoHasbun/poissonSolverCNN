@@ -38,6 +38,7 @@ class MSNet3D(nn.Module):
 
         # Create down_blocks and up_blocks
         for i in range(len(scales)):
+            print(scales)
             self.down_blocks.append(_ConvBlock3D(scales[i][0], scales[i][1], kernel_sizes[i], pool=True))
 
             if i != len(scales) - 1:
