@@ -41,9 +41,9 @@ mesh:
   xmax: 1.0e-2
   ymax: 1.0e-2
   zmax: 1.0e-2
-  nnx: 50
-  nny: 50
-  nnz: 50
+  nnx: 30
+  nny: 30
+  nnz: 30
 
 BC: 'full_out'
 

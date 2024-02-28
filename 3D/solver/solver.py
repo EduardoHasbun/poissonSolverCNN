@@ -71,7 +71,7 @@ plt.show()
 
 
 # 2d
-ouptut_slice = output_array[25,:,:]
+ouptut_slice = output_array[15,:,:]
 plt.figure(figsize=(8, 6))
 plt.imshow(ouptut_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 plt.show()
