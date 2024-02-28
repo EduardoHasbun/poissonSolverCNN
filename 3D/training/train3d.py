@@ -18,6 +18,7 @@ with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
 scales_data = cfg.get('arch', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
+print(scales)
 kernel_size = cfg['arch']['kernel_sizes']
 model_type = cfg['arch']['type']
 batch_size = cfg['data_loader']['batch_size']
