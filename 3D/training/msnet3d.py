@@ -4,12 +4,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class _ConvBlock3D(nn.Module):
-    """
-    General convolution block for MSNet. Depending on the location of the block
-    in the architecture, the block can begin with a MaxPool3d (for down)
-    or end with an Upsample layer (for up)
-    """
-    def __init__(self, in_channels, out_channels, kernel_size, pool=False, upsample_size=None):
+
+    def __init__(self, in_channels, out_channels, kernel_size, pool=False, upsample_size='bilinear'):
         super(_ConvBlock3D, self).__init__()
         layers = []
 
@@ -38,7 +34,6 @@ class MSNet3D(nn.Module):
 
         # Create down_blocks and up_blocks
         for i in range(len(scales)):
-            print(scales)
             self.down_blocks.append(_ConvBlock3D(scales[i][0], scales[i][1], kernel, pool=True))
 
             if i != len(scales) - 1:
