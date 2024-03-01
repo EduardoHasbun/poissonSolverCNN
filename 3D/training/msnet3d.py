@@ -34,6 +34,7 @@ class MSNet3D(nn.Module):
         # For upsample the list of resolution is needed when 
         # the number of points is not a power of 2
         self.input_res = tuple([input_res, input_res])
+        print('this')
         self.list_res = [int(input_res / 2**i) for i in range(self.n_scales)]
 
         # create down_blocks, bottom_fmaps and up_blocks
