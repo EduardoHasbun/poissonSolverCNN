@@ -35,11 +35,12 @@ class MSNet3D(nn.Module):
         self.input_res = tuple([input_res, input_res, input_res])
         self.n_scales = len(scales)
         self.kernel = kernel
+        self.scales = scales
         self.list_res = [int(input_res / 2**i) for i in range(self.n_scales)]
 
         # create down_blocks, bottom_fmaps and up_blocks
         middle_blocks = list()
-        for local_depth in range(self.max_scale):
+        for local_depth in range(self.n_scales):
             middle_blocks.append(self.scales[f'scale_{self.n_scales - local_depth:d}'])
         out_fmaps = self.scales['scale_0']
 
