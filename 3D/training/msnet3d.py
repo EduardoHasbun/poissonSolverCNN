@@ -1,61 +1,70 @@
 import torch
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class _ConvBlock3D(nn.Module):
-
-    def __init__(self, in_channels, out_channels, kernel_size, pool=False, upsample_size='bilinear'):
+    def __init__(self, fmaps, out_size, block_type, kernel_size, 
+            padding_mode='zeros', upsample_mode='bilinear'):
         super(_ConvBlock3D, self).__init__()
-        layers = []
+        layers = list()
+        # Append all the specified layers
+        for i in range(len(fmaps) - 1):
+            layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
+                kernel_size=kernel_size, padding=int((kernel_size - 1) / 2),
+                padding_mode=padding_mode))
+            # No ReLu at the very last layer
+            if i != len(fmaps) - 2 or block_type != 'out':
+                layers.append(nn.ReLU())
 
-        if pool:
-            layers.append(nn.MaxPool3d(2))
+        # Apply either Upsample or deconvolution
+        if block_type == 'middle':
+            layers.append(nn.Upsample(out_size, mode=upsample_mode))
 
-        layers.append(nn.Conv3d(in_channels, out_channels, kernel_size=kernel_size, padding=1))
-        layers.append(nn.ReLU())
-
-        if upsample_size is not None:
-            layers.append(nn.Upsample(size=upsample_size, mode='nearest'))
-
+        # Build the sequence of layers
         self.encode = nn.Sequential(*layers)
 
     def forward(self, x):
         return self.encode(x)
 
-
 class MSNet3D(nn.Module):
+    def __init__(self, scales, kernel_sizes, input_res, padding_mode='zeros',
+                    upsample_mode='bilinear'):
+        super(MSNet3D, self).__init__(scales, kernel_sizes)
+        # For upsample the list of resolution is needed when 
+        # the number of points is not a power of 2
+        self.input_res = tuple([input_res, input_res])
+        self.list_res = [int(input_res / 2**i) for i in range(self.n_scales)]
 
-    def __init__(self, scales, kernel, input_res):
-        super(MSNet3D, self).__init__()
+        # create down_blocks, bottom_fmaps and up_blocks
+        middle_blocks = list()
+        for local_depth in range(self.max_scale):
+            middle_blocks.append(self.scales[f'scale_{self.max_scale - local_depth:d}'])
+        out_fmaps = self.scales['scale_0']
 
-        self.down_blocks = nn.ModuleList()
-        self.up_blocks = nn.ModuleList()
-
-        # Create down_blocks and up_blocks
-        for i in range(len(scales)):
-            self.down_blocks.append(_ConvBlock3D(scales[i][0], scales[i][1], kernel, pool=True))
-
-            if i != len(scales) - 1:
-                self.up_blocks.append(_ConvBlock3D(scales[i][1], scales[i][0], kernel, upsample_size=(int(input_res / 2 ** (len(scales) - i - 1)), int(input_res / 2 ** (len(scales) - i - 1)), int(input_res / 2 ** (len(scales) - i - 1)))))
-
+        # Intemediate layers up (UpSample/Deconv at the end)
+        self.ConvsUp = nn.ModuleList()
+        for imiddle, middle_fmaps in enumerate(middle_blocks):
+            self.ConvsUp.append(_ConvBlock3D(middle_fmaps, 
+                out_size=self.list_res[-2 -imiddle], 
+                block_type='middle', kernel_size=self.kernel_sizes[-1 - imiddle],
+                padding_mode=padding_mode, upsample_mode=upsample_mode))
+        
         # Out layer
-        self.up_blocks.append(_ConvBlock3D(scales[-1][1], scales[-1][0], kernel))
+        self.ConvsUp.append(_ConvBlock3D(out_fmaps, 
+            out_size=self.list_res[0],
+            block_type='out', kernel_size=self.kernel_sizes[0], padding_mode=padding_mode))
 
     def forward(self, x):
-        down_outputs = []
-        # Apply the down loop
-        for down_block in self.down_blocks:
-            x = down_block(x)
-            down_outputs.append(x)
-
-        out = down_outputs[-1]
+        initial_map = x
         # Apply the up loop
-        for i, up_block in enumerate(self.up_blocks[:-1]):
-            out = torch.cat([out, down_outputs[-2-i]], dim=1)
-            out = up_block(out)
+        for iconv, ConvUp in enumerate(self.ConvsUp):
+            # First layer of convolution doesn't need concatenation
+            if iconv == 0:
+                x = ConvUp(x)
+            else:
+                tmp_map = F.interpolate(initial_map, x[0, 0].shape, mode='bilinear', align_corners=False)
+                x = ConvUp(torch.cat((x, tmp_map), dim=1))
+                
+        return x
 
-        # Last up block (no concatenation)
-        out = self.up_blocks[-1](out)
-
-        return out
