@@ -36,6 +36,7 @@ class MSNet3D(nn.Module):
         self.n_scales = len(scales)
         self.kernel = kernel
         self.scales = scales
+        print(scales)
         self.max_scales = int(self.n_scales)
         self.list_res = [int(input_res / 2**i) for i in range(self.n_scales)]
 
