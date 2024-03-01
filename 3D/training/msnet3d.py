@@ -36,12 +36,13 @@ class MSNet3D(nn.Module):
         self.n_scales = len(scales)
         self.kernel = kernel
         self.scales = scales
+        self.max_scales = int(self.n_scales)
         self.list_res = [int(input_res / 2**i) for i in range(self.n_scales)]
 
         # create down_blocks, bottom_fmaps and up_blocks
         middle_blocks = list()
         for local_depth in range(self.n_scales):
-            middle_blocks.append(self.scales[f'scale_{self.n_scales - local_depth:d}'])
+            middle_blocks.append(self.scales[f'scale_{self.max_scales - local_depth:d}'])
         out_fmaps = self.scales['scale_0']
 
         # Intemediate layers up (UpSample/Deconv at the end)
