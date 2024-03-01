@@ -32,14 +32,15 @@ class MSNet3D(nn.Module):
         super(MSNet3D, self).__init__()
         # For upsample the list of resolution is needed when 
         # the number of points is not a power of 2
-        self.input_res = tuple([input_res, input_res])
-        print('this')
+        self.input_res = tuple([input_res, input_res, input_res])
+        self.n_scales = len(scales)
+        self.kernel = kernel
         self.list_res = [int(input_res / 2**i) for i in range(self.n_scales)]
 
         # create down_blocks, bottom_fmaps and up_blocks
         middle_blocks = list()
         for local_depth in range(self.max_scale):
-            middle_blocks.append(self.scales[f'scale_{self.max_scale - local_depth:d}'])
+            middle_blocks.append(self.scales[f'scale_{self.n_scales - local_depth:d}'])
         out_fmaps = self.scales['scale_0']
 
         # Intemediate layers up (UpSample/Deconv at the end)
@@ -47,13 +48,13 @@ class MSNet3D(nn.Module):
         for imiddle, middle_fmaps in enumerate(middle_blocks):
             self.ConvsUp.append(_ConvBlock3D(middle_fmaps, 
                 out_size=self.list_res[-2 -imiddle], 
-                block_type='middle', kernel_size=self.kernel_sizes[-1 - imiddle],
+                block_type='middle', kernel_size=self.kernel[-1 - imiddle],
                 padding_mode=padding_mode, upsample_mode=upsample_mode))
         
         # Out layer
         self.ConvsUp.append(_ConvBlock3D(out_fmaps, 
             out_size=self.list_res[0],
-            block_type='out', kernel_size=self.kernel_sizes[0], padding_mode=padding_mode))
+            block_type='out', kernel_size=self.kernel[0], padding_mode=padding_mode))
 
     def forward(self, x):
         initial_map = x
