@@ -28,9 +28,9 @@ class _ConvBlock3D(nn.Module):
         return self.encode(x)
 
 class MSNet3D(nn.Module):
-    def __init__(self, scales, kernel_sizes, input_res, padding_mode='zeros',
+    def __init__(self, scales, kernel, input_res, padding_mode='zeros',
                     upsample_mode='bilinear'):
-        super(MSNet3D, self).__init__(scales, kernel_sizes)
+        super(MSNet3D, self).__init__(scales, kernel)
         # For upsample the list of resolution is needed when 
         # the number of points is not a power of 2
         self.input_res = tuple([input_res, input_res])
