@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 class _ConvBlock3D(nn.Module):
     def __init__(self, fmaps, out_size, block_type, kernel_size, 
-            padding_mode='zeros', upsample_mode='bilinear'):
+            padding_mode='zeros', upsample_mode='trilinear'):
         super(_ConvBlock3D, self).__init__()
         layers = list()
         # Append all the specified layers
@@ -28,7 +28,7 @@ class _ConvBlock3D(nn.Module):
         return self.encode(x)
 
 class MSNet3D(nn.Module):
-    def __init__(self, scales, kernel, input_res, padding_mode='zeros', upsample_mode='bilinear'):
+    def __init__(self, scales, kernel, input_res, padding_mode='zeros', upsample_mode='trilinear'):
         super(MSNet3D, self).__init__()
         # For upsample the list of resolution is needed when 
         # the number of points is not a power of 2
@@ -36,7 +36,6 @@ class MSNet3D(nn.Module):
         self.n_scales = len(scales)
         self.kernel = kernel
         self.scales = scales
-        print(scales)
         self.max_scales = int(self.n_scales)
         self.list_res = [int(input_res / 2**i) for i in range(self.n_scales)]
 
@@ -67,7 +66,7 @@ class MSNet3D(nn.Module):
             if iconv == 0:
                 x = ConvUp(x)
             else:
-                tmp_map = F.interpolate(initial_map, x[0, 0].shape, mode='bilinear', align_corners=False)
+                tmp_map = F.interpolate(initial_map, x[0, 0].shape, mode='trilinear', align_corners=False)
                 x = ConvUp(torch.cat((x, tmp_map), dim=1))
                 
         return x
