@@ -38,7 +38,6 @@ class MSNet3D(nn.Module):
         self.max_scale = self.n_scales - 1
         self.input_res = tuple([input_res, input_res, input_res])
         self.list_res = [int(input_res / 2**i) for i in range(self.n_scales)]
-        print(self.list_res)
         if isinstance(kernel_sizes, int):
             self.kernel_sizes = [tuple([kernel_sizes, kernel_sizes])] * len(scales)
         elif isinstance(kernel_sizes, list):
@@ -60,7 +59,7 @@ class MSNet3D(nn.Module):
             print("Length of list_res:", len(self.list_res))
             print("Value of imiddle:", imiddle)
             self.ConvsUp.append(_ConvBlock3D(middle_fmaps, 
-                out_size=self.list_res[-2 -imiddle], 
+                out_size=self.list_res[-imiddle-2], 
                 block_type='middle', kernel_size=self.kernel_sizes[-1 - imiddle],
                 padding_mode=padding_mode, upsample_mode=upsample_mode))
         
