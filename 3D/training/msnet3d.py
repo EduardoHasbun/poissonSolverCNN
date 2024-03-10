@@ -42,9 +42,9 @@ class MSNet3D(nn.Module):
         # create down_blocks, bottom_fmaps and up_blocks
         middle_blocks = list()
         for local_depth in range(self.n_scales):
-            print(self.scales)
-            middle_blocks.append(self.scales[f'scale_{self.max_scales - local_depth:d}'])
-        out_fmaps = self.scales['scale_0']
+            middle_blocks.append(self.scales[self.max_scales - local_depth])
+        out_fmaps = self.scales[0]
+
 
         # Intemediate layers up (UpSample/Deconv at the end)
         self.ConvsUp = nn.ModuleList()
