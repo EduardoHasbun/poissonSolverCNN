@@ -12,7 +12,7 @@ class _ConvBlock3D(nn.Module):
         for i in range(len(fmaps) - 1):
             layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
                 kernel_size=kernel_size, padding=int((kernel_size[0] - 1) / 2),
-                padding_mode=padding_mode))
+                padding_mode=padding_mode, stride=1))
             # No ReLu at the very last layer
             if i != len(fmaps) - 2 or block_type != 'out':
                 layers.append(nn.ReLU())
@@ -74,7 +74,7 @@ class MSNet3D(nn.Module):
             if iconv == 0:
                 x = ConvUp(x)
             else:
-                tmp_map = F.interpolate(initial_map, x[0, 0, 0].shape, mode='trilinear', align_corners=False)
+                tmp_map = F.interpolate(initial_map, x[0, 0].shape, mode='trilinear', align_corners=False)
                 x = ConvUp(torch.cat((x, tmp_map), dim=1))
                 
         return x
