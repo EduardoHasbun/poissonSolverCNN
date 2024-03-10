@@ -29,8 +29,8 @@ class _ConvBlock3D(nn.Module):
 
 class MSNet3D(nn.Module):
     def __init__(self, scales, kernel_sizes, input_res, padding_mode='zeros',
-                    upsample_mode='trilinear'):
-        super(MSNet3D, self).__init__(scales, kernel_sizes)
+                 upsample_mode='trilinear'):
+        super(MSNet3D, self).__init__()
         # For upsample the list of resolution is needed when 
         # the number of points is not a power of 2
         self.scales = scales
