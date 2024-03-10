@@ -10,7 +10,7 @@ class _ConvBlock3D(nn.Module):
         layers = list()
         # Append all the specified layers
         for i in range(len(fmaps) - 1):
-            layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
+            layers.append(nn.Convd(fmaps[i], fmaps[i + 1], 
                 kernel_size=kernel_size, padding=int((kernel_size - 1) / 2),
                 padding_mode=padding_mode))
             # No ReLu at the very last layer
@@ -28,36 +28,43 @@ class _ConvBlock3D(nn.Module):
         return self.encode(x)
 
 class MSNet3D(nn.Module):
-    def __init__(self, scales, kernel, input_res, padding_mode='zeros', upsample_mode='trilinear'):
-        super(MSNet3D, self).__init__()
+    def __init__(self, scales, kernel_sizes, input_res, padding_mode='zeros',
+                    upsample_mode='trilinear'):
+        super(MSNet3D, self).__init__(scales, kernel_sizes)
         # For upsample the list of resolution is needed when 
         # the number of points is not a power of 2
-        self.input_res = tuple([input_res, input_res, input_res])
-        self.n_scales = len(scales)
-        self.kernel = kernel
         self.scales = scales
-        self.max_scales = int(self.n_scales)
+        self.input_res = tuple([input_res, input_res, input_res])
         self.list_res = [int(input_res / 2**i) for i in range(self.n_scales)]
+        self.n_scales = len(scales)
+        self.max_scale = self.n_scales - 1
+        if isinstance(kernel_sizes, int):
+            self.kernel_sizes = [tuple([kernel_sizes, kernel_sizes])] * len(scales)
+        elif isinstance(kernel_sizes, list):
+            if isinstance(kernel_sizes[0], list):
+                self.kernel_sizes = [tuple(kernel_sizes[0])] * len(scales)
+            else:
+                # Convert the list of integers to a list of tuples
+                self.kernel_sizes = [tuple([ks, ks]) for ks in self.kernel_sizes]
 
         # create down_blocks, bottom_fmaps and up_blocks
         middle_blocks = list()
         for local_depth in range(self.n_scales):
-            middle_blocks.append(self.scales[len(self.scales) - 1 - local_depth])
+            middle_blocks.append(self.scales[self.max_scale - local_depth])
         out_fmaps = self.scales[0]
-
 
         # Intemediate layers up (UpSample/Deconv at the end)
         self.ConvsUp = nn.ModuleList()
         for imiddle, middle_fmaps in enumerate(middle_blocks):
             self.ConvsUp.append(_ConvBlock3D(middle_fmaps, 
                 out_size=self.list_res[-2 -imiddle], 
-                block_type='middle', kernel_size=self.kernel[-1 - imiddle],
+                block_type='middle', kernel_size=self.kernel_sizes[-1 - imiddle],
                 padding_mode=padding_mode, upsample_mode=upsample_mode))
         
         # Out layer
         self.ConvsUp.append(_ConvBlock3D(out_fmaps, 
             out_size=self.list_res[0],
-            block_type='out', kernel_size=self.kernel[0], padding_mode=padding_mode))
+            block_type='out', kernel_size=self.kernel_sizes[0], padding_mode=padding_mode))
 
     def forward(self, x):
         initial_map = x
@@ -67,8 +74,9 @@ class MSNet3D(nn.Module):
             if iconv == 0:
                 x = ConvUp(x)
             else:
-                tmp_map = F.interpolate(initial_map, x[0, 0].shape, mode='trilinear', align_corners=False)
+                tmp_map = F.interpolate(initial_map, x[0, 0, 0].shape, mode='trilinear', align_corners=False)
                 x = ConvUp(torch.cat((x, tmp_map), dim=1))
                 
         return x
+
 
