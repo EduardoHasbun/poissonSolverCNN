@@ -68,6 +68,10 @@ class MSNet3D(nn.Module):
 
     def forward(self, x):
         initial_map = x
+        # Add print statements to inspect tensor shapes
+        print("Input shape:", x.shape)
+        print("Output shape after ConvUp:", x.shape)
+
         # Apply the up loop
         for iconv, ConvUp in enumerate(self.ConvsUp):
             # First layer of convolution doesn't need concatenation
