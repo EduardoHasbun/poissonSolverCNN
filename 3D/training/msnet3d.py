@@ -16,6 +16,7 @@ class _ConvBlock3D(nn.Module):
             # No ReLu at the very last layer
             if i != len(fmaps) - 2 or block_type != 'out':
                 layers.append(nn.ReLU())
+                print('lalala')
 
         # Apply either Upsample or deconvolution
         if block_type == 'middle':
@@ -68,10 +69,6 @@ class MSNet3D(nn.Module):
 
     def forward(self, x):
         initial_map = x
-        # Add print statements to inspect tensor shapes
-        print("Input shape:", x.shape)
-        print("Output shape after ConvUp:", x.shape)
-
         # Apply the up loop
         for iconv, ConvUp in enumerate(self.ConvsUp):
             # First layer of convolution doesn't need concatenation
