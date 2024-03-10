@@ -38,6 +38,7 @@ class MSNet3D(nn.Module):
         self.max_scale = self.n_scales - 1
         self.input_res = tuple([input_res, input_res, input_res])
         self.list_res = [int(input_res / 2**i) for i in range(self.n_scales)]
+        print(self.list_res)
         if isinstance(kernel_sizes, int):
             self.kernel_sizes = [tuple([kernel_sizes, kernel_sizes])] * len(scales)
         elif isinstance(kernel_sizes, list):
