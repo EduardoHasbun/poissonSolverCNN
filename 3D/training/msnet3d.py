@@ -10,9 +10,8 @@ class _ConvBlock3D(nn.Module):
         layers = list()
         # Append all the specified layers
         for i in range(len(fmaps) - 1):
-            print(kernel_size)
             layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
-                kernel_size=kernel_size, padding=int((kernel_size - 1) / 2),
+                kernel_size=kernel_size, padding=int((kernel_size[0] - 1) / 2),
                 padding_mode=padding_mode))
             # No ReLu at the very last layer
             if i != len(fmaps) - 2 or block_type != 'out':
@@ -56,7 +55,6 @@ class MSNet3D(nn.Module):
 
         # Intemediate layers up (UpSample/Deconv at the end)
         self.ConvsUp = nn.ModuleList()
-        print(self.kernel_sizes)
         for imiddle, middle_fmaps in enumerate(middle_blocks):
             self.ConvsUp.append(_ConvBlock3D(middle_fmaps, 
                 out_size=self.list_res[-2 -imiddle], 
