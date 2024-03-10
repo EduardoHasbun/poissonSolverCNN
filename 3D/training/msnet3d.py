@@ -57,7 +57,7 @@ class MSNet3D(nn.Module):
         self.ConvsUp = nn.ModuleList()
         for imiddle, middle_fmaps in enumerate(middle_blocks):
             self.ConvsUp.append(_ConvBlock3D(middle_fmaps, 
-                out_size=self.list_res[-5], 
+                out_size=self.list_res[-1 - imiddle], 
                 block_type='middle', kernel_size=self.kernel_sizes[-1 - imiddle],
                 padding_mode=padding_mode, upsample_mode=upsample_mode))
         
