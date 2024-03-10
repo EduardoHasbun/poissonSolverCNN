@@ -10,13 +10,13 @@ class _ConvBlock3D(nn.Module):
         layers = list()
         # Append all the specified layers
         for i in range(len(fmaps) - 1):
+            print('here')
             layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
                 kernel_size=kernel_size, padding=int((kernel_size[0] - 1) / 2),
                 padding_mode=padding_mode, stride=1))
             # No ReLu at the very last layer
             if i != len(fmaps) - 2 or block_type != 'out':
                 layers.append(nn.ReLU())
-                print('lalala')
 
         # Apply either Upsample or deconvolution
         if block_type == 'middle':
