@@ -5,6 +5,7 @@ import numpy as np
 import yaml
 import matplotlib.pyplot as plt
 from unet3d import UNet3D as UNet
+from msnet3d import MSNet3D as MSnet
 from matplotlib.colors import ListedColormap
 
 
@@ -13,6 +14,7 @@ with open('C:\Codigos/poissonSolverCNN/3D/solver/solver.yml', 'r') as file:
 scales_data = cfg.get('arch', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
 kernel_size = cfg['arch']['kernel_sizes']
+network_type = cfg['arch']['type']
 
 xmin, xmax, nnx = cfg['mesh']['xmin'], cfg['mesh']['xmax'], cfg['mesh']['nnx']
 ymin, ymax, nny = cfg['mesh']['ymin'], cfg['mesh']['ymax'], cfg['mesh']['nny']
@@ -44,7 +46,10 @@ input_data = torch.from_numpy(input_data).float()
 input_array = input_data[0, 0, :, :, :]
 
 #Create Model
-model = UNet(scales=scales, kernel=kernel_size, input_res=nnx)
+if network_type == 'UNet':
+    model = UNet(scales=scales, kernel=kernel_size, input_res=nnx)
+elif network_type == 'MSNet':
+    model = MSnet(scales=scales, kernel_sizes=kernel_size, input_res=nnx)
 model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/3D/training/unet_model.pth'))
 model = model.float()
 for param in model.parameters():
@@ -71,7 +76,7 @@ plt.show()
 
 
 # 2d
-ouptut_slice = output_array[15,:,:]
+ouptut_slice = input_array[15,:,:]
 plt.figure(figsize=(8, 6))
 plt.imshow(ouptut_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 plt.show()
