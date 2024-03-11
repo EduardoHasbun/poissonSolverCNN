@@ -10,7 +10,6 @@ class _ConvBlock3D(nn.Module):
         layers = list()
         # Append all the specified layers
         for i in range(len(fmaps) - 1):
-            print(i)
             layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
                 kernel_size=kernel_size, padding=int((kernel_size[0] - 1) / 2),
                 padding_mode=padding_mode, stride=1))
@@ -26,6 +25,7 @@ class _ConvBlock3D(nn.Module):
         self.encode = nn.Sequential(*layers)
 
     def forward(self, x):
+        print(x.shape)
         return self.encode(x)
 
 class MSNet3D(nn.Module):
