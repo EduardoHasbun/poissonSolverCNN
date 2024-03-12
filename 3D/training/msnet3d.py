@@ -4,25 +4,21 @@ import torch.nn.functional as F
 
 
 class _ConvBlock3D(nn.Module):
-    def __init__(self, fmaps, block_type, kernel_size, padding_mode='zeros', 
-                    upsample_mode='nearest', out_size=None):
+    def __init__(self, fmaps, out_size, block_type, kernel_size, 
+            padding_mode='zeros', upsample_mode='trilinear'):
         super(_ConvBlock3D, self).__init__()
         layers = list()
-        # Apply pooling on down and bottom blocks
-        if block_type == 'down' or block_type == 'bottom':
-            layers.append(nn.MaxPool3d(2))
-
         # Append all the specified layers
         for i in range(len(fmaps) - 1):
-            # Calculate padding based on kernel size
-            pad = [(kernel_size[0] - 1) // 2, (kernel_size[1] - 1) // 2, (kernel_size[2] - 1) // 2]
-            layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], kernel_size=kernel_size, padding=pad))
-            # No ReLU at the very last layer
+            layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
+                kernel_size=kernel_size, padding=int((kernel_size[0] - 1) / 2),
+                padding_mode=padding_mode, stride=1))  
+            # No ReLu at the very last layer
             if i != len(fmaps) - 2 or block_type != 'out':
                 layers.append(nn.ReLU())
 
         # Apply either Upsample or deconvolution
-        if block_type == 'up' or block_type == 'bottom':
+        if block_type == 'middle':
             layers.append(nn.Upsample(out_size, mode=upsample_mode))
 
         # Build the sequence of layers
