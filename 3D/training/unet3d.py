@@ -55,9 +55,9 @@ class _ConvBlock3D(nn.Module):
 
 
 class UNet3D(nn.Module):
-    def __init__(self, scales, kernel_sizes, input_res, 
+    def __init__(self, scales, kernel_sizes, input_res,
                     padding_mode='zeros', upsample_mode='nearest'):
-        super(UNet3D, self).__init__(scales, kernel_sizes)
+        super(UNet3D, self).__init__()
         # create down_blocks, bottom_fmaps and up_blocks
         self.scales = scales
         self.n_scales = len(scales)
