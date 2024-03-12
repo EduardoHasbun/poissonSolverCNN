@@ -17,7 +17,7 @@ class CustomPadLayer3D(nn.Module):
         return x
 
 class _ConvBlock3D(nn.Module):
-    def __init__(self, fmaps, block_type, kernel_size, padding_mode='zeros', 
+    def __init__(self, fmaps, block_type, kernel_size, padding_mode='custom', 
                     upsample_mode='nearest', out_size=None):
         super(_ConvBlock3D, self).__init__()
         layers = list()
@@ -27,10 +27,16 @@ class _ConvBlock3D(nn.Module):
 
         # Append all the specified layers
         for i in range(len(fmaps) - 1):
-            layers.append(CustomPadLayer3D(kernel_size))
-            layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
+            if padding_mode == 'custom':
+                layers.append(CustomPadLayer3D(kernel_size))
+                layers.append(nn.Conv2d(fmaps[i], fmaps[i + 1], 
                     kernel_size=kernel_size, padding=0, 
                     padding_mode='zeros'))
+            else:
+                layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
+                    kernel_size=kernel_size, 
+                    padding=(int((kernel_size[0] - 1) / 2), int((kernel_size[0] - 1) / 2)), 
+                    padding_mode=padding_mode))
             # No ReLU at the very last layer
             if i != len(fmaps) - 2 or block_type != 'out':
                 layers.append(nn.ReLU())
