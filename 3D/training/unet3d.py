@@ -28,7 +28,7 @@ class _ConvBlock3D(nn.Module):
         # Append all the specified layers
         for i in range(len(fmaps) - 1):
             layers.append(CustomPadLayer3D(kernel_size))
-            layers.append(nn.Conv2d(fmaps[i], fmaps[i + 1], 
+            layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
                     kernel_size=kernel_size, padding=0, 
                     padding_mode='zeros'))
             # No ReLU at the very last layer
