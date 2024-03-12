@@ -57,8 +57,10 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 #Create model and losses
 if model_type == 'UNet':
     model = UNet3D(scales, kernel=kernel_size, input_res=nnx)
+    print('Using UNet model')
 elif model_type == 'MSNet':
     model = MSNet3D(scales=scales, kernel_sizes=kernel_size, input_res=nnx)
+    print('Using MSNet model')
 else:
     print('No model found')
 model = model.float() 
