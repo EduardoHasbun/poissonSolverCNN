@@ -4,15 +4,16 @@ import torch.nn.functional as F
 
 
 # Create the model
-class _Custom_pad_layer(nn.Module):
+class CustomPadLayer3D(nn.Module):
     def __init__(self, kernel_size):
-        super(_Custom_pad_layer, self).__init__()
-        self.padx = int((kernel_size[1] - 1) / 2)
-        self.pady = int((kernel_size[0] - 1) / 2)
+        super(CustomPadLayer3D, self).__init__()
+        self.padx = int((kernel_size[2] - 1) / 2)
+        self.pady = int((kernel_size[1] - 1) / 2)
+        self.padz = int((kernel_size[0] - 1) / 2)
 
     def forward(self, x):
-        x = F.pad(x, (0, 0, self.pady, 0), "replicate")
-        x = F.pad(x, (self.padx, self.padx, 0, self.pady), "constant", 0)
+        x = F.pad(x, (0, 0, 0, 0, self.padz, 0), "replicate")
+        x = F.pad(x, (self.padx, self.padx, self.pady, self.pady, 0, self.padz), "constant", 0)
         return x
 
 class _ConvBlock3D(nn.Module):
@@ -26,9 +27,10 @@ class _ConvBlock3D(nn.Module):
 
         # Append all the specified layers
         for i in range(len(fmaps) - 1):
-            # Calculate padding based on kernel size
-            pad = [(kernel_size[0] - 1) // 2, (kernel_size[1] - 1) // 2, (kernel_size[2] - 1) // 2]
-            layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], kernel_size=kernel_size, padding=pad))
+            layers.append(CustomPadLayer3D(kernel_size))
+            layers.append(nn.Conv2d(fmaps[i], fmaps[i + 1], 
+                    kernel_size=kernel_size, padding=0, 
+                    padding_mode='zeros'))
             # No ReLU at the very last layer
             if i != len(fmaps) - 2 or block_type != 'out':
                 layers.append(nn.ReLU())
