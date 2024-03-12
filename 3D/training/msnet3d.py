@@ -40,13 +40,13 @@ class MSNet3D(nn.Module):
         self.input_res = tuple([input_res, input_res, input_res])
         self.list_res = [int(input_res / 2**i) for i in range(self.n_scales)]
         if isinstance(kernel_sizes, int):
-            self.kernel_sizes = [(kernel_sizes, kernel_sizes, kernel_sizes)] * len(scales)  # Modify this line
+            self.kernel_sizes = [(kernel_sizes, kernel_sizes, kernel_sizes)] * len(scales) 
         elif isinstance(kernel_sizes, list):
             if isinstance(kernel_sizes[0], list):
-                self.kernel_sizes = [tuple(ks) for ks in kernel_sizes]  # Modify this line
+                self.kernel_sizes = [tuple(ks) for ks in kernel_sizes]  
             else:
                 # Convert the list of integers to a list of tuples
-                self.kernel_sizes = [(ks, ks, ks) for ks in kernel_sizes]  # Modify this line
+                self.kernel_sizes = [(ks, ks, ks) for ks in kernel_sizes]  
 
         # create down_blocks, bottom_fmaps and up_blocks
         middle_blocks = list()
