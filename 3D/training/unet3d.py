@@ -16,7 +16,7 @@ class CustomPadLayer3D(nn.Module):
 
 
 class _ConvBlock3D(nn.Module):
-    def __init__(self, fmaps, block_type, kernel_size, kernel_sizes, upsample_mode='nearest', out_size=None):
+    def __init__(self, fmaps, block_type, kernel_size, padding_mode='zeros', upsample_mode='nearest', out_size=None):
         super(_ConvBlock3D, self).__init__()
         layers = []
         # Apply pooling on down and bottom blocks
@@ -25,13 +25,16 @@ class _ConvBlock3D(nn.Module):
 
         # Append all the specified layers
         for i in range(len(fmaps) - 1):
-            layers.append(CustomPadLayer3D(kernel_sizes))
+            layers.append(CustomPadLayer3D(kernel_size))
             layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], kernel_size=kernel_size, padding=0))
             layers.append(nn.ReLU())
 
         # Apply either Upsample or deconvolution
         if block_type == 'up' or block_type == 'bottom':
-            layers.append(nn.Upsample(out_size, mode=upsample_mode))
+            if out_size is not None:
+                layers.append(nn.Upsample(size=out_size, mode=upsample_mode))
+            else:
+                layers.append(nn.Upsample(scale_factor=2, mode=upsample_mode))
 
         # Build the sequence of layers
         self.encode = nn.Sequential(*layers)
