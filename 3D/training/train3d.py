@@ -64,12 +64,12 @@ elif model_type == 'MSNet':
 else:
     print('No model found')
 
-print(model)
 model = model.float() 
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
 optimizer = optim.Adam(model.parameters(), lr = lr)
+print(model)
 
 #Train loop
 for epoch in range (num_epochs):
