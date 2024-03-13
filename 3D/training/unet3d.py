@@ -4,11 +4,11 @@ import torch.nn.functional as F
 
 
 class CustomPadLayer3D(nn.Module):
-    def __init__(self, kernel_size):
+    def __init__(self):
         super(CustomPadLayer3D, self).__init__()
-        self.padx = int((kernel_size[2] - 1) / 2)
-        self.pady = int((kernel_size[1] - 1) / 2)
-        self.padz = int((kernel_size[0] - 1) / 2)
+        self.padx = int((self.kernel_sizes[2] - 1) / 2)
+        self.pady = int((self.kernel_sizes[1] - 1) / 2)
+        self.padz = int((self.kernel_sizes[0] - 1) / 2)
 
     def forward(self, x):
         x = F.pad(x, (self.padx, self.padx, self.pady, self.pady, self.padz, self.padz), "constant", 0)
@@ -45,6 +45,7 @@ class UNet3D(nn.Module):
         super(UNet3D, self).__init__()
         self.scales = scales
         self.max_scale = len(scales) - 1
+        self.kernel_sizes = kernel_sizes
 
         # Entry layer
         self.ConvsDown = nn.ModuleList()
