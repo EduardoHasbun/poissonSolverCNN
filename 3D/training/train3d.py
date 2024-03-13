@@ -63,6 +63,8 @@ elif model_type == 'MSNet':
     print('Using MSNet model')
 else:
     print('No model found')
+
+print(model)
 model = model.float() 
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
