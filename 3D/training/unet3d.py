@@ -4,11 +4,11 @@ import torch.nn.functional as F
 
 # Create the model
 class CustomPadLayer3D(nn.Module):
-    def __init__(self, kernel_sizes):
+    def __init__(self, kernel_size):
         super(CustomPadLayer3D, self).__init__()
-        self.padx = int((kernel_sizes[2] - 1) / 2)
-        self.pady = int((kernel_sizes[1] - 1) / 2)
-        self.padz = int((kernel_sizes[0] - 1) / 2)
+        self.padx = int((kernel_size - 1) / 2)
+        self.pady = int((kernel_size - 1) / 2)
+        self.padz = int((kernel_size - 1) / 2)
 
     def forward(self, x):
         x = F.pad(x, (self.padx, self.padx, self.pady, self.pady, self.padz, self.padz), "constant", 0)
