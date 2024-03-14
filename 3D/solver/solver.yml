@@ -43,7 +43,7 @@ mesh:
   zmax: 1.0e-2
   nnx: 30
   nny: 30
-  nnz: 30
+  nnz: 1
 
 BC: 'full_out'
 
