@@ -54,7 +54,7 @@ class UNet3D(nn.Module):
 
     def __init__(self, scales, kernel_sizes, input_res, 
                     padding_mode='zeros', upsample_mode='nearest'):
-        super(UNet3D, self).__init__(scales, kernel_sizes)
+        super(UNet3D, self).__init__()
         self.scales = scales
         self.max_scale = len(scales) - 1
         self.kernel_sizes = kernel_sizes
