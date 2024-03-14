@@ -15,7 +15,7 @@ class CustomPadLayer3D(nn.Module):
         return x
 
 class ConvBlock3D(nn.Module):
-    def __init__(self, fmaps, block_type, kernel_size,kernel_sizes, padding_mode='zeros', upsample_mode='nearest', out_size=None):
+    def __init__(self, fmaps, block_type, kernel_size, padding_mode='zeros', upsample_mode='nearest', out_size=None):
         super(ConvBlock3D, self).__init__()
         layers = list()
 
@@ -85,7 +85,7 @@ class UNet3D(nn.Module):
 
         # Entry layer
         self.ConvsDown = nn.ModuleList()
-        self.ConvsDown.append(ConvBlock3D(in_fmaps, 'in', self.kernel_sizes[0], padding_mode=padding_mode))
+        self.ConvsDown.append(ConvBlock3D(in_fmaps, 'in', self.kernel_sizes[0],  padding_mode=padding_mode))
 
         # Intermediate down layers (with MaxPool at the beginning)
         for idown, down_fmaps in enumerate(down_blocks):
