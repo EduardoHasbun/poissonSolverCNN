@@ -84,6 +84,7 @@ class UNet3D(nn.Module):
         # Apply the up loop
         for ConvUp in self.ConvsUp:
             input_tmp = inputs_down.pop()
+            print("Shapes before concatenation:", x.shape, input_tmp.shape)
             x = ConvUp(torch.cat((x, input_tmp), dim=1))
 
         return x
