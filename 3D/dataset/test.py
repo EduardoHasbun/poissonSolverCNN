@@ -49,7 +49,8 @@ if __name__ == '__main__':
     potentials = np.empty((n_fields, nnx, nny, nnz))
 
     progress_bar = log_progress(total=n_fields, desc="Generating Fields")
-    for idx, _ in enumerate(progress_bar):
+    for idx in range(n_fields):
+        next(progress_bar)
         fields[idx] = f(points).reshape((nnx, nny, nnz))
 
     # Save fields and potentials
@@ -73,7 +74,6 @@ if __name__ == '__main__':
 
     print(np.shape(fields))
     print(np.shape(potentials))
-
 
     # # 3D plot of potential
     # fig = plt.figure(figsize=(8, 6))
