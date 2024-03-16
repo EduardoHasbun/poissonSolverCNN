@@ -5,7 +5,7 @@ import yaml
 from multiprocessing import get_context
 from scipy.interpolate import RegularGridInterpolator as rgi
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # Importing this for 3D plotting
+from mpl_toolkits.mplot3d import Axes3D
 from tqdm import tqdm as log_progress
 
 parser = argparse.ArgumentParser(description='Point Charge Dataset')
@@ -31,38 +31,25 @@ if __name__ == '__main__':
     amplitude = 1.8e+5
     points = np.array(np.meshgrid(x, y, z, indexing='ij')).T.reshape(-1, 3)
 
-    def generate_field(nits):
-        for i in range(nits):
-            data = np.zeros((nnx, nny, nnz))
-            # Creating a Gaussian charge in the center
-            amplitude = 1.8e+11  # Adjust as needed
-            sigma = 5.0e-3 # Adjust as needed
-            gauss = lambda x, y, z: amplitude * np.exp(-((x * (xmax - xmin) / nnx - (xmax - xmin) / 2) ** 2 +
-                                             (y * (ymax - ymin) / nny - (ymax - ymin) / 2) ** 2 +
-                                             (z * (zmax - zmin) / nnz - (zmax - zmin) / 2) ** 2) / (2 * sigma ** 2))
-            for xi in range(nnx):
-                for yi in range(nny):
-                    for zi in range(nnz):
-                        data[xi, yi, zi] = gauss(xi, yi, zi)
-            f = rgi((x, y, z), data, method='cubic')
-            yield f(points).reshape((nnx, nny, nnz))
+    # Generate the field outside the loop
+    data = np.zeros((nnx, nny, nnz))
+    amplitude = 1.8e+11  # Adjust as needed
+    sigma = 5.0e-3  # Adjust as needed
+    gauss = lambda x, y, z: amplitude * np.exp(-((x * (xmax - xmin) / nnx - (xmax - xmin) / 2) ** 2 +
+                                                 (y * (ymax - ymin) / nny - (ymax - ymin) / 2) ** 2 +
+                                                 (z * (zmax - zmin) / nnz - (zmax - zmin) / 2) ** 2) / (2 * sigma ** 2))
+    for xi in range(nnx):
+        for yi in range(nny):
+            for zi in range(nnz):
+                data[xi, yi, zi] = gauss(xi, yi, zi)
+    f = rgi((x, y, z), data, method='cubic')
 
-# Generate fields
-fields = np.empty((n_fields, nnx, nny, nnz))
-potentials = np.empty((n_fields, nnx, nny, nnz))  # Array to store potentials
-for idx, field in log_progress(enumerate(generate_field(n_fields)), total=n_fields, desc="Generating Fields"):
-    fields[idx] = field
+    # Generate fields and potentials
+    fields = np.empty((n_fields, nnx, nny, nnz))
+    potentials = np.empty((n_fields, nnx, nny, nnz))
 
-    if plotting and idx % 10 == 0:
-        fig = plt.figure(figsize=(8, 6))
-        ax = fig.add_subplot(111, projection='3d')
-        x_grid, y_grid, z_grid = np.meshgrid(x, y, z, indexing='ij')
-        ax.scatter(x_grid, y_grid, z_grid, c=fields[idx].ravel(), cmap='viridis')
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-        ax.set_title(f'Field Sample {idx}')
-        plt.show()
+    for idx, _ in log_progress(enumerate(range(n_fields)), total=n_fields, desc="Generating Fields"):
+        fields[idx] = f(points).reshape((nnx, nny, nnz))
 
     # Save fields and potentials
     file_path_fields = os.path.join('generated', 'fields.npy')
@@ -70,17 +57,21 @@ for idx, field in log_progress(enumerate(generate_field(n_fields)), total=n_fiel
     np.save(file_path_fields, fields)
     np.save(file_path_potentials, potentials)
 
-    # Save generated data
-    plots_dir = os.path.join('generated', 'plots')
-    if not os.path.exists(plots_dir):
-        os.makedirs(plots_dir)
+    # Plotting
+    if plotting:
+        for idx in range(0, n_fields, 10):
+            fig = plt.figure(figsize=(8, 6))
+            ax = fig.add_subplot(111, projection='3d')
+            x_grid, y_grid, z_grid = np.meshgrid(x, y, z, indexing='ij')
+            ax.scatter(x_grid, y_grid, z_grid, c=fields[idx].ravel(), cmap='viridis')
+            ax.set_xlabel('X')
+            ax.set_ylabel('Y')
+            ax.set_zlabel('Z')
+            ax.set_title(f'Field Sample {idx}')
+            plt.show()
 
-    file_path_fields = os.path.join('generated', 'fields.npy')
     print(np.shape(fields))
     print(np.shape(potentials))
-    os.makedirs('generated', exist_ok=True)
-    np.save(file_path_fields, fields)
-
 
     # # 3D plot of potential
     # fig = plt.figure(figsize=(8, 6))
