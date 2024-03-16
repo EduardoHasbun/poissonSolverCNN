@@ -48,9 +48,7 @@ if __name__ == '__main__':
     fields = np.empty((n_fields, nnx, nny, nnz))
     potentials = np.empty((n_fields, nnx, nny, nnz))
 
-    progress_bar = log_progress(total=n_fields, desc="Generating Fields")
-    for idx in range(n_fields):
-        next(progress_bar)
+    for idx, _ in log_progress(enumerate(range(n_fields)), total=n_fields, desc="Generating Fields"):
         fields[idx] = f(points).reshape((nnx, nny, nnz))
 
     # Save fields and potentials
