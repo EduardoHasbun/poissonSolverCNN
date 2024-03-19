@@ -36,8 +36,8 @@ Lx = xmax-xmin
 Ly = ymax-ymin
 Lz = zmax-zmin
 save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data2.npy')
-target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potential_data.npy')
+data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'fields.npy')
+target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.npy')
 
 
 #Create Data
@@ -83,8 +83,8 @@ for epoch in range (num_epochs):
         optimizer.zero_grad()
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1))# / ratio_max
         output = model(data)
-        loss = laplacian_loss(output, data = data, data_norm = data_norm)
-        # loss = inside_loss(output, target)
+        # loss = laplacian_loss(output, data = data, data_norm = data_norm)
+        loss = inside_loss(output, target)
         loss += dirichlet_loss(output)
         loss.backward()
         optimizer.step()
