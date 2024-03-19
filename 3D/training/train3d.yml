@@ -1,7 +1,7 @@
 globals:                                    # Domain sizes and others, used to compute global attributes
-    nnx: 60                                # Number of points in x direction
-    nny: 60                                # Number of points in y direction
-    nnz: 60
+    nnx: 30                                # Number of points in x direction
+    nny: 30                                # Number of points in y direction
+    nnz: 30
     xmin: 0.0
     xmax: 1.0e-2
     ymin: 0.0
