@@ -18,7 +18,7 @@ arch:
         scale_2: [[20, 16, 16, 20], [40, 16, 16, 20]]
         scale_3: [[20, 20, 20], [40, 20, 20]]
         scale_4: [20, 60, 20]
-    kernel_sizes: [3, 3, 3, 3, 3]
+    kernel_sizes: 3
 
 # arch:
 #     type: 'MSNet'
