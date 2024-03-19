@@ -5,7 +5,6 @@ import yaml
 from multiprocessing import get_context
 from scipy.interpolate import RegularGridInterpolator as rgi
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from tqdm import tqdm as log_progress
 
 parser = argparse.ArgumentParser(description='Point Charge Dataset')
@@ -28,13 +27,12 @@ if __name__ == '__main__':
 
     x, y, z = np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny), np.linspace(zmin, zmax, nnz)
 
-    amplitude = 1.8e+5
     points = np.array(np.meshgrid(x, y, z, indexing='ij')).T.reshape(-1, 3)
 
     # Generate the field outside the loop
     data = np.zeros((nnx, nny, nnz))
-    amplitude = 1.8e+11  # Adjust as needed
-    sigma = 5.0e-3  # Adjust as needed
+    amplitude = 1.8e+3  # Adjust as needed
+    sigma = 1.0e-3  # Adjust as needed
     gauss = lambda x, y, z: amplitude * np.exp(-((x * (xmax - xmin) / nnx - (xmax - xmin) / 2) ** 2 +
                                                  (y * (ymax - ymin) / nny - (ymax - ymin) / 2) ** 2 +
                                                  (z * (zmax - zmin) / nnz - (zmax - zmin) / 2) ** 2) / (2 * sigma ** 2))
@@ -50,6 +48,18 @@ if __name__ == '__main__':
 
     for idx, _ in log_progress(enumerate(range(n_fields)), total=n_fields, desc="Generating Fields"):
         fields[idx] = f(points).reshape((nnx, nny, nnz))
+        potentials[idx] = np.zeros((nnx, nny, nnz))  # Initialize potentials for each field
+        for xi in range(nnx):
+            for yi in range(nny):
+                for zi in range(nnz):
+                    distance = np.sqrt(((xi * (xmax - xmin) / nnx) - (xmax - xmin) / 2) ** 2 +
+                                    ((yi * (ymax - ymin) / nny) - (ymax - ymin) / 2) ** 2 +
+                                    ((zi * (zmax - zmin) / nnz) - (zmax - zmin) / 2) ** 2)
+                    if distance == 0:
+                        potentials[idx, xi, yi, zi] = np.inf
+                    else:
+                        potentials[idx, xi, yi, zi] = 1 / distance
+
 
     # Save fields and potentials
     file_path_fields = os.path.join('generated', 'fields.npy')
@@ -59,35 +69,18 @@ if __name__ == '__main__':
 
     # Plotting
     if plotting:
-        for idx in range(0, n_fields, 10):
-            fig = plt.figure(figsize=(8, 6))
-            ax = fig.add_subplot(111, projection='3d')
-            x_grid, y_grid, z_grid = np.meshgrid(x, y, z, indexing='ij')
-            ax.scatter(x_grid, y_grid, z_grid, c=fields[idx].ravel(), cmap='viridis')
-            ax.set_xlabel('X')
-            ax.set_ylabel('Y')
-            ax.set_zlabel('Z')
-            ax.set_title(f'Field Sample {idx}')
-            plt.show()
+        plt.figure()
+        plt.imshow(fields[0, :, :, nnz//2], cmap='viridis', origin='lower', extent=[xmin, xmax, ymin, ymax])
+        plt.xlabel('X')
+        plt.ylabel('Y')
+        plt.title('Field ')
+        plt.colorbar(label='Field')
+        plt.show()
 
-    print(np.shape(fields))
-    print(np.shape(potentials))
-
-    # # 3D plot of potential
-    # fig = plt.figure(figsize=(8, 6))
-    # ax = fig.add_subplot(111, projection='3d')
-    # ax.scatter(x_grid, y_grid, z_grid, c=potentials.ravel(), cmap='viridis')
-    # ax.set_xlabel('X')
-    # ax.set_ylabel('Y')
-    # ax.set_zlabel('Z')
-    # ax.set_title('Potential Distribution')
-    # plt.show()
-
-    # # 2D plot of potential in the middle of the domain
-    # plt.figure()
-    # plt.imshow(potentials[:, :, nnz // 2], cmap='viridis', origin='lower', extent=[xmin, xmax, ymin, ymax])
-    # plt.xlabel('X')
-    # plt.ylabel('Y')
-    # plt.title('Potential Distribution in the Middle of the Domain')
-    # plt.colorbar(label='Potential')
-    # plt.show()
+        plt.figure()
+        plt.imshow(potentials[0, :, :, nnz // 2], cmap='viridis', origin='lower', extent=[xmin, xmax, ymin, ymax])
+        plt.xlabel('X')
+        plt.ylabel('Y')
+        plt.title('Potential Distribution in the Middle of the Domain')
+        plt.colorbar(label='Potential')
+        plt.show()
