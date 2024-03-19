@@ -59,19 +59,20 @@ inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
+
 #Train loop
 for epoch in range (num_epochs):
     total_loss = 0
-    for batch_idx, batch in enumerate(dataloader):
-        data = batch[:, np.newaxis, :, :]
+    for batch_idx, (batch, target) in enumerate(dataloader):
+        data = batch[:, np.newaxis, :, :].float()
+        target = target[:, np.newaxis, :, :].float()
         optimizer.zero_grad()
-        data = data.to(model.parameters().__next__().dtype)
-        optimizer.zero_grad()
-        data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
 
+        optimizer.zero_grad()
+        data_norm = torch.ones((data.size(0), data.size(1), 1, 1))# / ratio_max
         output = model(data)
-        
-        loss = inside_loss(output, target)
+        loss = laplacian_loss(output, data = data, data_norm = data_norm)
+        # loss = inside_loss(output, target)
         loss += dirichlet_loss(output)
         loss.backward()
         optimizer.step()
@@ -80,4 +81,3 @@ for epoch in range (num_epochs):
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
     torch.save(model.state_dict(), os.path.join(save_dir, 'best_model.pth'))
-
