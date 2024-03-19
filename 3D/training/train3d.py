@@ -3,10 +3,11 @@ from unet3d import UNet3D
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
-from operators3d import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss
+from operators3d import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, InsideLoss
 import torch.optim as optim
 import os
 import argparse
+from torch.utils.data import TensorDataset
 
 #Import external parameteres
 parser = argparse.ArgumentParser(description='Training')
@@ -20,6 +21,7 @@ kernel_size = cfg['arch']['kernel_sizes']
 batch_size = cfg['data_loader']['batch_size']
 num_epochs = cfg['trainer']['epochs']
 lapl_weight = cfg['loss']['args']['lapl_weight']
+inside_weight = cfg['loss']['args']['inside_weight']
 bound_weight = cfg['loss']['args']['bound_weight']
 lr = cfg['loss']['args']['optimizer_lr']
 scales_data = cfg.get('arch', {}).get('scales', {})
@@ -33,12 +35,15 @@ Ly = ymax-ymin
 Lz = zmax-zmin
 save_dir = os.getcwd()
 data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'fields.npy')
+target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.npy')
 
 
 #Create Data
 dataset = np.load(data_dir)
-print(dataset.shape)
-dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+target  = np.load(target_dir)
+target = torch.tensor(target)
+data_set = TensorDataset(dataset, target)
+dataloader = DataLoader(data_set, batch_size=batch_size, shuffle=True)
 #Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
@@ -49,6 +54,7 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 model = UNet3D(scales, kernel=kernel_size, input_res=nnx)
 model = model.float() 
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
+inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
@@ -64,7 +70,7 @@ for epoch in range (num_epochs):
 
         output = model(data)
         
-        loss = laplacian_loss(output, data = data, data_norm = data_norm)
+        loss = inside_loss(output, target)
         loss += dirichlet_loss(output)
         loss.backward()
         optimizer.step()
