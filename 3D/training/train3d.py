@@ -37,6 +37,7 @@ data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data2.np
 
 #Create Data
 dataset = np.load(data_dir)
+print(dataset.shape)
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 #Parameters to Nomalize
 alpha = 0.1
