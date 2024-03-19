@@ -32,7 +32,7 @@ Lx = xmax-xmin
 Ly = ymax-ymin
 Lz = zmax-zmin
 save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data.npy')
+data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data2.npy')
 
 
 #Create Data
