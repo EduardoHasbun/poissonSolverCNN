@@ -35,6 +35,7 @@ class UNet3D(nn.Module):
         super(UNet3D, self).__init__()
 
         scales = list(scales)
+        print(scales)
 
         self.ConvsDown = nn.ModuleList([
             _ConvBlock3D(scales[0][0], kernel),
