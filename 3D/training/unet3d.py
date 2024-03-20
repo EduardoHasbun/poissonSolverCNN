@@ -57,8 +57,12 @@ class UNet3D(nn.Module):
         super(UNet3D, self).__init__()
         self.scales = scales
         self.max_scale = len(scales) - 1
-        self.kernel_sizes = kernel_sizes
+        if kernel_sizes.type == int:    
+            self.kernel_sizes = [kernel_sizes] * len(scales)
+        else:   
+            self.kernel_sizes = kernel_sizes
         
+        print(self.kernel_sizes)
         # create down_blocks, bottom_fmaps and up_blocks
         in_fmaps = self.scales[0][0]
 
