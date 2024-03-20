@@ -10,7 +10,7 @@ globals:                                    # Domain sizes and others, used to c
     zmax: 1.0e-2
     
 
-UNet3:
+arch:
     type: 'UNet'
     args:
     scales:
@@ -21,14 +21,6 @@ UNet3:
 
 
 
-# MSNet3:
-#     type: 'MSNet'
-#     args:
-#         scales:
-#             scale_0: [1, 58, 58, 1]
-#             scale_1: [2, 58, 58, 1]
-#             scale_2: [1, 40, 40, 40, 1]
-#         kernel_sizes: 3
         
 
 data_loader:
