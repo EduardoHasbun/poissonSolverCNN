@@ -23,9 +23,9 @@ globals:                                    # Domain sizes and others, used to c
 arch: 
     type: UNet
     scales:
-        scale_0: [[1, 1], [1, 1]]
-        scale_1: [[1, 1], [1, 1]]
-        scale_2: [[1, 1], [1, 1]]
+        scale_0: [1, 1]
+        scale_1: [1, 1]
+        scale_2: [1, 1]
     kernel_sizes: 3
 
 
