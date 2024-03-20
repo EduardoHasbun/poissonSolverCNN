@@ -62,7 +62,6 @@ class UNet3D(nn.Module):
         else:   
             self.kernel_sizes = kernel_sizes
         
-        print(self.kernel_sizes)
         # create down_blocks, bottom_fmaps and up_blocks
         in_fmaps = self.scales[0][0]
 
