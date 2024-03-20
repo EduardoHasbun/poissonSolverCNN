@@ -47,10 +47,6 @@ class InsideLoss(nn.Module):
         self.weight = inside_weight
 
     def forward(self, output, target):
-        output_np = output[:, 0, 1:-1, 1:-1, 1:-1].cpu().detach().numpy()
-        target_np = target[:, 0, 1:-1, 1:-1, 1:-1].cpu().detach().numpy()
-        max_diff = np.max(target_np)
-        print(max_diff)
         return F.mse_loss(output[:, 0, 1:-1, 1:-1, 1:-1], target[:, 0, 1:-1, 1:-1, 1:-1]) * self.weight
 
 
