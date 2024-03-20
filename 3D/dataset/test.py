@@ -16,7 +16,7 @@ with open(args.cfg, 'r') as yaml_stream:
 
 n_fields = cfg['n_it']
 nits = cfg['n_it']
-plotting = False
+plotting = True
 
 if __name__ == '__main__':
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
@@ -56,7 +56,7 @@ if __name__ == '__main__':
                                     ((yi * (ymax - ymin) / nny) - (ymax - ymin) / 2) ** 2 +
                                     ((zi * (zmax - zmin) / nnz) - (zmax - zmin) / 2) ** 2)
                     if distance == 0:
-                        potentials[idx, xi, yi, zi] = np.inf
+                        potentials[idx, xi, yi, zi] = amplitude
                     else:
                         potentials[idx, xi, yi, zi] = 1 / distance
 
