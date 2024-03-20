@@ -36,8 +36,8 @@ Lx = xmax-xmin
 Ly = ymax-ymin
 Lz = zmax-zmin
 save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'fields.npy')
-target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.npy')
+data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data2.npy')
+target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potential_data.npy')
 
 
 #Create Data
@@ -56,7 +56,7 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 #Create model and losses
 if model_type == 'UNet':
-    model = UNet3D(scales, kernel_sizes=kernel_size, input_res=nnx)
+    model = UNet3D(scales, kernel_sizes=kernel_size)
     print('Using UNet model')
 elif model_type == 'MSNet':
     model = MSNet3D(scales=scales, kernel_sizes=kernel_size, input_res=nnx)
@@ -77,7 +77,7 @@ for epoch in range (num_epochs):
         data = batch[:, np.newaxis, :, :].float()
         target = target[:, np.newaxis, :, :].float()
         optimizer.zero_grad()
-
+        # data = data.to(model.parameters().__next__().dtype)
         optimizer.zero_grad()
         # data_norm = torch.ones((data.size(0), data.size(1), 1, 1))# / ratio_max
         output = model(data)
@@ -91,5 +91,3 @@ for epoch in range (num_epochs):
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
     torch.save(model.state_dict(), os.path.join(save_dir, 'best_model.pth'))
-
-

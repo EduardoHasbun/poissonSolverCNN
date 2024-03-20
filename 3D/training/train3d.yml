@@ -10,7 +10,7 @@ globals:                                    # Domain sizes and others, used to c
     zmax: 1.0e-2
     
 
-arch:
+arch: 
     type: UNet
     scales:
         scale_0: [[1, 30, 20], [40, 30, 1]]
