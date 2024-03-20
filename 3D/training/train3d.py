@@ -43,7 +43,7 @@ target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.np
 #Create Data
 dataset = np.load(data_dir)
 target  = np.load(target_dir)
-print(np.max(target))
+print(np.min(target))
 dataset = torch.tensor(dataset)
 target = torch.tensor(target)
 data_set = TensorDataset(dataset, target)
