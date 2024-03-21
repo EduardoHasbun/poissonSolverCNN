@@ -47,7 +47,7 @@ input_array = input_data[0, 0, :, :, :]
 
 #Create Model
 if network_type == 'UNet':
-    model = UNet(scales=scales, kernel=kernel_size, input_res=nnx)
+    model = UNet(scales=scales, kernel_sizes=kernel_size, input_res=nnx)
 elif network_type == 'MSNet':
     model = MSnet(scales=scales, kernel_sizes=kernel_size, input_res=nnx)
 model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/3D/training/best_model.pth'))
@@ -76,7 +76,8 @@ plt.show()
 
 
 # 2d
-ouptut_slice = output_array[15,:,:]
+ouptut_slice = output_array[:,:,nnz//2]
 plt.figure(figsize=(8, 6))
 plt.imshow(ouptut_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+plt.colorbar()
 plt.show()

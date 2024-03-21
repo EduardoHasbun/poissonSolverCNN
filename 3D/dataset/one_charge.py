@@ -56,7 +56,7 @@ if __name__ == '__main__':
                                     ((yi * (ymax - ymin) / nny) - (ymax - ymin) / 2) ** 2 +
                                     ((zi * (zmax - zmin) / nnz) - (zmax - zmin) / 2) ** 2)
                     if distance == 0:
-                        potentials[idx, xi, yi, zi] = amplitude
+                        potentials[idx, xi, yi, zi] = amplitude *3
                     else:
                         potentials[idx, xi, yi, zi] = 1 / distance
 
