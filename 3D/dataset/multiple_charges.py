@@ -78,9 +78,11 @@ if __name__ == '__main__':
     file_name_fields = (f"fields_2_charges_"
     f"X1_{charges[0]['position'][0]}_Y1_{charges[0]['position'][1]}_Z1_{charges[0]['position'][2]}_"
     f"X2_{charges[1]['position'][0]}_Y2_{charges[1]['position'][1]}_Z2_{charges[1]['position'][2]}.npy")
+   
     file_name_potentials = (f"potentials_2_charges_"
     f"X1_{charges[0]['position'][0]}_Y1_{charges[0]['position'][1]}_Z1_{charges[0]['position'][2]}_"
     f"X2_{charges[1]['position'][0]}_Y2_{charges[1]['position'][1]}_Z2_{charges[1]['position'][2]}.npy")
+ 
     file_path_fields = os.path.join('generated', file_name_fields)
     file_path_potentials = os.path.join('generated', file_name_potentials)
     np.save(file_path_fields, fields)
