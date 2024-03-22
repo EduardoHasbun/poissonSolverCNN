@@ -42,7 +42,9 @@ target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.np
 
 #Create Data
 dataset = np.load(data_dir)
+print(np.max(dataset))
 target  = np.load(target_dir)
+print(np.max(target))
 dataset = torch.tensor(dataset)
 target = torch.tensor(target)
 data_set = TensorDataset(dataset, target)
@@ -87,7 +89,7 @@ for epoch in range (num_epochs):
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
-        if batch_idx % 20 ==0:
+        if batch_idx % 10 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
     torch.save(model.state_dict(), os.path.join(save_dir, 'best_model.pth'))
