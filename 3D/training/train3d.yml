@@ -10,34 +10,34 @@ globals:                                    # Domain sizes and others, used to c
     zmax: 1.0e-2
     
 
-arch:
-    type: 'MSNet'
-    scales:
-        scale_0: [2, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 1]
-        scale_1: [2, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 1]
-        scale_2: [1, 16, 18, 18, 18, 18, 18, 18, 18, 18, 18, 16, 16, 16, 1]
-    kernel_sizes: 3
-
-
-# arch: 
-#     type: UNet
+# arch:
+#     type: 'MSNet'
 #     scales:
-#         scale_0: [[1, 30, 20], [40, 30, 1]]
-#         scale_1: [[20, 20, 20], [40, 20, 20]]
-#         scale_2: [[20, 16, 16, 20], [40, 16, 16, 20]]
-#         scale_3: [[20, 20, 20], [40, 20, 20]]
-#         scale_4: [20, 60, 20]
+#         scale_0: [2, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 1]
+#         scale_1: [2, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 1]
+#         scale_2: [1, 16, 18, 18, 18, 18, 18, 18, 18, 18, 18, 16, 16, 16, 1]
 #     kernel_sizes: 3
+
+
+arch: 
+    type: UNet
+    scales:
+        scale_0: [[1, 30, 20], [40, 30, 1]]
+        scale_1: [[20, 20, 20], [40, 20, 20]]
+        scale_2: [[20, 16, 16, 20], [40, 16, 16, 20]]
+        scale_3: [[20, 20, 20], [40, 20, 20]]
+        scale_4: [20, 60, 20]
+    kernel_sizes: 3
 
      
 
 data_loader:
-    batch_size: 32
+    batch_size: 64
 
 
 loss:
     args:
-        bound_weight: 1.0e-19                   # Weighting of the loss on the boundaries (float)
+        bound_weight: 1.0e-10                   # Weighting of the loss on the boundaries (float)
         lapl_weight: 2.0e+7                 # Weighting of the loss on the Laplacian (float)
         optimizer_lr: 4.e-2 
         inside_weight: 2.0e+7
