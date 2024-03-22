@@ -16,7 +16,7 @@ with open(args.cfg, 'r') as yaml_stream:
 
 n_fields = cfg['n_it']
 nits = cfg['n_it']
-plotting = True
+plotting = False
 
 if __name__ == '__main__':
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
@@ -31,13 +31,10 @@ if __name__ == '__main__':
 
     # Define the positions and magnitudes of the charges
     charges = [
-        {'position': [(xmax - xmin) * 0.25, (ymax - ymin) * 0.25, (zmax - zmin) * 0.5], 'magnitude': 1.8e+3, 'sigma': 1.0e-3},
-        {'position': [(xmax - xmin) * 0.75, (ymax - ymin) * 0.75, (zmax - zmin) * 0.5], 'magnitude': 1.8e+3, 'sigma': 1.0e-3},
-        {'position': [(xmax - xmin) * 0.25, (ymax - ymin) * 0.75, (zmax - zmin) * 0.5], 'magnitude': 1.8e+3, 'sigma': 1.0e-3},
-        {'position': [(xmax - xmin) * 0.75, (ymax - ymin) * 0.25, (zmax - zmin) * 0.5], 'magnitude': 1.8e+3, 'sigma': 1.0e-3}
+        {'position': [(xmax - xmin) * 0.1, (ymax - ymin) * 0.1, (zmax - zmin) * 0.5], 'magnitude': 1.0e+1, 'sigma': 1.0e-3}
     ]
 
-    def gauss(x, y, z, charge):
+    def gauss(z, y, x, charge):
         amplitude = charge['magnitude']
         sigma = charge['sigma']
         return amplitude * np.exp(-((x - charge['position'][0]) ** 2 +
@@ -77,20 +74,16 @@ if __name__ == '__main__':
                             potentials[idx, xi, yi, zi] += charge['magnitude'] / distance
 
     # Save fields and potentials
-    file_name_fields = (f"fields_4_charges_"
-    f"X1_{charges[0]['position'][0]}_Y1_{charges[0]['position'][1]}_Z1_{charges[0]['position'][2]}_"
-    f"X2_{charges[1]['position'][0]}_Y2_{charges[1]['position'][1]}_Z2_{charges[1]['position'][2]}_"
-    f"X3_{charges[2]['position'][0]}_Y3_{charges[2]['position'][1]}_Z3_{charges[2]['position'][2]}_"
-    f"X4_{charges[3]['position'][0]}_Y4_{charges[3]['position'][1]}_Z4_{charges[3]['position'][2]}.npy")
+    # file_name_fields = (f"fields_2_charges_"
+    # f"X1_{charges[0]['position'][0]}_Y1_{charges[0]['position'][1]}_Z1_{charges[0]['position'][2]}_"
+    # f"X2_{charges[1]['position'][0]}_Y2_{charges[1]['position'][1]}_Z2_{charges[1]['position'][2]}.npy")
    
-    file_name_potentials = (f"potentials_4_charges_"
-    f"X1_{charges[0]['position'][0]}_Y1_{charges[0]['position'][1]}_Z1_{charges[0]['position'][2]}_"
-    f"X2_{charges[1]['position'][0]}_Y2_{charges[1]['position'][1]}_Z2_{charges[1]['position'][2]}_"
-    f"X3_{charges[2]['position'][0]}_Y3_{charges[2]['position'][1]}_Z3_{charges[2]['position'][2]}_"
-    f"X4_{charges[3]['position'][0]}_Y4_{charges[3]['position'][1]}_Z4_{charges[3]['position'][2]}.npy")
+    # file_name_potentials = (f"potentials_2_charges_"
+    # f"X1_{charges[0]['position'][0]}_Y1_{charges[0]['position'][1]}_Z1_{charges[0]['position'][2]}_"
+    # f"X2_{charges[1]['position'][0]}_Y2_{charges[1]['position'][1]}_Z2_{charges[1]['position'][2]}.npy")
  
-    file_path_fields = os.path.join('generated', file_name_fields)
-    file_path_potentials = os.path.join('generated', file_name_potentials)
+    file_path_fields = os.path.join('generated', 'fields.npy')
+    file_path_potentials = os.path.join('generated', 'potentials.npy')
     np.save(file_path_fields, fields)
     np.save(file_path_potentials, potentials)
 
