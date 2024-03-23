@@ -40,6 +40,7 @@ if __name__ == '__main__':
         return amplitude * np.exp(-((x - charge['position'][0]) ** 2 +
                                     (y - charge['position'][1]) ** 2 +
                                     (z - charge['position'][2]) ** 2) / (2 * sigma ** 2))
+    
 
     # Generate the field outside the loop
     data = np.zeros((nnx, nny, nnz))
