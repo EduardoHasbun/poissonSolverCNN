@@ -76,7 +76,7 @@ plt.show()
 
 
 # 2d
-ouptut_slice = output_array[:,:,nnz//2]
+ouptut_slice = input_array[:,:,nnz//2]
 plt.figure(figsize=(8, 6))
 plt.imshow(ouptut_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 plt.colorbar()

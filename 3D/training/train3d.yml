@@ -32,7 +32,7 @@ arch:
      
 
 data_loader:
-    batch_size: 64
+    batch_size: 16
 
 
 loss:
