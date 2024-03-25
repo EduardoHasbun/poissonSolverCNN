@@ -32,14 +32,14 @@ arch:
      
 
 data_loader:
-    batch_size: 16
+    batch_size: 64
 
 
 loss:
     args:
         bound_weight: 1.0e-10                   # Weighting of the loss on the boundaries (float)
         lapl_weight: 2.0e+7                 # Weighting of the loss on the Laplacian (float)
-        optimizer_lr: 4.e-2 
+        optimizer_lr: 4.e-4 
         inside_weight: 1.0e+1
 
 trainer:
