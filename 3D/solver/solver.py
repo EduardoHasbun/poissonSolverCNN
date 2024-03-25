@@ -60,23 +60,25 @@ model.eval()
 output = model(input_data)
 output_array = output.detach().numpy()[0, 0, :, :, :] 
 input_plot = input_data.detach().numpy()[0, 0, :, :, :]
-print(np.max(output_array))
+# print(np.max(output_array))
 
-fig = plt.figure(figsize=(8, 6))
-ax = fig.add_subplot(111, projection='3d')
-x_grid, y_grid, z_grid = np.meshgrid(x_1d, y_1d, z_1d, indexing='ij')
-scatter = ax.scatter(x_grid, y_grid, z_grid, c=output_array, cmap='viridis')
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Z')
-cbar = plt.colorbar(scatter, ax=ax, orientation='vertical')
-cbar.set_label('Color Scale')
-plt.show()
+
+#Plot 3D
+# fig = plt.figure(figsize=(8, 6))
+# ax = fig.add_subplot(111, projection='3d')
+# x_grid, y_grid, z_grid = np.meshgrid(x_1d, y_1d, z_1d, indexing='ij')
+# scatter = ax.scatter(x_grid, y_grid, z_grid, c=output_array, cmap='viridis')
+# ax.set_xlabel('X')
+# ax.set_ylabel('Y')
+# ax.set_zlabel('Z')
+# cbar = plt.colorbar(scatter, ax=ax, orientation='vertical')
+# cbar.set_label('Color Scale')
+# plt.show()
 
 
 
 # 2d
-ouptut_slice = input_array[:,:,nnz//2]
+ouptut_slice = output_array[:,:,nnz//2]
 plt.figure(figsize=(8, 6))
 plt.imshow(ouptut_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 plt.colorbar()
