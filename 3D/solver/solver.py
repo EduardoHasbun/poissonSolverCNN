@@ -78,7 +78,14 @@ input_plot = input_data.detach().numpy()[0, 0, :, :, :]
 
 
 # 2d
+input_slice = input_array[:,:,nnz//2]
 ouptut_slice = output_array[:,:,nnz//2]
+
+plt.figure(figsize=(8, 6))
+plt.imshow(input_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+plt.colorbar()
+plt.show()
+
 plt.figure(figsize=(8, 6))
 plt.imshow(ouptut_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 plt.colorbar()
