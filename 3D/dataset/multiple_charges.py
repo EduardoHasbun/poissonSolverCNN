@@ -32,7 +32,6 @@ if __name__ == '__main__':
     # Define the positions and magnitudes of the charges
     charges = [
         {'position': [(xmax - xmin) * 0.25, (ymax - ymin) * 0.5, (zmax - zmin) * 0.5], 'magnitude': 1.0e+1, 'sigma': 1.0e-3},
-        {'position': [(xmax - xmin) * 0.75, (ymax - ymin) * 0.5, (zmax - zmin) * 0.5], 'magnitude': 1.0e+1, 'sigma': 1.0e-3}
     ]
 
     def gauss(z, y, x, charge):
@@ -88,6 +87,12 @@ if __name__ == '__main__':
     file_path_potentials = os.path.join('generated', 'potentials.npy')
     np.save(file_path_fields, fields)
     np.save(file_path_potentials, potentials)
+
+    with open('parameters.txt', 'w') as file:
+        file.write('Position (y,x,z)')
+        for charge in charges:
+            file.write(f'{charge}\n')
+            # file.write(f'Position: ({charge['position'][0], charge['position'][1], charge['position'][2]})\n')
 
     # Plotting
     if plotting:

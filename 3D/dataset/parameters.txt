@@ -1,0 +1,2 @@
+Position (y,x,z){'position': [0.0075, 0.005, 0.005], 'magnitude': 10.0, 'sigma': 0.001}
+{'position': [0.0025, 0.005, 0.005], 'magnitude': 10.0, 'sigma': 0.001}
