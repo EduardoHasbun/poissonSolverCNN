@@ -16,7 +16,7 @@ with open(args.cfg, 'r') as yaml_stream:
 
 n_fields = cfg['n_it']
 nits = cfg['n_it']
-plotting = False
+plotting = True
 
 if __name__ == '__main__':
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
