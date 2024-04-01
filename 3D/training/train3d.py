@@ -78,7 +78,7 @@ for epoch in range (num_epochs):
     total_loss = 0
     for batch_idx, batch in enumerate(dataloader):
         data = batch[:, np.newaxis, :, :].float()
-        target = target[:, np.newaxis, :, :].float()
+        # target = target[:, np.newaxis, :, :].float()
         optimizer.zero_grad()
         # data = data.to(model.parameters().__next__().dtype)
         optimizer.zero_grad()
