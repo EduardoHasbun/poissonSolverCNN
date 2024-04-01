@@ -76,7 +76,7 @@ optimizer = optim.Adam(model.parameters(), lr = lr)
 #Train loop
 for epoch in range (num_epochs):
     total_loss = 0
-    for batch_idx, (batch, target) in enumerate(dataloader):
+    for batch_idx, batch in enumerate(dataloader):
         data = batch[:, np.newaxis, :, :].float()
         target = target[:, np.newaxis, :, :].float()
         optimizer.zero_grad()
