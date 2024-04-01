@@ -1,1 +1,0 @@
-Position (y,x,z){'position': [0.005, 0.005, 0.005], 'magnitude': 10.0, 'sigma': 0.001}

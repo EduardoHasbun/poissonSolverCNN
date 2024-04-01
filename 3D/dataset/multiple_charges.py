@@ -16,7 +16,7 @@ with open(args.cfg, 'r') as yaml_stream:
 
 n_fields = cfg['n_it']
 nits = cfg['n_it']
-plotting = True
+plotting = False
 
 if __name__ == '__main__':
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
@@ -31,7 +31,8 @@ if __name__ == '__main__':
 
     # Define the positions and magnitudes of the charges
     charges = [
-        {'position': [(xmax - xmin) * 0.5, (ymax - ymin) * 0.5, (zmax - zmin) * 0.5], 'magnitude': 1.0e+1, 'sigma': 1.0e-3}
+        {'position': [(xmax - xmin) * 0.75, (ymax - ymin) * 0.5, (zmax - zmin) * 0.5], 'magnitude': 1.0e+1, 'sigma': 1.0e-3},
+        {'position': [(xmax - xmin) * 0.25, (ymax - ymin) * 0.5, (zmax - zmin) * 0.5], 'magnitude': 1.0e+1, 'sigma': 1.0e-3}
     ]
 
     def gauss(z, y, x, charge):
