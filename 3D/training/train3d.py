@@ -42,9 +42,9 @@ target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.np
 
 #Create Data
 dataset = np.load(data_dir)
-dataset = np.tile(dataset, (100, 1, 1, 1))
+dataset = np.tile(dataset, (1000, 1, 1, 1))
 target  = np.load(target_dir) 
-target = np.tile(target, (100, 1, 1, 1))
+target = np.tile(target, (1000, 1, 1, 1))
 print(np.shape(dataset), np.shape(target))
 dataset = torch.tensor(dataset)
 target = torch.tensor(target)
