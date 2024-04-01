@@ -43,13 +43,13 @@ target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.np
 #Create Data
 dataset = np.load(data_dir)
 dataset = np.tile(dataset, (1000, 1, 1, 1))
-target  = np.load(target_dir) 
-target = np.tile(target, (1000, 1, 1, 1))
-print(np.shape(dataset), np.shape(target))
+# target  = np.load(target_dir) 
+# target = np.tile(target, (1000, 1, 1, 1))
 dataset = torch.tensor(dataset)
-target = torch.tensor(target)
-data_set = TensorDataset(dataset, target)
-dataloader = DataLoader(data_set, batch_size=batch_size, shuffle=True)
+# target = torch.tensor(target)
+# data_set = TensorDataset(dataset, target)
+# dataloader = DataLoader(data_set, batch_size=batch_size, shuffle=True)
+dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 #Parameters to Nomalize
 alpha = 0.1
@@ -82,10 +82,10 @@ for epoch in range (num_epochs):
         optimizer.zero_grad()
         # data = data.to(model.parameters().__next__().dtype)
         optimizer.zero_grad()
-        # data_norm = torch.ones((data.size(0), data.size(1), 1, 1))# / ratio_max
+        data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
         output = model(data)
-        # loss = laplacian_loss(output, data = data, data_norm = data_norm)
-        loss = inside_loss(output, target)
+        loss = laplacian_loss(output, data = data, data_norm = data_norm)
+        # loss = inside_loss(output, target)
         loss += dirichlet_loss(output)
         loss.backward()
         optimizer.step()
@@ -93,4 +93,4 @@ for epoch in range (num_epochs):
         if batch_idx % 5 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, '3_charges.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'new_loss.pth'))
