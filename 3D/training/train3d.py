@@ -37,18 +37,19 @@ Lx = xmax-xmin
 Ly = ymax-ymin
 Lz = zmax-zmin
 save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'fields.npy')
+data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data.npy')
 if loss_type == 'inside':
     target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.npy')
 
 
 #Create Data
 dataset = np.load(data_dir)
-dataset = np.tile(dataset, (1000, 1, 1, 1))
+dataset = np.expand_dims(dataset, axis=-1)
+# dataset = np.tile(dataset, (1000, 1, 1, 1))
 dataset = torch.tensor(dataset)
 if loss_type == 'inside':
     target  = np.load(target_dir) 
-    target = np.tile(target, (1000, 1, 1, 1))
+    # target = np.tile(target, (1000, 1, 1, 1))
     target = torch.tensor(target)
     data_set = TensorDataset(dataset, target)
     dataloader = DataLoader(data_set, batch_size=batch_size, shuffle=True)
