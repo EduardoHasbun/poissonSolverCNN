@@ -25,34 +25,16 @@ class ConvBlock3D(nn.Module):
 
         # Append all the specified layers
         for i in range(len(fmaps) - 1):
-            # Check if kernel size is a tuple for custom non-cubic kernel
-            if isinstance(kernel_size, tuple):
-                if padding_mode == 'custom':
-                    # Assuming kernel_size is a tuple (depth, height, width)
-                    layers.append(CustomPadLayer3D(kernel_size[1]))  # Use height for padding
-                    layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
-                                            kernel_size=kernel_size,
-                                            padding=0,
-                                            padding_mode='zeros'))
-                else:
-                    layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
-                                            kernel_size=kernel_size,
-                                            padding=(0, int((kernel_size[1] - 1) / 2), 0),  # Use height for padding
-                                            padding_mode=padding_mode))
+            if padding_mode == 'custom':
+                layers.append(CustomPadLayer3D(kernel_size))
+                layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
+                    kernel_size=kernel_size, padding=0, 
+                    padding_mode='zeros'))
             else:
-                if padding_mode == 'custom':
-                    # For cubic kernel
-                    layers.append(CustomPadLayer3D(kernel_size))
-                    layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
-                                            kernel_size=kernel_size, padding=0, 
-                                            padding_mode='zeros'))
-                else:
-                    layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
-                                            kernel_size=kernel_size, 
-                                            padding=(int((kernel_size - 1) / 2), 
-                                                     int((kernel_size - 1) / 2), 
-                                                     int((kernel_size - 1) / 2)), 
-                                            padding_mode=padding_mode))
+                layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
+                    kernel_size=kernel_size, 
+                    padding=(int((kernel_size - 1) / 2), int((kernel_size - 1) / 2), int((kernel_size - 1) / 2)), 
+                    padding_mode=padding_mode))
             # No ReLu at the very last layer
             if i != len(fmaps) - 2 or block_type != 'out':
                 layers.append(nn.ReLU())
@@ -66,7 +48,6 @@ class ConvBlock3D(nn.Module):
 
     def forward(self, x):
         return self.encode(x)
-
 
 
 class UNet3D(nn.Module):
