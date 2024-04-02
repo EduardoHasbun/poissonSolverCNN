@@ -25,6 +25,7 @@ num_epochs = cfg['trainer']['epochs']
 lapl_weight = cfg['loss']['args']['lapl_weight']
 inside_weight = cfg['loss']['args']['inside_weight']
 bound_weight = cfg['loss']['args']['bound_weight']
+loss_type = cfg['loss']['type']
 lr = cfg['loss']['args']['optimizer_lr']
 scales_data = cfg.get('arch', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
@@ -37,24 +38,26 @@ Ly = ymax-ymin
 Lz = zmax-zmin
 save_dir = os.getcwd()
 data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'fields.npy')
-target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.npy')
+if loss_type == 'inside':
+    target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.npy')
 
 
 #Create Data
 dataset = np.load(data_dir)
 dataset = np.tile(dataset, (1000, 1, 1, 1))
-# target  = np.load(target_dir) 
-# target = np.tile(target, (1000, 1, 1, 1))
 dataset = torch.tensor(dataset)
-# target = torch.tensor(target)
-# data_set = TensorDataset(dataset, target)
-# dataloader = DataLoader(data_set, batch_size=batch_size, shuffle=True)
-dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+if loss_type == 'inside':
+    target  = np.load(target_dir) 
+    target = np.tile(target, (1000, 1, 1, 1))
+    target = torch.tensor(target)
+    data_set = TensorDataset(dataset, target)
+    dataloader = DataLoader(data_set, batch_size=batch_size, shuffle=True)
+else:
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 #Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
-
 
 
 #Create model and losses
@@ -68,19 +71,24 @@ else:
     print('No model found')
 
 model = model.float() 
-laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
+
+if loss_type == 'laplacian':
+    laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
+elif loss_type == 'inside':
+    inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
 #Train loop
 for epoch in range (num_epochs):
     total_loss = 0
-    for batch_idx, batch in enumerate(dataloader):
-        data = batch[:, np.newaxis, :, :].float()
-        # target = target[:, np.newaxis, :, :].float()
-        optimizer.zero_grad()
-        # data = data.to(model.parameters().__next__().dtype)
+    for batch_idx, batch_data in enumerate(dataloader):
+        if loss_type == 'inside':   
+            data, target = batch_data
+            target = target[:, np.newaxis, :, :].float()
+        else:
+            data = batch_data
+        data = data[:, np.newaxis, :, :, :].float()
         optimizer.zero_grad()
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
         output = model(data)
@@ -93,4 +101,4 @@ for epoch in range (num_epochs):
         if batch_idx % 5 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'new_loss_2.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'new_loss.pth'))

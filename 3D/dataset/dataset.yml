@@ -13,4 +13,4 @@ domain:
   nny: 40
   zmin: 0.0
   zmax: 1.0e-2
-  nnz: 40
+  nnz: 1
