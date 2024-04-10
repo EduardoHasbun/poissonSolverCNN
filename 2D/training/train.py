@@ -58,9 +58,9 @@ for epoch in range (num_epochs):
         data = torch.DoubleTensor(data) 
         optimizer.zero_grad()
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
-
+        print(f'Data max: {np.max(data.numpy())}, Data min: {np.min(data.numpy())}')
+        print(f'Ratio: {ratio_max} .\n')
         output = model(data)
-        
         loss = laplacian_loss(output, data = data, data_norm = data_norm)
         loss += dirichlet_loss(output)
         loss.backward()
@@ -69,10 +69,5 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-
-
-# Save the trained model
-torch.save(model.state_dict(), os.path.join(save_dir, 'unet_model.pth'))
-
-
+    torch.save(model.state_dict(), os.path.join(save_dir, 'unet_model.pth'))
 

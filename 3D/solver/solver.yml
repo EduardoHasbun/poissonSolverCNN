@@ -22,9 +22,9 @@ init:
   n_back: 1.0e+16
   n_pert: 1.0e+11
   func: 'gaussians'
-  # args : [1.0e+1, 5.0e-3, 2.5e-3, 5.0e-3, 1.0e-3, 1.0e-3, 1.0e-3,   #2 charges along y axis
-  #         1.0e+1, 5.0e-3, 7.5e-3, 5.0e-3, 1.0e-3, 1.0e-3, 1.0e-3]
-  args : [1.0e+1, 5.0e-3, 5.0e-3, 5.0e-3, 1.0e-3, 1.0e-3, 1.0e-3] #charge in the middle
+  args : [1.0e+1, 5.0e-3, 2.5e-3, 5.0e-3, 1.0e-3, 1.0e-3, 1.0e-3,   #2 charges along y axis
+          1.0e+1, 5.0e-3, 7.5e-3, 5.0e-3, 1.0e-3, 1.0e-3, 1.0e-3]
+  # args : [1.0e+1, 5.0e-3, 5.0e-3, 5.0e-3, 1.0e-3, 1.0e-3, 1.0e-3] #charge in the middle
   # args : [1.0e+1, 5.0e-3, 2.5e-3, 5.0e-3, 1.0e-3, 1.0e-3, 1.0e-3] #one charge move in the y axis
 
 poisson:

@@ -44,7 +44,6 @@ if loss_type == 'inside':
 
 #Create Data
 dataset = np.load(data_dir)
-dataset = np.expand_dims(dataset, axis=-1)
 # dataset = np.tile(dataset, (1000, 1, 1, 1))
 dataset = torch.tensor(dataset)
 if loss_type == 'inside':
@@ -102,4 +101,4 @@ for epoch in range (num_epochs):
         if batch_idx % 5 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'new_loss.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'random_one_charge.pth'))

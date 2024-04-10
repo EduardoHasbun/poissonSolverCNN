@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from unet import UNet
 
 
-with open('C:\Codigos/poissonSolverCNN/solver/solver.yml', 'r') as file:
+with open('C:\Codigos/poissonSolverCNN/2D/solver/solver.yml', 'r') as file:
     cfg = yaml.load(file, Loader=yaml.FullLoader)
 scales_data = cfg.get('arch', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
@@ -40,7 +40,7 @@ input_data = torch.from_numpy(input_data).float()
 
 #Create Model
 model = UNet(scales=scales, kernel=kernel_size)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/training/unet_model.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/unet_model.pth'))
 model = model.float()
 for param in model.parameters():
     param.data = param.data.float()
@@ -48,7 +48,7 @@ model.eval()
 
 #Solver
 output = model(input_data)
-output_array = output.detach().numpy()[0, 0, :, :] / 1e6
+output_array = output.detach().numpy()[0, 0, :, :] 
 print(np.max(output_array))
 
 
