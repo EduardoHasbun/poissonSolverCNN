@@ -44,11 +44,11 @@ if loss_type == 'inside':
 
 #Create Data
 dataset = np.load(data_dir)
-dataset = np.tile(dataset, (1000, 1, 1, 1))
+dataset = np.tile(dataset, (500, 1, 1, 1))
 dataset = torch.tensor(dataset)
 if loss_type == 'inside':
     target  = np.load(target_dir) 
-    target = np.tile(target, (1000, 1, 1, 1))
+    target = np.tile(target, (500, 1, 1, 1))
     target = torch.tensor(target)
     data_set = TensorDataset(dataset, target)
     dataloader = DataLoader(data_set, batch_size=batch_size, shuffle=True)
