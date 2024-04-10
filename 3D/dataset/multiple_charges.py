@@ -31,8 +31,7 @@ if __name__ == '__main__':
 
     # Define the positions and magnitudes of the charges
     charges = [
-        {'position': [(xmax - xmin) * 0.75, (ymax - ymin) * 0.5, (zmax - zmin) * 0.5], 'magnitude': 1.0e+1, 'sigma': 1.0e-3},
-        {'position': [(xmax - xmin) * 0.25, (ymax - ymin) * 0.5, (zmax - zmin) * 0.5], 'magnitude': 1.0e+1, 'sigma': 1.0e-3}
+        {'position': [(xmax - xmin) * 0.75, (ymax - ymin) * 0.5, (zmax - zmin) * 0.5], 'magnitude': 1.0e+1, 'sigma': 1.0e-3}
     ]
 
     def gauss(z, y, x, charge):
