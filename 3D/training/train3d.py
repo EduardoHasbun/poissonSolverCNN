@@ -44,11 +44,11 @@ if loss_type == 'inside':
 
 #Create Data
 dataset = np.load(data_dir)
-# dataset = np.tile(dataset, (1000, 1, 1, 1))
+dataset = np.tile(dataset, (1000, 1, 1, 1))
 dataset = torch.tensor(dataset)
 if loss_type == 'inside':
     target  = np.load(target_dir) 
-    # target = np.tile(target, (1000, 1, 1, 1))
+    target = np.tile(target, (1000, 1, 1, 1))
     target = torch.tensor(target)
     data_set = TensorDataset(dataset, target)
     dataloader = DataLoader(data_set, batch_size=batch_size, shuffle=True)
@@ -63,10 +63,10 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 #Create model and losses
 if model_type == 'UNet':
     model = UNet3D(scales, kernel_sizes=kernel_size, input_res=nnx)
-    print('Using UNet model')
+    print('Using UNet model .\n')
 elif model_type == 'MSNet':
     model = MSNet3D(scales=scales, kernel_sizes=kernel_size, input_res=nnx)
-    print('Using MSNet model')
+    print('Using MSNet model .\n')
 else:
     print('No model found')
 
@@ -74,8 +74,10 @@ model = model.float()
 
 if loss_type == 'laplacian':
     laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
+    print('Using Laplacian Loss .\n')
 elif loss_type == 'inside':
     inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
+    print('Using Inside Loss .\n')
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
@@ -92,8 +94,10 @@ for epoch in range (num_epochs):
         optimizer.zero_grad()
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
         output = model(data)
-        loss = laplacian_loss(output, data = data, data_norm = data_norm)
-        # loss = inside_loss(output, target)
+        if loss_type =='laplacian':
+            loss = laplacian_loss(output, data = data, data_norm = data_norm)
+        elif loss_type == 'inside':
+            loss = inside_loss(output, target)
         loss += dirichlet_loss(output)
         loss.backward()
         optimizer.step()
