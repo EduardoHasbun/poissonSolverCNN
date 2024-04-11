@@ -9,9 +9,9 @@ domain:
   xmin: 0.0
   xmax: 1.0e-2
   nnx: 30
+  nny: 30
+  nnz: 30
   ymin: 0.0
   ymax: 1.0e-2
-  nny: 30
   zmin: 0.0
   zmax: 1.0e-2
-  nnz: 30
