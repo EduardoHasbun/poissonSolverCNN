@@ -154,4 +154,4 @@ def lapl(field, dx, dy, dz):
 
 
 def ratio_potrhs(alpha, Lx, Ly, Lz):
-    return alpha / (np.pi**2 / 4)**2 / (1 / Lx**2 + 1 / Ly**2 + 1 / Lz**2)
+    return alpha / (np.pi**2 / 8)**2 / (1 / Lx**2 + 1 / Ly**2 + 1 / Lz**2)

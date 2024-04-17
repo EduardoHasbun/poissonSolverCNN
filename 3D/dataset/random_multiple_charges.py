@@ -16,9 +16,9 @@ with open(args.cfg, 'r') as yaml_stream:
 
 n_fields = cfg['n_it']
 nits = cfg['n_it']
-n_charges = cfg['n_charges']
-plotting = True
-
+min_charges_per_field = cfg.get('min_charges_per_field', 2)
+max_charges_per_field = cfg.get('max_charges_per_field', 5)
+plotting = False
 
 if __name__ == '__main__':
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
@@ -38,13 +38,16 @@ if __name__ == '__main__':
                                     (y - charge['position'][1]) ** 2 +
                                     (z - charge['position'][2]) ** 2) / (2 * sigma ** 2))
     
-    def generate_random_charge(xmin, xmax, ymin, ymax, zmin, zmax):
-        random_position = [np.random.uniform((xmax - xmin)*0.4, (xmax - xmin)*0.6),
-                           np.random.uniform((ymax - ymin)*0.4, (ymax - ymin)*0.6),
-                           np.random.uniform((zmax - zmin)*0.4, (zmax - zmin)*0.6)]
-        random_magnitude = np.random.uniform(5e0, 1e+1) 
-        return {'position': random_position, 'magnitude': random_magnitude, 'sigma': 1.0e-3}
-
+    def generate_random_charges(xmin, xmax, ymin, ymax, zmin, zmax):
+        num_charges = np.random.randint(min_charges_per_field, max_charges_per_field + 1)
+        charges = []
+        for _ in range(num_charges):
+            random_position = [np.random.uniform(xmin*0.05, xmax*0.95),
+                               np.random.uniform(ymin*0.05, ymax*0.95),
+                               np.random.uniform(zmin*0.05, zmax*0.95)]
+            random_magnitude = np.random.uniform(1e+1, 1e+1) 
+            charges.append({'position': random_position, 'magnitude': random_magnitude, 'sigma': 1.0e-3})
+        return charges
 
     # Initialize arrays
     fields = np.empty((n_fields, nnx, nny, nnz))
@@ -52,8 +55,8 @@ if __name__ == '__main__':
     positions_data = []
 
     for idx in log_progress(range(n_fields), total=n_fields, desc="Generating Fields"):
-        # Generate multiple random charges for this field
-        charges = [generate_random_charge(xmin, xmax, ymin, ymax, zmin, zmax) for _ in range(n_charges)] 
+        # Generate random charges for this field
+        charges = generate_random_charges(xmin, xmax, ymin, ymax, zmin, zmax)
 
         # Initialize data for field and potential
         data = np.zeros((nnx, nny, nnz))
