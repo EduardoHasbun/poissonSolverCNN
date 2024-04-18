@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from unet3d import UNet3D as UNet
 from msnet3d import MSNet3D as MSnet
 from matplotlib.colors import ListedColormap
-from ..training.operators3d import ratio_potrhs
+# from ..training.operators3d import ratio_potrhs
 
 
 with open('C:\Codigos/poissonSolverCNN/3D/solver/solver.yml', 'r') as file:

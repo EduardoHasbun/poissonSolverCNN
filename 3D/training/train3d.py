@@ -44,12 +44,12 @@ if loss_type == 'inside':
 
 #Create Data
 dataset = np.load(data_dir)
-dataset = np.tile(dataset, (20, 1, 1, 1))
+dataset = np.tile(dataset, (100, 1, 1, 1))
 print(np.shape(dataset))
 dataset = torch.tensor(dataset)
 if loss_type == 'inside':
     target  = np.load(target_dir) 
-    target = np.tile(target, (20, 1, 1, 1))
+    target = np.tile(target, (100, 1, 1, 1))
     print(np.shape(target))
     target = torch.tensor(target)
     data_set = TensorDataset(dataset, target)
@@ -60,7 +60,7 @@ else:
 #Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
-ratio_max = 1
+ratio_max = 1.0
 
 
 #Create model and losses
