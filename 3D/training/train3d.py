@@ -60,6 +60,7 @@ else:
 #Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
+ratio_max = 1
 
 
 #Create model and losses
