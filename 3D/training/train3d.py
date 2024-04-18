@@ -60,7 +60,7 @@ else:
 #Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
-ratio_max = 1.0
+
 
 
 #Create model and losses
@@ -108,4 +108,4 @@ for epoch in range (num_epochs):
         if batch_idx % 5 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'random_one_charge.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'random_one_charge_2.pth'))
