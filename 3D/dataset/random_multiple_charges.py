@@ -16,9 +16,9 @@ with open(args.cfg, 'r') as yaml_stream:
 
 n_fields = cfg['n_it']
 nits = cfg['n_it']
-min_charges_per_field = cfg.get('min_charges_per_field', 2)
-max_charges_per_field = cfg.get('max_charges_per_field', 5)
-plotting = False
+min_charges_per_field = cfg.get('min_charges_per_field', 1)
+max_charges_per_field = cfg.get('max_charges_per_field', 3)
+plotting = True
 
 if __name__ == '__main__':
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
@@ -42,10 +42,10 @@ if __name__ == '__main__':
         num_charges = np.random.randint(min_charges_per_field, max_charges_per_field + 1)
         charges = []
         for _ in range(num_charges):
-            random_position = [np.random.uniform(xmin*0.05, xmax*0.95),
-                               np.random.uniform(ymin*0.05, ymax*0.95),
-                               np.random.uniform(zmin*0.05, zmax*0.95)]
-            random_magnitude = np.random.uniform(1e+1, 1e+1) 
+            random_position = [np.random.uniform(xmax*0.3, xmax*0.7),
+                               np.random.uniform(ymax*0.3, ymax*0.7),
+                               np.random.uniform(zmax*0.3, zmax*0.7)]
+            random_magnitude = np.random.uniform(1e+1, 2e+1) 
             charges.append({'position': random_position, 'magnitude': random_magnitude, 'sigma': 1.0e-3})
         return charges
 
