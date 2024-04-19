@@ -31,8 +31,8 @@ if __name__ == '__main__':
 
     # Generate the field outside the loop
     data = np.zeros((nnx, nny, nnz))
-    amplitude = 1.8e+3  # Adjust as needed
-    sigma = 1.0e-3  # Adjust as needed
+    amplitude = 1.8e+3  
+    sigma = 1.0e-3  
     gauss = lambda x, y, z: amplitude * np.exp(-((x * (xmax - xmin) / nnx - (xmax - xmin) / 2) ** 2 +
                                                  (y * (ymax - ymin) / nny - (ymax - ymin) / 2) ** 2 +
                                                  (z * (zmax - zmin) / nnz - (zmax - zmin) / 2) ** 2) / (2 * sigma ** 2))
@@ -56,7 +56,7 @@ if __name__ == '__main__':
                                     ((yi * (ymax - ymin) / nny) - (ymax - ymin) / 2) ** 2 +
                                     ((zi * (zmax - zmin) / nnz) - (zmax - zmin) / 2) ** 2)
                     if distance == 0:
-                        potentials[idx, xi, yi, zi] = amplitude *3
+                        potentials[idx, xi, yi, zi] = amplitude / (xmax/nnx)
                     else:
                         potentials[idx, xi, yi, zi] = 1 / distance
 
