@@ -66,10 +66,10 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 #Create model and losses
 if model_type == 'UNet':
     model = UNet3D(scales, kernel_sizes=kernel_size, input_res=nnx)
-    print('Using UNet model .\n')
+    print('Using UNet model \n')
 elif model_type == 'MSNet':
     model = MSNet3D(scales=scales, kernel_sizes=kernel_size, input_res=nnx)
-    print('Using MSNet model .\n')
+    print('Using MSNet model \n')
 else:
     print('No model found')
 
@@ -77,10 +77,10 @@ model = model.float()
 
 if loss_type == 'laplacian':
     laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
-    print('Using Laplacian Loss .\n')
+    print('Using Laplacian Loss \n')
 elif loss_type == 'inside':
     inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
-    print('Using Inside Loss .\n')
+    print('Using Inside Loss \n')
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 

@@ -40,7 +40,7 @@ loss:
     args:
         bound_weight: 1.0e+1                   # Weighting of the loss on the boundaries (float)
         lapl_weight: 2.0e+20                 # Weighting of the loss on the Laplacian (float)
-        optimizer_lr: 4.e-3 
+        optimizer_lr: 4.e-2 
         inside_weight: 1.0e+7
 
 trainer:
