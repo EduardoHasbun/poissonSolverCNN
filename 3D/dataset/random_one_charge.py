@@ -39,9 +39,9 @@ if __name__ == '__main__':
                                     (z - charge['position'][2]) ** 2) / (2 * sigma ** 2))
     
     def generate_random_charge(xmin, xmax, ymin, ymax, zmin, zmax):
-        random_position = [np.random.uniform((xmax - xmin)*0.4, (xmax - xmin)*0.6),
-                           np.random.uniform((ymax - ymin)*0.4, (ymax - ymin)*0.6),
-                           np.random.uniform((zmax - zmin)*0.5, (zmax - zmin)*0.5)]
+        random_position = [np.random.uniform((xmax - xmin)*0.2, (xmax - xmin)*0.8),
+                           np.random.uniform((ymax - ymin)*0.2, (ymax - ymin)*0.8),
+                           np.random.uniform((zmax - zmin)*0.2, (zmax - zmin)*0.8)]
         random_magnitude = np.random.uniform(1e+1, 2e+1) 
         return {'position': random_position, 'magnitude': random_magnitude, 'sigma': 1.0e-3}
 
