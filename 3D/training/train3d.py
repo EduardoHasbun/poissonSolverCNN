@@ -42,9 +42,15 @@ if loss_type == 'inside':
     target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.npy')
 
 
+
+#Parameters to Nomalize
+alpha = 0.1
+ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
+
 #Create Data
 dataset = np.load(data_dir)
-dataset = np.tile(dataset, (1000, 1, 1, 1))
+# dataset = np.tile(dataset, (1000, 1, 1, 1))
+dataset *= ratio_max
 print(np.shape(dataset))
 dataset = torch.tensor(dataset)
 if loss_type == 'inside':
@@ -56,11 +62,6 @@ if loss_type == 'inside':
     dataloader = DataLoader(data_set, batch_size=batch_size, shuffle=True)
 else:
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-
-#Parameters to Nomalize
-alpha = 0.1
-ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
-
 
 
 #Create model and losses
@@ -105,7 +106,7 @@ for epoch in range (num_epochs):
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
-        if batch_idx % 5 ==0:
+        if batch_idx % 10 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'one_charge_random.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'laplacian_loss.pth'))

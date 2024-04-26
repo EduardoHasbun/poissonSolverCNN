@@ -21,7 +21,7 @@ if __name__ == '__main__':
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
     ymin, ymax, nny = cfg['domain']['ymin'], cfg['domain']['ymax'], cfg['domain']['nny']
     zmin, zmax, nnz = cfg['domain']['zmin'], cfg['domain']['zmax'], cfg['domain']['nnz']
-    n_res_factor = 2
+    n_res_factor = 5
 
     # Create a 1D grid for each axis
     x, y, z = np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny), np.linspace(zmin, zmax, nnz)
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     # Generate random data samples
     random_data_array = np.empty((nits, nnx, nny, nnz))
     for idx, random_data in log_progress(enumerate(generate_random(nits)), total=nits, desc="Processing"):
-        random_data_array[idx] = random_data * 1.5e3
+        random_data_array[idx] = random_data 
 
         if plotting and idx % 10 == 0:
             fig = plt.figure(figsize=(8, 6))
@@ -63,7 +63,7 @@ if __name__ == '__main__':
             plt.close()
 
 
-    file_path = os.path.join('generated', 'random_data.npy')
+    file_path = os.path.join('generated', 'fields.npy')
     print(np.shape(random_data_array))
     os.makedirs('generated', exist_ok=True)
     np.save(file_path, random_data_array)
