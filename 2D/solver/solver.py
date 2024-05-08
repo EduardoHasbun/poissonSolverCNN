@@ -20,7 +20,7 @@ y_1d = np.linspace(ymin, ymax, nny)
 X, Y = np.meshgrid(x_1d, y_1d)
 
 
-#Define Gaussians's Functions
+# Define Gaussians's Functions
 def gaussian(x, y, amplitude, x0, y0, sigma_x, sigma_y):
     return amplitude * np.exp(-((x - x0) / sigma_x)**2
                               - ((y - y0) / sigma_y)**2)
@@ -33,12 +33,11 @@ def gaussians(x, y, params):
     return profile
 
 
-# input_data = gaussians(X, Y, cfg['init']['args']).astype(np.float32)
 input_data = gaussians(X, Y, cfg['init']['args'])
 input_data = input_data[np.newaxis, np.newaxis, :, :]
 input_data = torch.from_numpy(input_data).float()
 
-#Create Model
+# Create Model
 model = UNet(scales=scales, kernel=kernel_size)
 model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/unet_model.pth'))
 model = model.float()
@@ -46,10 +45,9 @@ for param in model.parameters():
     param.data = param.data.float()
 model.eval() 
 
-#Solver
+# Solver
 output = model(input_data)
 output_array = output.detach().numpy()[0, 0, :, :] 
-print(np.max(output_array))
 
 
 # Plots
@@ -68,7 +66,5 @@ axs[1].set_title('Output')
 axs[1].set_xlabel('X')
 axs[1].set_ylabel('Y')
 cbar_output = plt.colorbar(img_output, ax=axs[1], label='Magnitude')
-
 plt.tight_layout()
-
 plt.show()

@@ -26,25 +26,20 @@ z_1d = np.linspace(zmin, zmax, nnz)
 X, Y, Z = np.meshgrid(x_1d, y_1d, z_1d)
 
 
-#Define Gaussians's Functions
-def gaussian(x, y, z, amplitude, x0, y0, z0, sigma_x, sigma_y, sigma_z):
-    return amplitude * np.exp(-((x - x0) / sigma_x)**2
-                              - ((y - y0) / sigma_y)**2
-                              - ((z - z0) / sigma_z)**2)
-def gaussians(x, y, z, params):
-    profile = np.zeros_like(x)
-    ngauss = int(len(params) / 7)
-    params = np.array(params).reshape(ngauss, 7)
-    for index in range(ngauss):
-        profile += gaussian(x, y, z, *params[index, :])
-    return profile
+# Define Function to test
+def function(x, y, z):
+    return 6*x + 6*y + 6*z
+
+# Define Solution of the function
+def solution(x,y,z):
+    return x**3+y**3+z**3
 
 
-# input_data = gaussians(X, Y, cfg['init']['args']).astype(np.float32)
-input_data = gaussians(X, Y, Z, cfg['init']['args'])
+input_data = function(X,Y,Z)
 input_data = input_data[np.newaxis, np.newaxis, :, :, :]
 input_data = torch.from_numpy(input_data).float()
 input_array = input_data[0, 0, :, :, :]
+analitical_solution = solution(X,Y,Z)
 
 #Create Model
 if network_type == 'UNet':
@@ -61,33 +56,41 @@ model.eval()
 output = model(input_data)
 output_array = output.detach().numpy()[0, 0, :, :, :] 
 input_plot = input_data.detach().numpy()[0, 0, :, :, :]
-# print(np.max(output_array))
-
-
-#Plot 3D
-# fig = plt.figure(figsize=(8, 6))
-# ax = fig.add_subplot(111, projection='3d')
-# x_grid, y_grid, z_grid = np.meshgrid(x_1d, y_1d, z_1d, indexing='ij')
-# scatter = ax.scatter(x_grid, y_grid, z_grid, c=output_array, cmap='viridis')
-# ax.set_xlabel('X')
-# ax.set_ylabel('Y')
-# ax.set_zlabel('Z')
-# cbar = plt.colorbar(scatter, ax=ax, orientation='vertical')
-# cbar.set_label('Color Scale')
-# plt.show()
 
 
 
-# 2d
+# Plots
 input_slice = input_array[:,:,nnz//2]
 ouptut_slice = output_array[:,:,nnz//2]
 
-# plt.figure(figsize=(8, 6))
-# plt.imshow(input_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-# plt.colorbar()
-# plt.show()
+plt.figure(figsize=(8, 6))
+plt.imshow(input_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+plt.colorbar()
+plt.show()
 
 plt.figure(figsize=(8, 6))
 plt.imshow(ouptut_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 plt.colorbar()
-plt.savefig('output_plot_2.png')
+plt.show()
+
+
+# Define the indices for the inner region
+inner_indices_x = slice(7, 24)
+inner_indices_y = slice(7, 24)
+inner_indices_z = slice(7, 24)
+
+# Extract inner regions of the arrays
+output_inner = output_array[inner_indices_x, inner_indices_y, inner_indices_z]
+analytical_inner = analitical_solution[inner_indices_x, inner_indices_y, inner_indices_z]
+
+# Calculate the relative error
+relative_error_inner = np.abs(output_inner - analytical_inner) / np.abs(analytical_inner)
+
+# Plot the relative error
+plt.figure(figsize=(8, 6))
+plt.imshow(relative_error_inner[:,:,nnz//2], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+plt.colorbar(label='Relative Error')
+plt.title('Relative Error in Inner Region')
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.show()
