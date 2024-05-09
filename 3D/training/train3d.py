@@ -4,7 +4,7 @@ from msnet3d import MSNet3D
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
-from operators3d import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, InsideLoss
+from operators3d import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, InsideLoss, NewDirichletBoundaryLoss
 import torch.optim as optim
 import os
 import argparse
@@ -80,7 +80,8 @@ if loss_type == 'laplacian':
 elif loss_type == 'inside':
     inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
     print('Using Inside Loss \n')
-dirichlet_loss = DirichletBoundaryLoss(bound_weight)
+# dirichlet_loss = DirichletBoundaryLoss(bound_weight)
+dirichlet_loss = NewDirichletBoundaryLoss(bound_weight, xmin, xmax, ymin, ymax, zmin, zmax)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
 #Train loop
