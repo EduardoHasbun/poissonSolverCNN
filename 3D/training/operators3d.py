@@ -48,7 +48,7 @@ class NewDirichletBoundaryLoss(nn.Module):
     def forward(self, output):
         
         def function2solve(x, y, z):
-            return x^3 + y^3 + z^3
+            return torch.pow(x, 3) + torch.pow(y, 3) + torch.pow(z, 3)  
         
         bnd_loss = torch.zeros(1, device=output.device)
 
