@@ -53,10 +53,12 @@ input_data_subdomain2[:, :, interface_mask] = 0
 # Load models
 model_subdomain1 = UNet(scales=scales, kernel=kernel_size)
 model_subdomain1.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/unet_model.pth'))
+model_subdomain1 = model_subdomain1.float()
 model_subdomain1.eval()
 
 model_subdomain2 = UNet(scales=scales, kernel=kernel_size)
 model_subdomain2.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/unet_model.pth'))
+model_subdomain2 = model_subdomain2.float()
 model_subdomain2.eval()
 
 # Solver for subdomain 1
@@ -76,16 +78,16 @@ combined_output[combined_output_mask] = phi_subdomain2[combined_output_mask]
 # Apply boundary condition in the interface
 
 
-output_array = combined_output.detach().numpy()[0, 0, :, :] 
+# output_array = combined_output.detach().numpy()[0, 0, :, :] 
 
 
 # Plot results
-fig, axs = plt.subplots(1, 2, figsize=(10, 5)) 
-img_output = axs[1].imshow(output_array, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-axs[1].set_title('Output')
-axs[1].set_xlabel('X')
-axs[1].set_ylabel('Y')
-cbar_output = plt.colorbar(img_output, ax=axs[1], label='Magnitude')
+plt.figure(figsize=(8, 6))
+img_output = plt.imshow(combined_output, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+plt.title('Output')
+plt.xlabel('X')
+plt.ylabel('Y')
+cbar_output = plt.colorbar(img_output, label='Magnitude')
 plt.tight_layout()
 plt.show()
 

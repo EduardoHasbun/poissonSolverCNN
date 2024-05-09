@@ -1,9 +1,11 @@
+
 init:
+  func: 'gaussians'
   # args : [1.0e+2, 0.4e-2, 0.6e-2, 1.0e-3, 1.0e-3,
   #              1.0e+11, 0.6e-2, 0.4e-2, 1.0e-3, 1.0e-3,
   #              1.0e+11, 0.6e-2, 0.6e-2, 1.0e-3, 1.0e-3,
   #              1.0e+11, 0.4e-2, 0.4e-2, 1.0e-3, 1.0e-3]
-  args : [1.8e+3, 0.5e-2, 0.5e-2, 1.0e-3, 1.0e-5]   #Radio 1
+  args : [1.8e+3, 0.5e-2, 0.5e-2, 1.0e-3, 1.0e-3]   #Radio 1
 
 
 mesh:
@@ -18,6 +20,9 @@ mesh:
     y: 0.5e-2
   interface_radius: 1.0e-3
 
+# This block is useful only if poisson/type = 'network'
+network:
+  n_gpu: 1                                    # Number of GPUs to use
 
   globals:                                    # Domain sizes and others, used to compute global attributes
     nnx: 101
@@ -26,14 +31,14 @@ mesh:
     xmax: 1.0e-2
     ymin: 0.0
     ymax: 1.0e-2
-    coord: 'cart'
-    verbosity: 2
 
   
   arch:
     db_file: 'unets_ks3_rf200.yml'
     args:
         input_res: 101
+
+
 
 arch:
     scales:

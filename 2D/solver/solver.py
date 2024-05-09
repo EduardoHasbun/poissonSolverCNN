@@ -41,8 +41,6 @@ input_data = torch.from_numpy(input_data).float()
 model = UNet(scales=scales, kernel=kernel_size)
 model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/unet_model.pth'))
 model = model.float()
-for param in model.parameters():
-    param.data = param.data.float()
 model.eval() 
 
 # Solver
