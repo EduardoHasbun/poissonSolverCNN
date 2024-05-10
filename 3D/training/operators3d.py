@@ -61,6 +61,8 @@ class NewDirichletBoundaryLoss(nn.Module):
         x = x.expand(batch, n, length, height, width)
         y = y.expand(batch, n, length, height, width)
         z = z.expand(batch, n, length, height, width)
+        for value in x:
+            print(value)
 
         # Concatenating along the appropriate dimension
         domain = torch.cat((x, y, z), dim=2)
