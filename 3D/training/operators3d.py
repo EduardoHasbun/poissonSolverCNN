@@ -68,8 +68,8 @@ class NewDirichletBoundaryLoss(nn.Module):
         domain = torch.cat((x, y, z), dim=2)
 
         print(np.shape(domain))
-        for value in domain[0,0,0,:,0]:
-            print(value)
+        # for value in domain[0,0,0,:,0]:
+        #     print(value)
         
 
         # Compute the boundary condition for each boundary
