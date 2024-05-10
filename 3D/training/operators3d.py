@@ -66,7 +66,7 @@ class NewDirichletBoundaryLoss(nn.Module):
         domain = torch.cat((x, y, z), dim=2)
 
         print(np.shape(domain))
-        print(torch.max(domain[0,0,0,:,0]))
+        print(domain[0,0,0,:,0])
 
         # Compute the boundary condition for each boundary
         top = function2solve(x, y, torch.ones_like(z)*self.zmax)
