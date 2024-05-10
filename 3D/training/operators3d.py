@@ -55,6 +55,8 @@ class NewDirichletBoundaryLoss(nn.Module):
         # Extract the dimension of the domain
         batch, n, length, height, width  = output.size()
         x = torch.linspace(self.xmin, self.xmax, length, device=output.device)
+        print(np.shape(x))
+        print(x)
         y = torch.linspace(self.ymin, self.ymax, height, device=output.device)
         z = torch.linspace(self.zmin, self.zmax, width, device=output.device)
         # Broadcasting to match the shape of output
