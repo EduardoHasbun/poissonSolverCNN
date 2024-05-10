@@ -68,12 +68,14 @@ class NewDirichletBoundaryLoss(nn.Module):
 
         # Calculate Loss
         # Calculate Loss
-        bnd_loss += F.mse_loss(output[:, 0, :, :, -1], top.unsqueeze(1).unsqueeze(-1))
-        bnd_loss += F.mse_loss(output[:, 0, :, :, 0], bottom.unsqueeze(1).unsqueeze(-1))
-        bnd_loss += F.mse_loss(output[:, 0, :, -1, :], right.unsqueeze(1).unsqueeze(-1))
-        bnd_loss += F.mse_loss(output[:, 0, :, 0, :], left.unsqueeze(1).unsqueeze(-1))
-        bnd_loss += F.mse_loss(output[:, 0, -1, :, :], front.unsqueeze(1).unsqueeze(-1))
-        bnd_loss += F.mse_loss(output[:, 0, 0, :, :], back.unsqueeze(1).unsqueeze(-1))
+        # Calculate Loss
+        bnd_loss += F.mse_loss(output[:, 0, :, :, -1][:, :, :, None], top.unsqueeze(0).unsqueeze(-1))
+        bnd_loss += F.mse_loss(output[:, 0, :, :, 0][:, :, :, None], bottom.unsqueeze(0).unsqueeze(-1))
+        bnd_loss += F.mse_loss(output[:, 0, :, -1, :][:, :, None, :], right.unsqueeze(0).unsqueeze(-1))
+        bnd_loss += F.mse_loss(output[:, 0, :, 0, :][:, :, None, :], left.unsqueeze(0).unsqueeze(-1))
+        bnd_loss += F.mse_loss(output[:, 0, -1, :, :][:, None, :, :], front.unsqueeze(0).unsqueeze(-1))
+        bnd_loss += F.mse_loss(output[:, 0, 0, :, :][:, None, :, :], back.unsqueeze(0).unsqueeze(-1))
+
         return bnd_loss * self.weight
     
 
