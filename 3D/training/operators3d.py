@@ -66,8 +66,8 @@ class NewDirichletBoundaryLoss(nn.Module):
 
         # Extract the dimension of the domain
         batch, _, _, _, _  = output.size()
-        domain = domain.unsqueeze(0).unsqueeze(1)
-        domain = torch.cat([domain] * batch, dim=0)
+        self.domain = self.domain.unsqueeze(0).unsqueeze(1)
+        self.domain = torch.cat([self.domain] * batch, dim=0)
         print(np.shape(self.domain))
 
 
