@@ -40,37 +40,33 @@ class DirichletBoundaryLoss(nn.Module):
     
 
 class NewDirichletBoundaryLoss(nn.Module):
-    def __init__(self, bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz):
+    def __init__(self, bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz, batch):
         super().__init__()
         self.weight = bound_weight
         self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax = xmin, xmax, ymin, ymax, zmin, zmax
         x = torch.linspace(self.xmin, self.xmax, nnx)
         y = torch.linspace(self.ymin, self.ymax, nny)
         z = torch.linspace(self.zmin, self.zmax, nnz)
-        
-
         def function2solve(x, y, z):
-            return torch.pow(x, 3) + torch.pow(y, 3) + torch.pow(z, 3) 
-        
+            return torch.pow(x, 3) + torch.pow(y, 3) + torch.pow(z, 3)   
         domain = torch.zeros(nnx, nny, nnz)
         for i in range(nnx):
             for j in range(nny):
                 for k in range(nnz):
                     domain[i, j, k] = function2solve(x[i], y[j], z[k])
         self.domain = domain
-        
-
-
-    def forward(self, output):
-        bnd_loss = torch.zeros(1, device=output.device)
-
-        # Extract the dimension of the domain
-        batch, _, _, _, _  = output.size()
         self.domain = self.domain.unsqueeze(0).unsqueeze(1)
         self.domain = torch.cat([self.domain] * batch, dim=0)
         print(np.shape(self.domain))
 
-
+    def forward(self, output):
+        print(np.shape(self.domain))
+        bnd_loss = F.mse_loss(output[:, 0, -1, :, :], self.domain[:, 0, -1, :, :])
+        bnd_loss += F.mse_loss(output[:, 0, :, 0, :], self.domain[:, 0, :, 0, :])
+        bnd_loss += F.mse_loss(output[:, 0, :, -1, :], self.domain[:, 0, :, -1, :])
+        bnd_loss += F.mse_loss(output[:, 0, 0, :, :], self.domain[:, 0, 0, :, :])
+        bnd_loss += F.mse_loss(output[:, 0, :, :, 0], self.domain[:, 0, :, :, 0])
+        bnd_loss += F.mse_loss(output[:, 0, :, :, -1], self.domain[:, 0, :, :, -1])
         return bnd_loss * self.weight
     
 

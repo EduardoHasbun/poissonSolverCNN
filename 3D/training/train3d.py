@@ -81,7 +81,7 @@ elif loss_type == 'inside':
     inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
     print('Using Inside Loss \n')
 # dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-dirichlet_loss = NewDirichletBoundaryLoss(bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz)
+dirichlet_loss = NewDirichletBoundaryLoss(bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz, batch_size)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
 #Train loop
