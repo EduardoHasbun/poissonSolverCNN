@@ -59,7 +59,7 @@ class NewDirichletBoundaryLoss(nn.Module):
         z = torch.linspace(self.zmin, self.zmax, width, device=output.device)
         
         domain = function2solve
-        print(np.shape(domain))
+        print(domain)
         
 
         # Compute the boundary condition for each boundary
