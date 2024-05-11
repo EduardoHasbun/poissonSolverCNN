@@ -40,43 +40,36 @@ class DirichletBoundaryLoss(nn.Module):
     
 
 class NewDirichletBoundaryLoss(nn.Module):
-    def __init__(self, bound_weight, xmin, xmax, ymin, ymax, zmin, zmax):
+    def __init__(self, bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz):
         super().__init__()
         self.weight = bound_weight
         self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax = xmin, xmax, ymin, ymax, zmin, zmax
-
-    def forward(self, output):
+        x = torch.linspace(self.xmin, self.xmax, nnx)
+        y = torch.linspace(self.ymin, self.ymax, nny)
+        z = torch.linspace(self.zmin, self.zmax, nnz)
         
+
         def function2solve(x, y, z):
             return torch.pow(x, 3) + torch.pow(y, 3) + torch.pow(z, 3) 
-         
+        
+        domain = torch.zeros(nnx, nny, nnz)
+        for i in range(nnx):
+            for j in range(nny):
+                for k in range(nnz):
+                    domain[i, j, k] = function2solve(x[i], y[j], z[k])
+        self.domain = domain
+        
+
+
+    def forward(self, output):
         bnd_loss = torch.zeros(1, device=output.device)
 
         # Extract the dimension of the domain
-        batch, n, length, height, width  = output.size()
-        x = torch.linspace(self.xmin, self.xmax, length, device=output.device)
-        y = torch.linspace(self.ymin, self.ymax, height, device=output.device)
-        z = torch.linspace(self.zmin, self.zmax, width, device=output.device)
-        
-        domain = function2solve(x,y,z)
-        print(np.shape(domain))
-        
+        batch, n, _, _, _  = output.size()
+        print(np.shape(self.domain))
 
-        # Compute the boundary condition for each boundary
-        top = function2solve(x, y, torch.ones_like(z)*self.zmax)
-        bottom = function2solve(x, y, torch.ones_like(z)*self.zmin)
-        right = function2solve(x, torch.ones_like(y)*self.ymax, z)
-        left = function2solve(x, torch.ones_like(y)*self.ymin, z)
-        front = function2solve(torch.ones_like(x)*self.xmax, y, z)
-        back = function2solve(torch.ones_like(x)*self.xmin, y, z)
+        print(outputo)
 
-        # Calculate Loss
-        bnd_loss += F.mse_loss(output[:, 0, :, :, -1], top)
-        bnd_loss += F.mse_loss(output[:, 0, :, :, 0], bottom.unsqueeze(1).unsqueeze(-1))
-        bnd_loss += F.mse_loss(output[:, 0, :, -1, :], right.unsqueeze(1).unsqueeze(-1))
-        bnd_loss += F.mse_loss(output[:, 0, :, 0, :], left.unsqueeze(1).unsqueeze(-1))
-        bnd_loss += F.mse_loss(output[:, 0, -1, :, :], front.unsqueeze(1).unsqueeze(-1))
-        bnd_loss += F.mse_loss(output[:, 0, 0, :, :], back.unsqueeze(1).unsqueeze(-1))
         return bnd_loss * self.weight
     
 
