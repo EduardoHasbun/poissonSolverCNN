@@ -55,10 +55,10 @@ class NewDirichletBoundaryLoss(nn.Module):
                 for k in range(nnz):
                     domain[i, j, k] = function2solve(x[i], y[j], z[k])
         self.domain = domain
+        self.domain = self.domain.unsqueeze(0).unsqueeze(1)
 
     def forward(self, output):
         batch, _, _, _, _ = output.size()
-        self.domain = self.domain.unsqueeze(0).unsqueeze(1)
         self.domain = torch.cat([self.domain] * batch, dim=0)
         print(np.shape(self.domain))
         bnd_loss = F.mse_loss(output[:, 0, -1, :, :], self.domain[:, 0, -1, :, :])
