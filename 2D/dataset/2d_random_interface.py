@@ -5,7 +5,6 @@ import yaml
 import matplotlib.pyplot as plt
 import argparse
 from scipy.interpolate import RegularGridInterpolator as rgi
-import copy
 
 
 
@@ -57,20 +56,15 @@ if __name__ == '__main__':
     test = np.empty((nits, nnx, nny))
     for idx, random_data in enumerate(generate_random_data(nits)):
         random_data_array[idx] = random_data
-        inside_domain = copy.copy(random_data_array[idx-1])
-        outside_domain = copy.copy(random_data)
+        inside_domain = random_data_array[idx-1].copy()
+        outside_domain = random_data.copy()
 
         inside_domain[~interface_mask] = 0
         outside_domain[interface_mask] = 0
 
-        random_data_test = np.zeros_like(random_data_array[idx])
-        random_data_test[interface_mask] = inside_domain[interface_mask]
-        random_data_test[~interface_mask] = outside_domain[~interface_mask]
-
-        test[idx] =  random_data_test
 
         plt.figure(figsize=(8, 6))
-        plt.imshow(random_data_array[idx], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+        plt.imshow(inside_domain, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
         plt.show()
         
         if ploting and idx%100==0:
