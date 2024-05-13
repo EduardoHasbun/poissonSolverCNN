@@ -18,7 +18,7 @@ mesh:
   interface_center:
     x: 0.5e-2
     y: 0.5e-2
-  interface_radius: 1.0e-3
+  interface_radius: 2.0e-3
 
 # This block is useful only if poisson/type = 'network'
 network:

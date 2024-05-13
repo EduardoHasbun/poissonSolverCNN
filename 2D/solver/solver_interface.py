@@ -83,7 +83,7 @@ combined_output[combined_output_mask] = phi_subdomain2[combined_output_mask]
 
 # Plot results
 plt.figure(figsize=(8, 6))
-img_output = plt.imshow(combined_output, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+img_output = plt.imshow(input_data_subdomain1[0,0,:,:], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 plt.title('Output')
 plt.xlabel('X')
 plt.ylabel('Y')
