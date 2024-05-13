@@ -59,7 +59,7 @@ class NewDirichletBoundaryLoss(nn.Module):
 
     def forward(self, output):
         batch, _, _, _, _ = output.size()
-        self.domain = torch.cat([self.domain] * batch, dim=0)
+        self.domain = self.domain.expand(batch_size, -1, -1, -1)
         print(np.shape(self.domain))
         bnd_loss = F.mse_loss(output[:, 0, -1, :, :], self.domain[:, 0, -1, :, :])
         bnd_loss += F.mse_loss(output[:, 0, :, 0, :], self.domain[:, 0, :, 0, :])
