@@ -1,6 +1,5 @@
 import numpy as np
 import os
-from multiprocessing import Pool, cpu_count
 import yaml
 import matplotlib.pyplot as plt
 import argparse
@@ -19,7 +18,6 @@ ploting = False
 
 
 if __name__ == '__main__':
-    pool = Pool(processes=cpu_count())
     # Parameters for data generation
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
     nny, ymin, ymax = cfg['domain']['nny'], cfg['domain']['ymin'], cfg['domain']['ymax']
@@ -54,7 +52,7 @@ if __name__ == '__main__':
     random_data_array = np.empty((nits, nnx, nny))
     inside_domain_array = np.empty((nits, nnx, nny))
     outside_domain_array = np.empty((nits, nnx, nny))
-    for idx, random_data in log_progress(enumerate(pool.imap(generate_random_data, range(nits))), total=nits, desc="Processing"):
+    for idx, random_data in enumerate(generate_random_data(nits)):
         if idx == 0:
             inside_domain = np.zeros_like(random_data)
         else:
