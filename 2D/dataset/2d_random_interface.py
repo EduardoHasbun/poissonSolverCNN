@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import argparse
 from scipy.interpolate import RegularGridInterpolator as rgi
 from tqdm import tqdm as log_progress
+from tqdm import tqdm
 
 
 # Specific arguments
@@ -54,7 +55,7 @@ if __name__ == '__main__':
     random_data_array = np.empty((nits, nnx, nny))
     inside_domain_array = np.empty((nits, nnx, nny))
     outside_domain_array = np.empty((nits, nnx, nny))
-    for idx, random_data in log_progress(enumerate(pool.imap(generate_random_data(nits), range(nits))), total=nits, desc="Processing"):
+    for idx, random_data in tqdm(enumerate(pool.imap(generate_random_data, [(nits, nnx_lower, nny_lower, xmin, xmax, ymin, ymax)] * nits)), total=nits, desc="Processing"):
         if idx == 0:
             inside_domain = np.zeros_like(random_data)
         else:
