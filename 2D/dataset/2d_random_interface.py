@@ -52,7 +52,7 @@ if __name__ == '__main__':
     random_data_array = np.empty((nits, nnx, nny))
     inside_domain_array = np.empty((nits, nnx, nny))
     outside_domain_array = np.empty((nits, nnx, nny))
-    for idx, random_data in enumerate(generate_random_data(nits)):
+    for idx, random_data in log_progress(enumerate(generate_random_data(nits)), total=nits, desc="Processing"):
         if idx == 0:
             inside_domain = np.zeros_like(random_data)
         else:
