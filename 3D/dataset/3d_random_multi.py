@@ -3,7 +3,6 @@ import os
 from multiprocessing import Pool, cpu_count
 import yaml
 from scipy.interpolate import RegularGridInterpolator as rgi
-import matplotlib.pyplot as plt
 import argparse
 from tqdm import tqdm as log_progress
 
@@ -50,18 +49,6 @@ if __name__ == '__main__':
     random_data_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny'], cfg['domain']['nnz']))
     for idx, random_data in log_progress(enumerate(pool.imap(generate_random, range(nits))), total=nits, desc="Processing"):
         random_data_array[idx] = random_data 
-
-        # if plotting and idx % 10 == 0:
-        #     fig = plt.figure(figsize=(8, 6))
-        #     ax = fig.add_subplot(111, projection='3d')
-        #     x_grid, y_grid, z_grid = np.meshgrid(x, y, z, indexing='ij')
-        #     ax.scatter(x_grid, y_grid, z_grid, c=random_data_array[idx].ravel(), cmap='viridis')
-        #     ax.set_xlabel('X')
-        #     ax.set_ylabel('Y')
-        #     ax.set_zlabel('Z')
-        #     ax.set_title(f'Random Data Sample {idx}')
-        #     plt.savefig(os.path.join(plots_dir, f'random_data_plot_{idx}.png'))
-        #     plt.close()
 
     file_path = os.path.join('generated', 'fields.npy')
     print(np.shape(random_data_array))
