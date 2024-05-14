@@ -1,4 +1,4 @@
-n_it: 3
+n_it: 20000
 output_dir: 'C:\Codigos\poissonSolverCNN\dataset\generated\'
 
 domain:
