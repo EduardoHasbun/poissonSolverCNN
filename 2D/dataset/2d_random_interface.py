@@ -1,11 +1,12 @@
 import numpy as np
 import os
-import yaml
-import argparse
-import matplotlib.pyplot as plt
-from scipy.interpolate import RegularGridInterpolator as rgi
-from tqdm import tqdm
 from multiprocessing import Pool, cpu_count
+import yaml
+import matplotlib.pyplot as plt
+import argparse
+from scipy.interpolate import RegularGridInterpolator as rgi
+from tqdm import tqdm as tqdm
+
 
 # Specific arguments
 parser = argparse.ArgumentParser(description='RHS random dataset')
@@ -17,26 +18,8 @@ nits = cfg['n_it']
 ploting = False
 
 
-def generate_random_data(idx):
-    z_lower = 2 * np.random.random((nnx_lower, nny_lower)) - 1
-    f = rgi((x_lower, y_lower,), z_lower, method='cubic')
-    random_data = f(points).reshape((nnx, nny))
-
-    inside_domain = np.zeros_like(random_data) if idx == 0 else random_data_old.copy()
-    outside_domain = random_data.copy()
-
-    inside_domain[~interface_mask] = 0
-    outside_domain[interface_mask] = 0
-
-    random_data_array[idx, interface_mask] = inside_domain[interface_mask]
-    random_data_array[idx, ~interface_mask] = outside_domain[~interface_mask]
-    inside_domain_array[idx] = inside_domain
-    outside_domain_array[idx] = outside_domain
-
-    return random_data
-
-
 if __name__ == '__main__':
+    pool = Pool(processes=cpu_count())
     # Parameters for data generation
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
     nny, ymin, ymax = cfg['domain']['nny'], cfg['domain']['ymin'], cfg['domain']['ymax']
@@ -45,8 +28,8 @@ if __name__ == '__main__':
     n_res_factor = 16
 
     # Create a grid
-    x, y = np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
-    X, Y = np.meshgrid(x, y)
+    x, y= np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
+    X, Y = np.meshgrid(x,y)
 
     # Generate circular mask for interface
     interface_mask = (X - interface_center[0])**2 + (Y - interface_center[1])**2 <= interface_radius**2
@@ -57,6 +40,12 @@ if __name__ == '__main__':
     x_lower, y_lower = np.linspace(xmin, xmax, nnx_lower), np.linspace(ymin, ymax, nny_lower)
     points = np.array(np.meshgrid(x, y, indexing='ij')).T.reshape(-1, 2)
 
+    def generate_random_data(nits):
+        for i in range(nits):
+            z_lower = 2 * np.random.random((nnx_lower, nny_lower)) - 1
+            f = rgi((x_lower, y_lower,), z_lower, method='cubic')
+            yield f(points).reshape((nnx, nny))
+
     plots_dir = os.path.join('generated', 'plots')
     if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
@@ -65,23 +54,32 @@ if __name__ == '__main__':
     random_data_array = np.empty((nits, nnx, nny))
     inside_domain_array = np.empty((nits, nnx, nny))
     outside_domain_array = np.empty((nits, nnx, nny))
-    random_data_old = None
+    for idx, random_data in tqdm(enumerate(pool.map(generate_random_data, range(nits))), total = nits):
+        if idx == 0:
+            inside_domain = np.zeros_like(random_data)
+        else:
+            inside_domain = random_data_old.copy()
+        outside_domain = random_data.copy()
 
-    # Define the number of processes
-    num_processes = min(cpu_count(), nits)
+        inside_domain[~interface_mask] = 0
+        outside_domain[interface_mask] = 0
 
-    with Pool(processes=num_processes) as pool:
-        for idx, random_data in enumerate(tqdm(pool.imap(generate_random_data, range(nits)), total=nits)):
-            random_data_old = random_data
-            if ploting and idx % 100 == 0:
-                plt.figure(figsize=(8, 6))
-                plt.imshow(random_data, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-                plt.colorbar(label='Random Data')
-                plt.title(f'Random Data Sample {idx}')
-                plt.xlabel('X')
-                plt.ylabel('Y')
-                plt.savefig(os.path.join(plots_dir, f'random_data_plot_{idx}.png'))
-                plt.close()
+        random_data_array[idx, interface_mask] = inside_domain[interface_mask]
+        random_data_array[idx, ~interface_mask] = outside_domain[~interface_mask]
+        inside_domain_array[idx] = inside_domain
+        outside_domain_array[idx] = outside_domain
+
+        random_data_old = random_data
+        
+        if ploting and idx%100==0:
+            plt.figure(figsize=(8, 6))
+            plt.imshow(random_data, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+            plt.colorbar(label='Random Data')
+            plt.title(f'Random Data Sample {idx}')
+            plt.xlabel('X')
+            plt.ylabel('Y') 
+            plt.savefig(os.path.join(plots_dir, f'random_data_plot_{idx}.png'))
+            plt.close()
 
     file_path_domain = os.path.join('generated', 'domain.npy')
     file_path_inside = os.path.join('generated', 'inside.npy')
@@ -90,3 +88,5 @@ if __name__ == '__main__':
     np.save(file_path_domain, random_data_array)
     np.save(file_path_inside, inside_domain_array)
     np.save(file_path_outside, outside_domain_array)
+    
+
