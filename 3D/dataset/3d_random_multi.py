@@ -5,6 +5,7 @@ import yaml
 from scipy.interpolate import RegularGridInterpolator as rgi
 import argparse
 from tqdm import tqdm as log_progress
+import matplotlib.pyplot as plt
 
 # Specific arguments
 parser = argparse.ArgumentParser(description='RHS random dataset')
@@ -48,7 +49,10 @@ if __name__ == '__main__':
     # Generate random data samples
     random_data_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny'], cfg['domain']['nnz']))
     for idx, random_data in log_progress(enumerate(pool.imap(generate_random, range(nits))), total=nits, desc="Processing"):
-        random_data_array[idx] = random_data 
+        random_data_array[idx] = random_data
+        plt.figure(figsize=(8, 6))
+        plt.imshow(random_data[25, :, :])
+        plt.show()
 
     file_path = os.path.join('generated', 'fields.npy')
     print(np.shape(random_data_array))
