@@ -50,9 +50,6 @@ if __name__ == '__main__':
     random_data_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny'], cfg['domain']['nnz']))
     for idx, random_data in log_progress(enumerate(pool.imap(generate_random, range(nits))), total=nits, desc="Processing"):
         random_data_array[idx] = random_data
-        plt.figure(figsize=(8, 6))
-        plt.imshow(random_data[25, :, :])
-        plt.show()
 
     file_path = os.path.join('generated', 'fields.npy')
     print(np.shape(random_data_array))
