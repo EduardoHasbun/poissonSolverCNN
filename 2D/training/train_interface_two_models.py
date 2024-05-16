@@ -85,8 +85,8 @@ for epoch in range (num_epochs):
         optimizer.zero_grad()
         insdie, outisde = torch.DoubleTensor(inside), torch.DoubleTensor(outside)
         optimizer.zero_grad()
-        data_norm_inside = torch.ones((data_dir_inside.size(0), data_dir_inside.size(1), 1, 1)) / ratio_max
-        data_norm_outside = torch.ones((data_dir_outside.size(0), data_dir_outside.size(1), 1, 1)) / ratio_max
+        data_norm_inside = torch.ones((inside.size(0), inside.size(1), 1, 1)) / ratio_max
+        data_norm_outside = torch.ones((outside.size(0), outside.size(1), 1, 1)) / ratio_max
 
         # Getting Outputs
         output_inside = model_inside(inside)
