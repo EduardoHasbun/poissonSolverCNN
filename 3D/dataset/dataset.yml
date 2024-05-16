@@ -8,9 +8,9 @@ domain:
   bcs: 'dirichlet'
   xmin: 0.0
   xmax: 1.0e-2
-  nnx: 50
-  nny: 50
-  nnz: 50
+  nnx: 60
+  nny: 60
+  nnz: 60
   ymin: 0.0
   ymax: 1.0e-2
   zmin: 0.0

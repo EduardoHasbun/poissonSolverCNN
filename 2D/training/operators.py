@@ -35,6 +35,16 @@ class DirichletBoundaryLoss(nn.Module):
         bnd_loss += F.mse_loss(output[:, 0, :, -1], torch.zeros_like(output[:, 0, :, -1]))
         bnd_loss += F.mse_loss(output[:, 0, 0, :], torch.zeros_like(output[:, 0, 0, :]))
         return bnd_loss * self.weight
+    
+
+class InterfaceBoundaryLoss(nn.Module):
+    def __init__(self, bound_weight, interface):
+        super().__init__()
+        self.weight = bound_weight
+        self.interface = interface
+
+    def forward(self, output_in, output_out):
+        
 
 
 

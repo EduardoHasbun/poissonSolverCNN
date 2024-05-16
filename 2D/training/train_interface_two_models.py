@@ -27,27 +27,37 @@ scales = [value for key, value in sorted(scales_data.items())]
 kernel_sizes = cfg['arch']['kernel_sizes']
 xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
             cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['nnx'], cfg['globals']['nny']
+interface_center = (cfg['globals']['interface_center']['x'], cfg['globals']['interface_center']['y'])
+interface_radius = cfg['globals']['interface_radius']
 Lx = xmax-xmin
 Ly = ymax-ymin
 save_dir = os.getcwd()
 data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data.npy')
 
+# Parameters for data
+x, y= np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
+X, Y = np.meshgrid(x,y)
+interface_mask = (X - interface_center[0])**2 + (Y - interface_center[1])**2 <= interface_radius**2
 
-#Create Data
+
+
+# Load Data
 dataset = np.load(data_dir)
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-#Parameters to Nomalize
+
+# Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 
-
-#Create model and losses
-model = UNet(scales, kernel=kernel_size)
-model = model.double()
+# Create models and losses
+model_out = UNet(scales, kernel=kernel_size)
+model_in = UNet(scales, kernel=kernel_size)
+model_out = model_out.double()
+model_in = model_in.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-optimizer = optim.Adam(model.parameters(), lr = lr)
+optimizer = optim.Adam(model_in.parameters(), lr = lr)
 
 #Train loop
 for epoch in range (num_epochs):

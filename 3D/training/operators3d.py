@@ -58,7 +58,7 @@ class NewDirichletBoundaryLoss(nn.Module):
 
     def forward(self, output):
         batch, _, _, _, _ = output.size()
-        domain = self.domain.repeat(batch, 1, 1, 1, 1)
+        domain = self.domain.repeat(batch, 1, 1, 1, 1).copy()
         bnd_loss = F.mse_loss(output[:, 0, -1, :, :], domain[:, 0, -1, :, :])
         bnd_loss += F.mse_loss(output[:, 0, :, 0, :], domain[:, 0, :, 0, :])
         bnd_loss += F.mse_loss(output[:, 0, :, -1, :], domain[:, 0, :, -1, :])

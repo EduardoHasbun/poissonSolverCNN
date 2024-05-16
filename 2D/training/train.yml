@@ -5,6 +5,10 @@ globals:                                    # Domain sizes and others, used to c
     xmax: 1.0e-2
     ymin: 0.0
     ymax: 1.0e-2
+    interface_center:
+        x: 0.5e-2
+        y: 0.5e-2
+    interface_radius: 2.0e-3
 
 arch:
     scales:

@@ -58,7 +58,6 @@ output_array = output.detach().numpy()[0, 0, :, :, :]
 input_plot = input_data.detach().numpy()[0, 0, :, :, :]
 
 
-
 # Plots
 input_slice = input_array[:,:,nnz//2]
 ouptut_slice = output_array[:,:,nnz//2]
@@ -74,17 +73,8 @@ plt.colorbar()
 plt.show()
 
 
-# Define the indices for the inner region
-inner_indices_x = slice(7, 24)
-inner_indices_y = slice(7, 24)
-inner_indices_z = slice(7, 24)
-
-# Extract inner regions of the arrays
-output_inner = output_array[inner_indices_x, inner_indices_y, inner_indices_z]
-analytical_inner = analitical_solution[inner_indices_x, inner_indices_y, inner_indices_z]
-
 # Calculate the relative error
-relative_error_inner = np.abs(output_inner - analytical_inner) / np.abs(analytical_inner)
+relative_error_inner = np.abs(output_array - analitical_solution) / np.abs(analitical_solution)
 
 # Plot the relative error
 plt.figure(figsize=(8, 6))
