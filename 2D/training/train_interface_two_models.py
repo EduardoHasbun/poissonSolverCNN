@@ -48,12 +48,12 @@ for i in range(1, interface_mask.shape[0]):
         elif interface_mask[i, j] != interface_mask[i, j - 1]:
             interface_boundary[i, j] = True
 
-# Define a structuring element for dilation
-struct = np.array([[0, 1, 0],
-                   [1, 1, 1],
-                   [0, 1, 0]])
-boundary_neighbors = ndimage.binary_dilation(interface_boundary, structure=struct).astype(interface_boundary.dtype)
-boundary_neighbors[interface_boundary] = 0
+# # Define a structuring element for dilation
+# struct = np.array([[0, 1, 0],
+#                    [1, 1, 1],
+#                    [0, 1, 0]])
+# boundary_neighbors = ndimage.binary_dilation(interface_boundary, structure=struct).astype(interface_boundary.dtype)
+# boundary_neighbors[interface_boundary] = 0
 
 # Load Data
 dataset_inside = np.load(data_dir_inside)
@@ -90,6 +90,7 @@ for epoch in range (num_epochs):
         data_norm_outside = torch.ones((outside.size(0), outside.size(1), 1, 1)) / ratio_max
         
         # Getting Outputs
+        print(np.shape(inside))
         output_inside = model_inside(inside)
         output_outside = model_outside(outside)
 
