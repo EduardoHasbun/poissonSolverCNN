@@ -42,7 +42,7 @@ class InterfaceBoundaryLoss(nn.Module):
         self.interface = interface
 
     def forward(self, output_in, output_out):
-        bnd_loss = F.mse_loss(output_in[:, 0, self.interface], output_out[:, 0, self.interface])
+        bnd_loss = F.mse_loss(output_in[:, 0, self.interface], output_out[:, 0, self.interface])  #
         return bnd_loss * self.weight
         
 
@@ -96,6 +96,8 @@ def lapl(field, dx, dy, b=0):
         (2 * field[:, 0, -1, -1] - 5 * field[:, 0, -2, -1] + 4 * field[:, 0, -3, -1] - field[:, 0, -4, -1]) / dy**2 + \
         (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
 
+    # laplacian[:, 0, interface] *= epislon1
+    # laplacian[:, 0, ~interface] *= epislon2
 
     return laplacian
 

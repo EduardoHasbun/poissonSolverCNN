@@ -87,7 +87,7 @@ for epoch in range (num_epochs):
         inside = inside[:, np.newaxis, :, :]
         outside = outside[:, np.newaxis, :, :]
         optimizer.zero_grad()
-        insdie, outisde = torch.DoubleTensor(inside), torch.DoubleTensor(outside)
+        insside, outside = torch.DoubleTensor(inside), torch.DoubleTensor(outside)
         data_norm_inside = torch.ones((inside.size(0), inside.size(1), 1, 1)) / ratio_max
         data_norm_outside = torch.ones((outside.size(0), outside.size(1), 1, 1)) / ratio_max
         
@@ -101,7 +101,7 @@ for epoch in range (num_epochs):
         total_loss_inside += loss_inside
 
         # Loss Outisde
-        loss_outside = laplacian_loss(output_outside, data = outisde, data_norm = data_norm_outside)
+        loss_outside = laplacian_loss(output_outside, data = outside, data_norm = data_norm_outside)
         loss_outside += dirichlet_loss(output_outside)
         total_loss_outside += loss_outside
 
