@@ -15,9 +15,9 @@ mesh:
   xmax: 1.0e-2
   ymax: 1.0e-2
   zmax: 1.0e-2
-  nnx: 70
-  nny: 70
-  nnz: 70
+  nnx: 60
+  nny: 60
+  nnz: 60
 
 
 arch: 
