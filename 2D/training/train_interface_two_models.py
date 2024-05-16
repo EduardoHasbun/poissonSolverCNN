@@ -84,9 +84,6 @@ for epoch in range (num_epochs):
     total_loss_inside = 0
     total_loss_outside = 0
     for batch_idx, (inside, outside) in enumerate(dataloader):
-        print("Shape of inside:", inside.shape)
-        print("Shape of outside:", outside.shape)
-        break
         inside = inside[:, np.newaxis, :, :]
         outside = outside[:, np.newaxis, :, :]
         optimizer.zero_grad()

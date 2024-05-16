@@ -49,7 +49,6 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 #Create Data
 dataset = np.load(data_dir)
-dataset = dataset * ratio_max
 # dataset = np.tile(dataset, (1000, 1, 1, 1))
 dataset = torch.tensor(dataset)
 if loss_type == 'inside':
