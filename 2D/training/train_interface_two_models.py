@@ -34,7 +34,7 @@ Lx = xmax-xmin
 Ly = ymax-ymin
 save_dir = os.getcwd()
 data_dir_inside = os.path.join(save_dir, '..', 'dataset', 'generated', 'inside.npy')
-data_dir_outside = os.path.join(save_dir, '..', 'dataset', 'generated', 'outisde.npy')
+data_dir_outside = os.path.join(save_dir, '..', 'dataset', 'generated', 'outside.npy')
 
 # Parameters for data
 x, y= np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
