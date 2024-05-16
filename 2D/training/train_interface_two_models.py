@@ -80,10 +80,11 @@ optimizer = optim.Adam(parameters, lr=lr)
 for epoch in range (num_epochs):
     total_loss_inside = 0
     total_loss_outside = 0
-    for batch_idx, batch in enumerate(dataloader):
-        inside, outside = batch[:, np.newaxis, :, :]
-        inside = torch.transpose(inside, 0, 1)
-        outside = torch.transpose(outside, 0, 1)
+    for batch_idx, (inside, outside) in enumerate(dataloader):
+        inside = inside[:, np.newaxis, :, :]
+        outside = outside[:, np.newaxis, :, :]
+        # inside = torch.transpose(inside, 0, 1)
+        # outside = torch.transpose(outside, 0, 1)
         optimizer.zero_grad()
         insdie, outisde = torch.DoubleTensor(inside), torch.DoubleTensor(outside)
         data_norm_inside = torch.ones((inside.size(0), inside.size(1), 1, 1)) / ratio_max
