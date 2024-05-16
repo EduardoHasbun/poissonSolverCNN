@@ -58,7 +58,10 @@ for i in range(1, interface_mask.shape[0]):
 # Load Data
 dataset_inside = np.load(data_dir_inside)
 dataset_outside = np.load(data_dir_outside)
+print("Shape of dataset_inside:", dataset_inside.shape)
+print("Shape of dataset_outside:", dataset_outside.shape)
 dataloader = DataLoader((dataset_inside, dataset_outside), batch_size=batch_size, shuffle=True)
+
 
 # Parameters to Nomalize
 alpha = 0.1
@@ -81,6 +84,9 @@ for epoch in range (num_epochs):
     total_loss_inside = 0
     total_loss_outside = 0
     for batch_idx, (inside, outside) in enumerate(dataloader):
+        print("Shape of inside:", inside.shape)
+        print("Shape of outside:", outside.shape)
+        break
         inside = inside[:, np.newaxis, :, :]
         outside = outside[:, np.newaxis, :, :]
         optimizer.zero_grad()
