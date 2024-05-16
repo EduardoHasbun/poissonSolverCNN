@@ -57,8 +57,8 @@ boundary_neighbors[interface_boundary] = 0
 
 # Load Data
 dataset_inside = np.load(data_dir_inside)
-datset_outisde = np.load(data_dir_outside)
-dataloader = DataLoader((dataset_inside, data_dir_outside), batch_size=batch_size, shuffle=True)
+dataset_outside = np.load(data_dir_outside)
+dataloader = DataLoader((dataset_inside, dataset_outside), batch_size=batch_size, shuffle=True)
 
 # Parameters to Nomalize
 alpha = 0.1
