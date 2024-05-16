@@ -66,8 +66,8 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 
 # Create models and losses
-model_outside = UNet(scales, kernel=kernel_size)
-model_inside = UNet(scales, kernel=kernel_size)
+model_outside = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
+model_inside = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
 model_outside = model_outside.double()
 model_inside = model_inside.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
@@ -82,12 +82,13 @@ for epoch in range (num_epochs):
     total_loss_outside = 0
     for batch_idx, batch in enumerate(dataloader):
         inside, outside = batch[:, np.newaxis, :, :]
+        inside = torch.transpose(inside, 0, 1)
+        outside = torch.transpose(outside, 0, 1)
         optimizer.zero_grad()
         insdie, outisde = torch.DoubleTensor(inside), torch.DoubleTensor(outside)
-        optimizer.zero_grad()
         data_norm_inside = torch.ones((inside.size(0), inside.size(1), 1, 1)) / ratio_max
         data_norm_outside = torch.ones((outside.size(0), outside.size(1), 1, 1)) / ratio_max
-
+        
         # Getting Outputs
         output_inside = model_inside(inside)
         output_outside = model_outside(outside)
@@ -103,11 +104,11 @@ for epoch in range (num_epochs):
         total_loss_outside += loss_outside
 
         # Backpropagation
-        loss_inside.backward()
-        loss_outside.backward()
-        optimizer.step()
+        loss_inside.backward(retain_graph=True)
+        loss_outside.backward(retain_graph=True)
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss Inside: {loss_inside.item()}, Loss Outside: {loss_outside.item()}")
+    optimizer.step()
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss Inside: {total_loss_inside / len(dataloader)}, Loss Outside: {total_loss_outside / len(dataloader)}")
     torch.save(model_inside.state_dict(), os.path.join(save_dir, 'model_inside.pth'))
     torch.save(model_outside.state_dict(), os.path.join(save_dir, 'model_outside,pth'))

@@ -43,7 +43,7 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 
 #Create model and losses
-model = UNet(scales, kernel=kernel_size)
+model = UNet(scales, kernel_sizes=kernel_size, input_res = nnx)
 model = model.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
@@ -58,8 +58,6 @@ for epoch in range (num_epochs):
         data = torch.DoubleTensor(data) 
         optimizer.zero_grad()
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
-        print(f'Data max: {np.max(data.numpy())}, Data min: {np.min(data.numpy())}')
-        print(f'Ratio: {ratio_max} .\n')
         output = model(data)
         loss = laplacian_loss(output, data = data, data_norm = data_norm)
         loss += dirichlet_loss(output)
