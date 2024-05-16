@@ -83,15 +83,12 @@ for epoch in range (num_epochs):
     for batch_idx, (inside, outside) in enumerate(dataloader):
         inside = inside[:, np.newaxis, :, :]
         outside = outside[:, np.newaxis, :, :]
-        # inside = torch.transpose(inside, 0, 1)
-        # outside = torch.transpose(outside, 0, 1)
         optimizer.zero_grad()
         insdie, outisde = torch.DoubleTensor(inside), torch.DoubleTensor(outside)
         data_norm_inside = torch.ones((inside.size(0), inside.size(1), 1, 1)) / ratio_max
         data_norm_outside = torch.ones((outside.size(0), outside.size(1), 1, 1)) / ratio_max
         
         # Getting Outputs
-        print(np.shape(inside))
         output_inside = model_inside(inside)
         output_outside = model_outside(outside)
 
