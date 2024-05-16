@@ -16,8 +16,6 @@ class LaplacianLoss(nn.Module):
         self.dy = self.Ly/nny
 
     def forward(self, output, data=None, data_norm=1.):
-        print(f'Ouptut Max: {np.max(output.detach().numpy())}, Ouptut Min: {np.min(output.detach().numpy())}')
-        print(f'Data norm max: {np.max(data_norm.numpy())}, Data norm min: {np.min(data_norm.numpy())}')
         laplacian = lapl(output / data_norm, self.dx, self.dy)
         return self.Lx**2 * self.Ly**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
     
@@ -44,9 +42,11 @@ class InterfaceBoundaryLoss(nn.Module):
         self.interface = interface
 
     def forward(self, output_in, output_out):
+        bnd_loss = F.mse_loss(output_in[:, 0, self.interface], output_out[:, 0, self.interface])
+        return bnd_loss
         
 
-
+ 
 
 
 

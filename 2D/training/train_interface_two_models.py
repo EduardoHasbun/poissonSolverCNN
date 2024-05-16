@@ -3,10 +3,11 @@ from unet import UNet
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
-from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss
+from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, InterfaceBoundaryLoss
 import torch.optim as optim
 import os
 import argparse
+from scipy import ndimage
 
 #Import external parameteres
 parser = argparse.ArgumentParser(description='Training')
@@ -32,18 +33,32 @@ interface_radius = cfg['globals']['interface_radius']
 Lx = xmax-xmin
 Ly = ymax-ymin
 save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data.npy')
+data_dir_inside = os.path.join(save_dir, '..', 'dataset', 'generated', 'inside.npy')
+data_dir_outside = os.path.join(save_dir, '..', 'dataset', 'generated', 'outisde.npy')
 
 # Parameters for data
 x, y= np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
 X, Y = np.meshgrid(x,y)
 interface_mask = (X - interface_center[0])**2 + (Y - interface_center[1])**2 <= interface_radius**2
+interface_boundary = np.zeros_like(interface_mask, dtype=bool)
+for i in range(1, interface_mask.shape[0]):
+    for j in range(1, interface_mask.shape[1]):
+        if interface_mask[i, j] != interface_mask[i - 1, j]:
+            interface_boundary[i, j] = True
+        elif interface_mask[i, j] != interface_mask[i, j - 1]:
+            interface_boundary[i, j] = True
 
-
+# Define a structuring element for dilation
+struct = np.array([[0, 1, 0],
+                   [1, 1, 1],
+                   [0, 1, 0]])
+boundary_neighbors = ndimage.binary_dilation(interface_boundary, structure=struct).astype(interface_boundary.dtype)
+boundary_neighbors[interface_boundary] = 0
 
 # Load Data
-dataset = np.load(data_dir)
-dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+dataset_inside = np.load(data_dir_inside)
+datset_outisde = np.load(data_dir_outside)
+dataloader = DataLoader((dataset_inside, data_dir_outside), batch_size=batch_size, shuffle=True)
 
 # Parameters to Nomalize
 alpha = 0.1
@@ -51,33 +66,49 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 
 # Create models and losses
-model_out = UNet(scales, kernel=kernel_size)
-model_in = UNet(scales, kernel=kernel_size)
-model_out = model_out.double()
-model_in = model_in.double()
+model_outside = UNet(scales, kernel=kernel_size)
+model_inside = UNet(scales, kernel=kernel_size)
+model_outside = model_outside.double()
+model_inside = model_inside.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-optimizer = optim.Adam(model_in.parameters(), lr = lr)
+interface_loss = InterfaceBoundaryLoss(bound_weight, interface_boundary)
+parameters = list(model_inside.parameters()) + list(model_outside.parameters())
+optimizer = optim.Adam(parameters, lr=lr)
 
 #Train loop
 for epoch in range (num_epochs):
-    total_loss = 0
+    total_loss_inside = 0
+    total_loss_outside = 0
     for batch_idx, batch in enumerate(dataloader):
-        data = batch[:, np.newaxis, :, :]
+        inside, outside = batch[:, np.newaxis, :, :]
         optimizer.zero_grad()
-        data = torch.DoubleTensor(data) 
+        insdie, outisde = torch.DoubleTensor(inside), torch.DoubleTensor(outside)
         optimizer.zero_grad()
-        data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
-        print(f'Data max: {np.max(data.numpy())}, Data min: {np.min(data.numpy())}')
-        print(f'Ratio: {ratio_max} .\n')
-        output = model(data)
-        loss = laplacian_loss(output, data = data, data_norm = data_norm)
-        loss += dirichlet_loss(output)
-        loss.backward()
+        data_norm_inside = torch.ones((data_dir_inside.size(0), data_dir_inside.size(1), 1, 1)) / ratio_max
+        data_norm_outside = torch.ones((data_dir_outside.size(0), data_dir_outside.size(1), 1, 1)) / ratio_max
+
+        # Getting Outputs
+        output_inside = model_inside(inside)
+        output_outside = model_outside(outside)
+
+        # Loss Inside
+        loss_inside = laplacian_loss(output_inside, data = inside, data_norm = data_norm_inside)
+        loss_inside += interface_loss(output_inside, output_outside)
+        total_loss_inside += loss_inside
+
+        # Loss Outisde
+        loss_outside = laplacian_loss(output_outside, data = outisde, data_norm = data_norm_outside)
+        loss_outside += dirichlet_loss(output_outside)
+        total_loss_outside += loss_outside
+
+        # Backpropagation
+        loss_inside.backward()
+        loss_outside.backward()
         optimizer.step()
-        total_loss += loss.item()
         if batch_idx % 20 ==0:
-            print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
-    print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'unet_model.pth'))
+            print(f"Epoch {epoch}, Batch {batch_idx}, Loss Inside: {loss_inside.item()}, Loss Outside: {loss_outside.item()}")
+    print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss Inside: {total_loss_inside / len(dataloader)}, Loss Outside: {total_loss_outside / len(dataloader)}")
+    torch.save(model_inside.state_dict(), os.path.join(save_dir, 'model_inside.pth'))
+    torch.save(model_outside.state_dict(), os.path.join(save_dir, 'model_outside,pth'))
 
