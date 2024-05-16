@@ -49,7 +49,7 @@ class NewDirichletBoundaryLoss(nn.Module):
         z = torch.linspace(self.zmin, self.zmax, nnz)
         def function2solve(x, y, z):
             return np.sin(x) + np.sin(y) + np.sin(z) 
-        X, Y, Z = np.meshgrid
+        X, Y, Z = np.meshgrid(x, y, z)
         domain = function2solve(X, Y, Z)
         self.domain = domain.unsqueeze(0)
 
