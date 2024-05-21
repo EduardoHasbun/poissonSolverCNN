@@ -54,19 +54,18 @@ if __name__ == '__main__':
     outside_domain_array = np.empty((nits, nnx, nny))
     for idx, random_data in log_progress(enumerate(generate_random_data(nits)), total=nits, desc="Processing"):
         if idx == 0:
-            inside_domain = np.zeros_like(random_data)
+            inside_domain = random_data.copy()
         else:
-            inside_domain = random_data_old.copy()
-        outside_domain = random_data.copy()
+            inside_domain = random_data_old.copy() 
+        outside_domain = random_data.copy() 
 
         inside_domain[~interface_mask] = 0
         outside_domain[interface_mask] = 0
 
-        random_data_array[idx, interface_mask] = inside_domain[interface_mask]
-        random_data_array[idx, ~interface_mask] = outside_domain[~interface_mask]
+        random_data_array[idx, interface_mask] = inside_domain[interface_mask] 
+        random_data_array[idx, ~interface_mask] = outside_domain[~interface_mask] 
         inside_domain_array[idx] = inside_domain
         outside_domain_array[idx] = outside_domain
-
         random_data_old = random_data
         
         if ploting and idx%100==0:
