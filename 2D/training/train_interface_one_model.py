@@ -30,11 +30,13 @@ xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'
             cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['nnx'], cfg['globals']['nny']
 interface_center = (cfg['globals']['interface_center']['x'], cfg['globals']['interface_center']['y'])
 interface_radius = cfg['globals']['interface_radius']
+epsilon_inside = cfg['globas']['epsilon_inside']
+epsilon_outside = cfg['globals']['epsilon_outside']
 Lx = xmax-xmin
 Ly = ymax-ymin
 save_dir = os.getcwd()
-data_dir_inside = os.path.join(save_dir, '..', 'dataset', 'generated', 'inside.npy')
-data_dir_outside = os.path.join(save_dir, '..', 'dataset', 'generated', 'outside.npy')
+domain_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'domain.npy')
+
 
 # Parameters for data
 x, y= np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
@@ -56,7 +58,7 @@ for i in range(1, interface_mask.shape[0]):
 # boundary_neighbors[interface_boundary] = 0
 
 # Load Data
-data = np.load(domain)
+data = np.load(domain_dir)
 dataloader = DataLoader(data, batch_size=batch_size, shuffle=True)
 
 
@@ -68,7 +70,7 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly)
 # Create models and losses
 model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
 model= model.double()
-laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
+laplacian_loss = LaplacianLoss(cfg, lapl_weight, epsilon_inside, epsilon_outside, interface_mask)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 interface_loss = InterfaceBoundaryLoss(bound_weight, interface_boundary)
 parameters = list(model.parameters())
@@ -76,28 +78,25 @@ optimizer = optim.Adam(parameters, lr=lr)
 
 #Train loop
 for epoch in range (num_epochs):
-    total_loss_inside = 0
-    total_loss_outside = 0
+    total_loss = 0
     for batch_idx, data in enumerate(dataloader):
         data = data[:, np.newaxis, :, :]
         optimizer.zero_grad()
         data = torch.DoubleTensor(data)
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
-        
         # Getting Outputs
-        output_inside = model(data)
+        output= model(data)
 
         # Loss Inside
-        loss_inside = laplacian_loss(output_inside, data = data, data_norm = data_norm)
-        loss_inside += interface_loss(output_inside, output_outside)
-        total_loss_inside += loss_inside
+        loss = laplacian_loss(output, data = data, data_norm = data_norm)
+        loss += interface_loss(output)
+        total_loss += loss
 
         # Backpropagation
-        loss_inside.backward(retain_graph=True)
+        loss.backward(retain_graph=True)
         if batch_idx % 20 ==0:
-            print(f"Epoch {epoch}, Batch {batch_idx}, Loss Inside: {loss_inside.item()}, Loss Outside: {loss_outside.item()}")
+            print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     optimizer.step()
-    print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss Inside: {total_loss_inside / len(dataloader)}, Loss Outside: {total_loss_outside / len(dataloader)}")
-    torch.save(model_inside.state_dict(), os.path.join(save_dir, 'model_inside.pth'))
-    torch.save(model_outside.state_dict(), os.path.join(save_dir, 'model_outside,pth'))
+    print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
+    torch.save(model.state_dict(), os.path.join(save_dir, 'model_inside.pth'))
 

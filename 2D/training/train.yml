@@ -9,6 +9,8 @@ globals:                                    # Domain sizes and others, used to c
         x: 0.5e-2
         y: 0.5e-2
     interface_radius: 2.0e-3
+    epsilon_inside: 80
+    epsilon_outside: 1
 
 arch:
     scales:

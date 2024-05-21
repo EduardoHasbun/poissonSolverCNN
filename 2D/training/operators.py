@@ -5,7 +5,7 @@ import numpy as np
 
 
 class LaplacianLoss(nn.Module):
-    def __init__(self, cfg, lapl_weight):
+    def __init__(self, cfg, lapl_weight, e_in, e_out, interface):
         super().__init__()
         self.weight = lapl_weight
         xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
@@ -14,9 +14,11 @@ class LaplacianLoss(nn.Module):
         self.Ly = ymax-ymin
         self.dx = self.Lx/nnx
         self.dy = self.Ly/nny
-
+        self.epsilon_inside = e_in
+        self.epsilon_outside = e_out
+        self.interface = interface
     def forward(self, output, data=None, data_norm=1.):
-        laplacian = lapl(output / data_norm, self.dx, self.dy)
+        laplacian = lapl(output / data_norm, self.dx, self.dy, self.interface, self.epsilon_inside, self.epsilon_outside)
         return self.Lx**2 * self.Ly**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
     
 
@@ -50,7 +52,7 @@ class InterfaceBoundaryLoss(nn.Module):
 
 
 
-def lapl(field, dx, dy, b=0):
+def lapl(field, dx, dy, interface, epsilon_in, epsilon_out, b=0):
 
     # Create laplacian tensor with shape (batch_size, 1, h, w)
     laplacian = torch.zeros_like(field).type(field.type())
@@ -96,8 +98,8 @@ def lapl(field, dx, dy, b=0):
         (2 * field[:, 0, -1, -1] - 5 * field[:, 0, -2, -1] + 4 * field[:, 0, -3, -1] - field[:, 0, -4, -1]) / dy**2 + \
         (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
 
-    # laplacian[:, 0, interface] *= epislon1
-    # laplacian[:, 0, ~interface] *= epislon2
+    laplacian[:, 0, interface] *= epsilon_in
+    laplacian[:, 0, ~interface] *= epsilon_out
 
     return laplacian
 
