@@ -16,6 +16,7 @@ with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
 nits = cfg['n_it']
 ploting = False
+
 # Parameters for data generation
 xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
 nny, ymin, ymax = cfg['domain']['nny'], cfg['domain']['ymin'], cfg['domain']['ymax']
@@ -23,6 +24,7 @@ interface_center = (cfg['domain']['interface_center']['x'], cfg['domain']['inter
 interface_radius = cfg['domain']['interface_radius']
 n_res_factor = 20
 # Create a grid
+
 x, y= np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
 X, Y = np.meshgrid(x,y)
 
@@ -74,9 +76,6 @@ if __name__ == '__main__':
         data_array[idx, ~interface_mask] = outside_domain[~interface_mask] 
         inside_domain_array[idx] = inside_domain
         outside_domain_array[idx] = outside_domain
-        plt.figure(figsize=(8, 6))
-        plt.imshow(data_array[idx])
-        plt.show()
         
         if ploting and idx%100==0:
             plt.figure(figsize=(8, 6))
