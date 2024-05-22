@@ -44,11 +44,9 @@ class InterfaceBoundaryLoss(nn.Module):
         self.interface = interface
 
     def forward(self, output_in, output_out):
-        bnd_loss = F.mse_loss(output_in[:, 0, self.interface], output_out[:, 0, self.interface])  #
+        bnd_loss = F.mse_loss(output_in[:, 0, self.interface], output_out[:, 0, self.interface])  
         return bnd_loss * self.weight
         
-
- 
 
 
 

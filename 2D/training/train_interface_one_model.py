@@ -61,11 +61,9 @@ for i in range(1, interface_mask.shape[0]):
 data = np.load(domain_dir)
 dataloader = DataLoader(data, batch_size=batch_size, shuffle=True)
 
-
 # Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly)
-
 
 # Create models and losses
 model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
@@ -73,8 +71,7 @@ model= model.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight, epsilon_inside, epsilon_outside, interface_mask)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 interface_loss = InterfaceBoundaryLoss(bound_weight, interface_boundary)
-parameters = list(model.parameters())
-optimizer = optim.Adam(parameters, lr=lr)
+optimizer = optim.Adam(model.parameters(), lr = lr)
 
 #Train loop
 for epoch in range (num_epochs):
@@ -84,12 +81,14 @@ for epoch in range (num_epochs):
         optimizer.zero_grad()
         data = torch.DoubleTensor(data)
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
-        # Getting Outputs
+
+        # Getting Output
         output= model(data)
 
-        # Loss Inside
+        # Loss 
         loss = laplacian_loss(output, data = data, data_norm = data_norm)
-        loss += interface_loss(output)
+        # loss += interface_loss(output)
+        loss += dirichlet_loss(output)
         total_loss += loss
 
         # Backpropagation
