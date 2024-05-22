@@ -30,7 +30,7 @@ xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'
             cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['nnx'], cfg['globals']['nny']
 interface_center = (cfg['globals']['interface_center']['x'], cfg['globals']['interface_center']['y'])
 interface_radius = cfg['globals']['interface_radius']
-epsilon_inside = cfg['globas']['epsilon_inside']
+epsilon_inside = cfg['globlas']['epsilon_inside']
 epsilon_outside = cfg['globals']['epsilon_outside']
 Lx = xmax-xmin
 Ly = ymax-ymin
