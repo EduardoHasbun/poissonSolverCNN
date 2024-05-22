@@ -40,8 +40,6 @@ dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
-
-
 #Create model and losses
 model = UNet(scales, kernel_sizes=kernel_size, input_res = nnx)
 model = model.double()
