@@ -5,7 +5,7 @@ import numpy as np
 
 
 class LaplacianLoss(nn.Module):
-    def __init__(self, cfg, lapl_weight, e_in, e_out, interface):
+    def __init__(self, cfg, lapl_weight, e_in = 1, e_out = 1, interface = (1, 1)):
         super().__init__()
         self.weight = lapl_weight
         xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
