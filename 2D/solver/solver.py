@@ -38,8 +38,8 @@ input_data = input_data[np.newaxis, np.newaxis, :, :]
 input_data = torch.from_numpy(input_data).float()
 
 # Create Model
-model = UNet(scales=scales, kernel=kernel_size)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/unet_model.pth'))
+model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/interface_model.pth'))
 model = model.float()
 model.eval() 
 

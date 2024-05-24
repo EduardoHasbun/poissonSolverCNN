@@ -20,6 +20,7 @@ ploting = False
 # Parameters for data generation
 xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
 nny, ymin, ymax = cfg['domain']['nny'], cfg['domain']['ymin'], cfg['domain']['ymax']
+e_in, e_out = cfg['domain']['epsilon_in'], cfg['domain']['epsilon_out']
 interface_center = (cfg['domain']['interface_center']['x'], cfg['domain']['interface_center']['y'])
 interface_radius = cfg['domain']['interface_radius']
 n_res_factor = 20
@@ -72,10 +73,10 @@ if __name__ == '__main__':
         inside_domain[~interface_mask] = 0
         outside_domain[interface_mask] = 0
 
-        data_array[idx, interface_mask] = inside_domain[interface_mask] 
-        data_array[idx, ~interface_mask] = outside_domain[~interface_mask] 
-        inside_domain_array[idx] = inside_domain
-        outside_domain_array[idx] = outside_domain
+        data_array[idx, interface_mask] = inside_domain[interface_mask] / e_in
+        data_array[idx, ~interface_mask] = outside_domain[~interface_mask] /e_out
+        inside_domain_array[idx] = inside_domain / e_in
+        outside_domain_array[idx] = outside_domain /e_out
         
         if ploting and idx%100==0:
             plt.figure(figsize=(8, 6))

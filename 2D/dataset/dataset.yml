@@ -18,3 +18,5 @@ domain:
     x: 0.5e-2
     y: 0.5e-2
   interface_radius: 2.0e-3
+  epsilon_in: 1
+  epsilon_out: 80
