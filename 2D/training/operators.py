@@ -67,7 +67,7 @@ class DirichletBoundaryLossFunction(nn.Module):
         bnd_loss += F.mse_loss(output[:, 0, :, 0], domain[:, 0, :, 0])
         bnd_loss += F.mse_loss(output[:, 0, :, -1], domain[:, 0, :, -1])
         bnd_loss += F.mse_loss(output[:, 0, 0, :], domain[:, 0, 0, :])
-        return bnd_loss * self.weight
+        return (bnd_loss * self.weight).double()
         
 
 
