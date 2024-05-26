@@ -39,7 +39,7 @@ input_data = torch.from_numpy(input_data).float()
 
 # Create Model
 model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/interface_model.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/interface_model_2.pth'))
 model = model.float()
 model.eval() 
 
