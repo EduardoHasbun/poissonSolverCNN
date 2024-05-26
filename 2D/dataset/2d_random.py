@@ -19,22 +19,24 @@ def generate_random_data(i, x_lower, y_lower, x, y, nnx, nny):
     n_res_factor = 16
     nnx_lower = int(nnx / n_res_factor)
     nny_lower = int(nny / n_res_factor)
-    
+
     z_lower = 2 * np.random.random((nny_lower, nnx_lower)) - 1
     f = rgi((x_lower, y_lower,), z_lower, method='cubic')
-    return f(x, y)
+    random_data = f(x, y)
+    return random_data
 
 if __name__ == '__main__':
     # Parameters for data generation
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
     nny, ymin, ymax = cfg['domain']['nny'], cfg['domain']['ymin'], cfg['domain']['ymax']
-    
+    n_res_factor = 16
+
     # Create a grid
     x, y = np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
 
     # Factor to divide the grid by to generate the random grid
-    nnx_lower = int(nnx / 16)
-    nny_lower = int(nny / 16)
+    nnx_lower = int(nnx / n_res_factor)
+    nny_lower = int(nny / n_res_factor)
     x_lower, y_lower = np.linspace(xmin, xmax, nnx_lower), np.linspace(ymin, ymax, nny_lower)
 
     plots_dir = os.path.join('generated', 'plots')
@@ -48,7 +50,7 @@ if __name__ == '__main__':
             [(i, x_lower, y_lower, x, y, nnx, nny) for i in range(nits)]
         ))
 
-    # Convert results to array
+    # Store results
     random_data_array = np.array(results)
 
     for idx, random_data in enumerate(random_data_array):
