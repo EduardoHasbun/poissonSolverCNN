@@ -2,7 +2,7 @@ import numpy as np
 import os
 from multiprocessing import Pool, cpu_count
 import yaml
-from scipy import interpolate
+from scipy.interpolate import RegularGridInterpolator as rgi
 import matplotlib.pyplot as plt
 import argparse
 
@@ -21,7 +21,7 @@ def generate_random_data(i, x_lower, y_lower, x, y, nnx, nny):
     nny_lower = int(nny / n_res_factor)
     
     z_lower = 2 * np.random.random((nny_lower, nnx_lower)) - 1
-    f = interpolate.interp2d(x_lower, y_lower, z_lower, kind='cubic')
+    f = rgi((x_lower, y_lower,), z_lower, method='cubic')
     return f(x, y)
 
 if __name__ == '__main__':

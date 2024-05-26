@@ -30,7 +30,7 @@ xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'
 Lx = xmax-xmin
 Ly = ymax-ymin
 save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'domain.npy')
+data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data.npy')
 
 
 #Create Data
@@ -65,5 +65,5 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'unet_model.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'dirichlet_function.pth'))
 
