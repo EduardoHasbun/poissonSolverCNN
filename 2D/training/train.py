@@ -3,7 +3,7 @@ from unet import UNet
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
-from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss
+from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, DirichletBoundaryLossFunction
 import torch.optim as optim
 import os
 import argparse
@@ -45,6 +45,7 @@ model = UNet(scales, kernel_sizes=kernel_size, input_res = nnx)
 model = model.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
+dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, nnx, nny)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
 #Train loop
@@ -57,7 +58,7 @@ for epoch in range (num_epochs):
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
         output = model(data)
         loss = laplacian_loss(output, data = data, data_norm = data_norm)
-        loss += dirichlet_loss(output)
+        loss += dirichlet_loss_function(output)
         loss.backward()
         optimizer.step()
         total_loss += loss.item()

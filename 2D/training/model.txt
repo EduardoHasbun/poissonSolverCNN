@@ -1,2 +1,3 @@
 interface_model_1: model considering epsilon only in the laplacian and without interfaceboundaryloss
 interface_model_2: model considering epsilon in the data and the laplacian, without interfaceboundaryloss
+interface_model_3: model considering epsilon only in the dataset, withoutinterfaceloss
