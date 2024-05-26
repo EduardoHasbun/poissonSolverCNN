@@ -54,7 +54,7 @@ class DirichletBoundaryLossFunction(nn.Module):
         self.xmin, self.xmax, self.ymin, self.ymax= xmin, xmax, ymin, ymax
         x = torch.linspace(self.xmin, self.xmax, nnx)
         y = torch.linspace(self.ymin, self.ymax, nny)
-        def function2solve(x, y, z):
+        def function2solve(x, y):
             return torch.sin(x) + torch.sin(y) 
         X, Y = torch.meshgrid(x, y)
         domain = function2solve(X, Y)
