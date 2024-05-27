@@ -2,3 +2,5 @@ interface_model_1: model considering epsilon only in the laplacian and without i
 interface_model_2: model considering epsilon in the data and the laplacian, without interfaceboundaryloss
 interface_model_3: model considering epsilon only in the dataset, without interfaceloss
 interface_model_4: model considering epsilon only in data, without interfaceloss and ratio
+model_dirichlet_power3: boundary data of the funciton x^3 + y^3
+model_dirichlet_power3_without_ratio: boundary data of the function x^3 + y^3 without ratio
