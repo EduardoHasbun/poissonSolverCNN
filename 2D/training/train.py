@@ -33,20 +33,22 @@ save_dir = os.getcwd()
 data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data.npy')
 
 
-#Create Data
-dataset = np.load(data_dir)
-dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 #Parameters to Nomalize
 alpha = 0.1
-# ratio_max = ratio_potrhs(alpha, Lx, Ly)
-ratio_max = 1
+ratio_max = ratio_potrhs(alpha, Lx, Ly)
+
+
+#Create Data
+dataset = np.load(data_dir) * ratio_max
+dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
 
 #Create model and losses
 model = UNet(scales, kernel_sizes=kernel_size, input_res = nnx)
 model = model.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, nnx, nny)
+dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, nnx, nny, ratio_max)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
 #Train loop
@@ -66,5 +68,5 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'model_dirichlet_power3_without_ratio.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'model_dirichlet_power3.pth'))
 

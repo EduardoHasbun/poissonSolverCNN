@@ -5,6 +5,7 @@ import numpy as np
 import yaml
 import matplotlib.pyplot as plt
 from unet import UNet
+import os
 
 
 with open('C:\Codigos/poissonSolverCNN/2D/solver/solver.yml', 'r') as file:
@@ -18,6 +19,9 @@ ymin, ymax, nny  = cfg['mesh']['ymin'], cfg['mesh']['ymax'], cfg['mesh']['nny']
 x_1d = np.linspace(xmin, xmax, nnx)
 y_1d = np.linspace(ymin, ymax, nny)
 X, Y = np.meshgrid(x_1d, y_1d)
+plots_dir = os.path.join('results')
+if not os.path.exists(plots_dir):
+    os.makedirs(plots_dir)
 
 
 # Define Gaussians's Functions
@@ -32,11 +36,13 @@ def gaussians(x, y, params):
         profile += gaussian(x, y, *params[index, :])
     return profile
 
-def function2solve(x,y):
-    return -6 * (x + y)
+def function2solve(x, y):
+    # return -6 * (x + y)
+    return np.sin(x) + np.sin(y)
 
-def resolution(x,y):
-    return x**3 + y**3
+def resolution(x, y):
+    # return x**3 + y**3
+    return np.sin(x) + np.sin(y)
 
 # Create input data and resolution data for the error
 input_data = function2solve(X, Y)
@@ -46,7 +52,7 @@ resolution_data = resolution(X, Y)
 
 # Create Model
 model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/dirichlet_function.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/model_dirichlet_power3_without_ratio.pth'))
 model = model.float()
 model.eval() 
 
@@ -56,7 +62,8 @@ output_array = output.detach().numpy()[0, 0, :, :]
 
 
 # Plots
-fig, axs = plt.subplots(1, 3, figsize=(10, 5))  
+fig, axs = plt.subplots(1, 3, figsize=(10, 5)) 
+fig.suptitle('Power 3', fontsize=16) 
 
 # Plot Input
 img_input = axs[0].imshow(output_array, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
@@ -74,10 +81,11 @@ cbar_input = plt.colorbar(img_input, ax=axs[1], label='Magnitude')
 
 # Plot Output
 realitve_error = abs(output_array - resolution_data)/ resolution_data
-img_output = axs[2].imshow(realitve_error[97:99, 97:99], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+img_output = axs[2].imshow(realitve_error, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[2].set_title('Relative Error')
 axs[2].set_xlabel('X')
 axs[2].set_ylabel('Y')
 cbar_output = plt.colorbar(img_output, ax=axs[2], label='Magnitude')
 plt.tight_layout()
-plt.show()
+os.makedirs('results', exist_ok=True)
+plt.savefig(os.path.join(plots_dir, f'Power 3 without ratio.png'))

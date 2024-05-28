@@ -21,7 +21,7 @@ class LaplacianLoss(nn.Module):
         laplacian = lapl(output / data_norm, self.dx, self.dy, self.interface, self.epsilon_inside, self.epsilon_outside)
         return self.Lx**2 * self.Ly**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
     
-
+    
     
 class DirichletBoundaryLoss(nn.Module):
     def __init__(self, bound_weight):
@@ -47,12 +47,10 @@ class InterfaceBoundaryLoss(nn.Module):
         bnd_loss = F.mse_loss(output_in[:, 0, self.interface], output_out[:, 0, self.interface])  
         return bnd_loss * self.weight
     
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+
 
 class DirichletBoundaryLossFunction(nn.Module):
-    def __init__(self, bound_weight, xmin, xmax, ymin, ymax, nnx, nny):
+    def __init__(self, bound_weight, xmin, xmax, ymin, ymax, nnx, nny, ratio_max):
         super().__init__()
         self.weight = bound_weight
         self.xmin, self.xmax, self.ymin, self.ymax = xmin, xmax, ymin, ymax
@@ -63,7 +61,7 @@ class DirichletBoundaryLossFunction(nn.Module):
         def function2solve(x, y):
             return torch.pow(x,3) + torch.pow(y,3)
         
-        domain = function2solve(X, Y)
+        domain = function2solve(X, Y) * ratio_max
         self.domain = domain.unsqueeze(0)
 
     def forward(self, output):
@@ -76,8 +74,6 @@ class DirichletBoundaryLossFunction(nn.Module):
         return (bnd_loss * self.weight)
 
         
-
-
 
 def lapl(field, dx, dy, interface, epsilon_in, epsilon_out, b=0):
 

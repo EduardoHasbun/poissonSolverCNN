@@ -1,10 +1,10 @@
-
 import torch
 import torch.nn as nn
 import numpy as np
 import yaml
 import matplotlib.pyplot as plt
 from unet import UNet
+import os
 
 
 with open('C:\Codigos/poissonSolverCNN/2D/solver/solver.yml', 'r') as file:
@@ -12,6 +12,9 @@ with open('C:\Codigos/poissonSolverCNN/2D/solver/solver.yml', 'r') as file:
 scales_data = cfg.get('arch', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
 kernel_size = cfg['arch']['kernel_sizes']
+plots_dir = os.path.join('results')
+if not os.path.exists(plots_dir):
+    os.makedirs(plots_dir)
 
 xmin, xmax, nnx = cfg['mesh']['xmin'], cfg['mesh']['xmax'], cfg['mesh']['nnx']
 ymin, ymax, nny  = cfg['mesh']['ymin'], cfg['mesh']['ymax'], cfg['mesh']['nny']
@@ -39,7 +42,7 @@ input_data = torch.from_numpy(input_data).float()
 
 # Create Model
 model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/interface_model_2.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/interface_model_2.pth'))
 model = model.float()
 model.eval() 
 
@@ -49,7 +52,8 @@ output_array = output.detach().numpy()[0, 0, :, :]
 
 
 # Plots
-fig, axs = plt.subplots(1, 2, figsize=(10, 5))  
+fig, axs = plt.subplots(1, 2, figsize=(10, 5)) 
+fig.suptitle('Interface model 2 ', fontsize=16)  
 
 # Plot Input
 img_input = axs[0].imshow(input_data.numpy()[0, 0, :, :], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
@@ -65,4 +69,8 @@ axs[1].set_xlabel('X')
 axs[1].set_ylabel('Y')
 cbar_output = plt.colorbar(img_output, ax=axs[1], label='Magnitude')
 plt.tight_layout()
-plt.show()
+os.makedirs('results', exist_ok=True)
+plt.savefig(os.path.join(plots_dir, f'Interface model 2.png'))
+
+
+# analizr una linea del dominio

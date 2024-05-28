@@ -34,6 +34,3 @@ loss:
 
 trainer:
     epochs: 500                              # Number of epochs
-    save_period: 10                         # Output period
-    plot_period: 10                         # Period to send plots to TensorBoard
-
