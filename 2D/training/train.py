@@ -39,7 +39,7 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 
 #Create Data
-dataset = np.load(data_dir) * ratio_max
+dataset = np.load(data_dir) 
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
