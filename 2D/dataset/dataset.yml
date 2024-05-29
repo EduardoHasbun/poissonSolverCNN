@@ -6,14 +6,11 @@ domain:
   mat: 'cart_dirichlet'
   bcs: 'dirichlet'
   xmin: 0.0
-  xmax: 1.0e-2
+  xmax: 5
   nnx: 101
   ymin: 0.0
-  ymax: 1.0e-2
+  ymax: 5
   nny: 101
-  zmin: 0.0
-  zmax: 1.0e-2
-  nnz: 101
   interface_center:
     x: 0.5e-2
     y: 0.5e-2

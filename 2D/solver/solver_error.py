@@ -41,7 +41,7 @@ def function2solve(x, y):
     # return np.sin(x) + np.sin(y)
 
 def resolution(x, y):
-    return x**3 + y**3
+    return x**3 + y**3 
     # return np.sin(x) + np.sin(y)
 
 # Create input data and resolution data for the error
@@ -77,7 +77,7 @@ img_resolution = axs[1].imshow(resolution_data, extent=(xmin, xmax, ymin, ymax),
 axs[1].set_title('Resolution')
 axs[1].set_xlabel('X')
 axs[1].set_ylabel('Y')
-cbar_input = plt.colorbar(img_input, ax=axs[1], label='Magnitude')
+cbar_input = plt.colorbar(img_resolution, ax=axs[1], label='Magnitude')
 
 # Plot Output
 realitve_error = abs(output_array - resolution_data)/ resolution_data
