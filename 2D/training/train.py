@@ -30,7 +30,7 @@ xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'
 Lx = xmax-xmin
 Ly = ymax-ymin
 save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data_normal.npy')
+data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data_5.npy')
 
 
 #Parameters to Nomalize
@@ -39,7 +39,7 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 
 #Create Data
-dataset = np.load(data_dir) * ratio_max
+dataset = np.load(data_dir) 
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
