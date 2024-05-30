@@ -64,9 +64,10 @@ class DirichletBoundaryLossFunction(nn.Module):
         domain = function2solve(X, Y) * ratio_max
         self.domain = domain.unsqueeze(0)
 
-    def forward(self, output):
+    def forward(self, output, data_norm = 1.):
         batch, _, _, _ = output.size()
         domain = self.domain.repeat(batch, 1, 1, 1)
+        output /= data_norm
         bnd_loss = F.mse_loss(output[:, 0, -1, :], domain[:, 0, -1, :])
         bnd_loss += F.mse_loss(output[:, 0, :, 0], domain[:, 0, :, 0])
         bnd_loss += F.mse_loss(output[:, 0, :, -1], domain[:, 0, :, -1])
