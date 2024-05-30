@@ -56,7 +56,7 @@ if __name__ == '__main__':
     if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
 
-    print('nnx: ', cfg['domain']['nnx'], 'nny: ', cfg['domain']['nny'], "nnz: ")
+    print('nnx: ', cfg['domain']['nnx'], 'nny: ', cfg['domain']['nny'])
 
     # Generate random data samples
     data_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny']))
@@ -75,6 +75,6 @@ if __name__ == '__main__':
             plt.savefig(os.path.join(plots_dir, f'random_data_plot_{idx}.png'))
             plt.close()
 
-    file_path_domain = os.path.join('generated', 'random_data.npy')
+    file_path_domain = os.path.join('generated', 'random_data_normal.npy')
     os.makedirs('generated', exist_ok=True)
     np.save(file_path_domain, data_array)
