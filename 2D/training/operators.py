@@ -61,7 +61,7 @@ class DirichletBoundaryLossFunction(nn.Module):
         def function2solve(x, y):
             return torch.pow(x,3) + torch.pow(y,3)
         
-        domain = function2solve(X, Y) 
+        domain = function2solve(X, Y) * ratio_max
         self.domain = domain.unsqueeze(0)
 
     def forward(self, output, data_norm = 1.):
