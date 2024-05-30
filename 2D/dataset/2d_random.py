@@ -56,7 +56,7 @@ if __name__ == '__main__':
     if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
 
-    print('nnx: ', cfg['domain']['nnx'], 'nny: ', cfg['domain']['nny'], 'xmax: ', cfg['domain']['xmax'])
+    print('nnx: ', cfg['domain']['nnx'], 'nny: ', cfg['domain']['nny'], 'xmax: ', cfg['domain']['xmax'], 'ymax: ', cfg['domain']['ymax'])
 
     # Generate random data samples
     data_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny']))
