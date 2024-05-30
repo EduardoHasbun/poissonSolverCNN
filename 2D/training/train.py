@@ -36,7 +36,6 @@ data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data_nor
 #Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly)
-ratio_max = 1
 
 
 #Create Data
