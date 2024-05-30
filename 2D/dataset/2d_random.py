@@ -75,6 +75,6 @@ if __name__ == '__main__':
             plt.savefig(os.path.join(plots_dir, f'random_data_plot_{idx}.png'))
             plt.close()
 
-    file_path_domain = os.path.join('generated', 'random_data_normal.npy')
+    file_path_domain = os.path.join('generated', 'random_data_5.npy')
     os.makedirs('generated', exist_ok=True)
     np.save(file_path_domain, data_array)

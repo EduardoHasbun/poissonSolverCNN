@@ -52,7 +52,7 @@ resolution_data = resolution(X, Y)
 
 # Create Model
 model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/model_dirichlet_power3.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/test_1.pth'))
 model = model.float()
 model.eval() 
 
@@ -81,11 +81,11 @@ cbar_input = plt.colorbar(img_resolution, ax=axs[1], label='Magnitude')
 
 # Plot Output
 realitve_error = abs(output_array - resolution_data)/ resolution_data
-img_output = axs[2].imshow(realitve_error, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+img_output = axs[2].imshow(np.log10(realitve_error), extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[2].set_title('Relative Error')
 axs[2].set_xlabel('X')
 axs[2].set_ylabel('Y')
 cbar_output = plt.colorbar(img_output, ax=axs[2], label='Magnitude')
 plt.tight_layout()
 os.makedirs('results', exist_ok=True)
-plt.savefig(os.path.join(plots_dir, f'Power 3.png'))
+plt.savefig(os.path.join(plots_dir, f'Test 1.png'))

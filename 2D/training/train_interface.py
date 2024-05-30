@@ -57,8 +57,7 @@ dataloader = DataLoader(data, batch_size=batch_size, shuffle=True)
 
 # Parameters to Nomalize
 alpha = 0.1
-# ratio_max = ratio_potrhs(alpha, Lx, Ly)
-ratio_max = 1
+ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 
 #Create model and losses
