@@ -36,6 +36,8 @@ data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data_5.n
 #Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly)
+ratio_max = 1
+
 
 
 #Create Data
@@ -68,5 +70,5 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'test_2_1.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'test_1.pth'))
 
