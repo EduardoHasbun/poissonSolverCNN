@@ -36,7 +36,7 @@ data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data_5.n
 #Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly)
-ratio_max = 10.0
+ratio_max = 1 / 5.0
 
 
 
@@ -63,7 +63,7 @@ for epoch in range (num_epochs):
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
         output = model(data)
         loss = laplacian_loss(output, data = data, data_norm = data_norm)
-        loss += dirichlet_loss_function(output)
+        loss += dirichlet_loss_function(output, data_norm)
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
