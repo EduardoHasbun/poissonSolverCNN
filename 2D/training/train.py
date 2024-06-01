@@ -45,7 +45,6 @@ dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 #Create model and losses
 model = UNet(scales, kernel_sizes=kernel_size, input_res = nnx)
-model = model.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 # dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, nnx, nny, ratio_max)
@@ -57,11 +56,11 @@ for epoch in range (num_epochs):
     for batch_idx, batch in enumerate(dataloader):
         data = batch[:, np.newaxis, :, :]
         optimizer.zero_grad()
-        data = torch.DoubleTensor(data) 
+        # data = torch.DoubleTensor(data) 
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
         output = model(data)
-        loss = laplacian_loss(output, data = data, data_norm = data_norm)
-        loss += dirichlet_loss_function(output, data_norm)
+        # loss = laplacian_loss(output, data = data, data_norm = data_norm)
+        loss = dirichlet_loss_function(output, data_norm)
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
