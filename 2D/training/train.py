@@ -47,7 +47,7 @@ dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 model = UNet(scales, kernel_sizes=kernel_size, input_res = nnx)
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 # dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, nnx, nny, ratio_max)
+dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, nnx, nny)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
 #Train loop
