@@ -1,7 +1,7 @@
 import torch
 from unet import UNet
 import yaml
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 import numpy as np
 from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, DirichletBoundaryLossFunction
 import torch.optim as optim
@@ -40,8 +40,7 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 #Create Data
 dataset = np.load(data_dir).astype(np.float32) 
-dataset = torch.tensor(dataset, dtype=torch.float32)
-dataloader = DataLoader(TensorDataset(dataset), batch_size=batch_size, shuffle=True)
+dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
 #Create model and losses
@@ -58,7 +57,7 @@ for epoch in range (num_epochs):
     for batch_idx, batch in enumerate(dataloader):
         data = batch[:, np.newaxis, :, :]
         optimizer.zero_grad()
-        # data = torch.FloatTensor(data) 
+        data = torch.FloatTensor(data) 
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
         output = model(data)
         # loss = laplacian_loss(output, data = data, data_norm = data_norm)
