@@ -11,8 +11,8 @@ init:
 mesh:
   xmin: 0
   ymin: 0
-  xmax: 1.0e-2
-  ymax: 1.0e-2
+  xmax: 5
+  ymax: 5
   nnx: 101
   nny: 101
   interface_center:
