@@ -41,62 +41,62 @@ class DirichletBoundaryLoss(nn.Module):
     
     
 
-class InterfaceBoundaryLoss(nn.Module):
-    def __init__(self, bound_weight, interface_mask, epsilon_1, epsilon_2, dx, dy, interface_center):
-        super().__init__()
-        self.weight = bound_weight
-        self.interface_mask = interface_mask
-        self.epsilon_1 = epsilon_1
-        self.epsilon_2 = epsilon_2
-        self.dx = dx
-        self.dy = dy
-        self.interface_center = interface_center
+# class InterfaceBoundaryLoss(nn.Module):
+#     def __init__(self, bound_weight, interface_mask, epsilon_1, epsilon_2, dx, dy, interface_center):
+#         super().__init__()
+#         self.weight = bound_weight
+#         self.interface_mask = interface_mask
+#         self.epsilon_1 = epsilon_1
+#         self.epsilon_2 = epsilon_2
+#         self.dx = dx
+#         self.dy = dy
+#         self.interface_center = interface_center
 
-        # Compute the interface boundary coordinates once during initialization
-        self.interface_boundary_coords = torch.nonzero(interface_mask, as_tuple=False)
+#         # Compute the interface boundary coordinates once during initialization
+#         self.interface_boundary_coords = torch.nonzero(interface_mask, as_tuple=False)
 
-    def forward(self, output_in, output_out):
-        # Continuity of potential
-        bnd_loss_potential = F.mse_loss(output_in[:, 0, self.interface_mask], output_out[:, 0, self.interface_mask])
+#     def forward(self, output_in, output_out):
+#         # Continuity of potential
+#         bnd_loss_potential = F.mse_loss(output_in[:, 0, self.interface_mask], output_out[:, 0, self.interface_mask])
 
-        # Compute normal derivatives at the interface
-        dphi1_dn = self.compute_normal_derivative(output_in[:, 0])
-        dphi2_dn = self.compute_normal_derivative(output_out[:, 0])
+#         # Compute normal derivatives at the interface
+#         dphi1_dn = self.compute_normal_derivative(output_in[:, 0])
+#         dphi2_dn = self.compute_normal_derivative(output_out[:, 0])
 
-        # Continuity of normal component of displacement field
-        normal_derivative_mismatch = self.epsilon_1 * dphi1_dn - self.epsilon_2 * dphi2_dn
-        bnd_loss_derivative = torch.mean(normal_derivative_mismatch[self.interface_mask] ** 2)
+#         # Continuity of normal component of displacement field
+#         normal_derivative_mismatch = self.epsilon_1 * dphi1_dn - self.epsilon_2 * dphi2_dn
+#         bnd_loss_derivative = torch.mean(normal_derivative_mismatch[self.interface_mask] ** 2)
 
-        # Total boundary loss
-        total_loss = self.weight * (bnd_loss_potential + bnd_loss_derivative)
-        return total_loss
+#         # Total boundary loss
+#         total_loss = self.weight * (bnd_loss_potential + bnd_loss_derivative)
+#         return total_loss
 
-    def compute_normal_derivative(self, phi):
-        # Get the coordinates of the boundary points
-        boundary_coords = self.interface_boundary_coords
+#     def compute_normal_derivative(self, phi):
+#         # Get the coordinates of the boundary points
+#         boundary_coords = self.interface_boundary_coords
 
-        normal_x = (boundary_coords[:, 1].float() - self.interface_center[0])
-        normal_y = (boundary_coords[:, 0].float() - self.interface_center[1])
-        norm = torch.sqrt(normal_x**2 + normal_y**2)
-        normal_x /= norm
-        normal_y /= norm
+#         normal_x = (boundary_coords[:, 1].float() - self.interface_center[0])
+#         normal_y = (boundary_coords[:, 0].float() - self.interface_center[1])
+#         norm = torch.sqrt(normal_x**2 + normal_y**2)
+#         normal_x /= norm
+#         normal_y /= norm
 
-        # Compute derivatives using central differences
-        dphi_dx = (phi[:, 2:] - phi[:, :-2]) / (2 * self.dx)
-        dphi_dy = (phi[2:, :] - phi[:-2, :]) / (2 * self.dy)
+#         # Compute derivatives using central differences
+#         dphi_dx = (phi[:, 2:] - phi[:, :-2]) / (2 * self.dx)
+#         dphi_dy = (phi[2:, :] - phi[:-2, :]) / (2 * self.dy)
 
-        # Pad derivatives to match original phi shape
-        dphi_dx = F.pad(dphi_dx, (0, 0, 1, 1), mode='replicate')
-        dphi_dy = F.pad(dphi_dy, (1, 1, 0, 0), mode='replicate')
+#         # Pad derivatives to match original phi shape
+#         dphi_dx = F.pad(dphi_dx, (0, 0, 1, 1), mode='replicate')
+#         dphi_dy = F.pad(dphi_dy, (1, 1, 0, 0), mode='replicate')
 
-        # Initialize normal derivatives with zeros
-        dphi_dn = torch.zeros_like(phi)
+#         # Initialize normal derivatives with zeros
+#         dphi_dn = torch.zeros_like(phi)
 
-        # Assign normal derivatives at boundary coordinates
-        for i, coord in enumerate(boundary_coords):
-            dphi_dn[coord[0], coord[1]] = normal_x[i] * dphi_dx[coord[0], coord[1]] + normal_y[i] * dphi_dy[coord[0], coord[1]]
+#         # Assign normal derivatives at boundary coordinates
+#         for i, coord in enumerate(boundary_coords):
+#             dphi_dn[coord[0], coord[1]] = normal_x[i] * dphi_dx[coord[0], coord[1]] + normal_y[i] * dphi_dy[coord[0], coord[1]]
 
-        return dphi_dn
+#         return dphi_dn
 
     
 
@@ -183,3 +183,29 @@ def lapl(field, dx, dy, interface, epsilon_in, epsilon_out, b=0):
 
 def ratio_potrhs(alpha, Lx, Ly):
     return alpha / (np.pi**2 / 4)**2 / (1 / Lx**2 + 1 / Ly**2)
+
+
+
+
+
+
+
+
+
+
+class InterfaceBoundaryLoss(nn.Module):
+    def __init__(self, bound_weight, interface_mask, epsilon_1, epsilon_2, dx, dy, interface_center):
+        super().__init__()
+        self.weight = bound_weight
+        self.interface_mask = interface_mask
+        self.epsilon_1 = epsilon_1
+        self.epsilon_2 = epsilon_2
+        self.dx = dx
+        self.dy = dy
+        self.interface_center = interface_center
+
+    def forward(self, output_in, output_out):
+        # Continuity of potential
+        bnd_loss_potential = F.mse_loss(output_in[:, 0, self.interface_mask], output_out[:, 0, self.interface_mask])
+        total_loss = self.weight * (bnd_loss_potential )
+        return total_loss
