@@ -98,12 +98,12 @@ for epoch in range (num_epochs):
 
         # Loss Inside
         loss_inside = laplacian_loss(output_inside, data = inside, data_norm = data_norm_inside)
-        # loss_inside += interface_loss(output_inside, output_outside)
+        loss_inside += interface_loss(output_inside, output_outside)
         total_loss_inside += loss_inside
 
         # Loss Outisde
         loss_outside = laplacian_loss(output_outside, data = outside, data_norm = data_norm_outside)
-        # loss_outside = interface_loss(output_inside, output_outside)
+        loss_outside = interface_loss(output_inside, output_outside)
         loss_outside += dirichlet_loss(output_outside)
         total_loss_outside += loss_outside
 
