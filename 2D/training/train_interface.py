@@ -115,4 +115,4 @@ for epoch in range (num_epochs):
     optimizer.step()
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss Inside: {total_loss_inside / len(dataloader)}, Loss Outside: {total_loss_outside / len(dataloader)}")
     torch.save(model_inside.state_dict(), os.path.join(save_dir, 'model_inside.pth'))
-    torch.save(model_outside.state_dict(), os.path.join(save_dir, 'model_outside,pth'))
+    torch.save(model_outside.state_dict(), os.path.join(save_dir, 'model_outside.pth'))
