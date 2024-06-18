@@ -6,6 +6,7 @@ import yaml
 import matplotlib.pyplot as plt
 from unet import UNet
 import os
+# from ..training.operators import ratio_potrhs
 
 
 with open('C:\Codigos/poissonSolverCNN/2D/solver/solver.yml', 'r') as file:
@@ -16,6 +17,8 @@ kernel_size = cfg['arch']['kernel_sizes']
 
 xmin, xmax, nnx = cfg['mesh']['xmin'], cfg['mesh']['xmax'], cfg['mesh']['nnx']
 ymin, ymax, nny  = cfg['mesh']['ymin'], cfg['mesh']['ymax'], cfg['mesh']['nny']
+Lx = xmax-xmin
+Ly = ymax-ymin
 x_1d = np.linspace(xmin, xmax, nnx)
 y_1d = np.linspace(ymin, ymax, nny)
 X, Y = np.meshgrid(x_1d, y_1d)
@@ -23,6 +26,11 @@ plots_dir = os.path.join('results')
 if not os.path.exists(plots_dir):
     os.makedirs(plots_dir)
 
+
+
+#Parameters to Nomalize
+alpha = 0.1
+# ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 # Define Gaussians's Functions
 def gaussian(x, y, amplitude, x0, y0, sigma_x, sigma_y):
@@ -52,16 +60,16 @@ resolution_data = resolution(X, Y)
 
 # Create Model
 model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/test_8.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/test_14.pth'))
 model = model.float()
 model.eval() 
 
 # Solver
-output = model(input_data)
-output_array = output.detach().numpy()[0, 0, :, :] 
+output = model(input_data) 
+output_array = output.detach().numpy()[0, 0, :, :] * 0.205319645
 
-
-
+print(output_array[100, 100])
+print(resolution_data[100, 100])
 
 
 # Plots
@@ -83,12 +91,12 @@ axs[1].set_ylabel('Y')
 cbar_input = plt.colorbar(img_resolution, ax=axs[1], label='Magnitude')
 
 # Plot Output
-realitve_error = abs(output_array - resolution_data)/ resolution_data
-img_output = axs[2].imshow(np.log10(realitve_error), extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+realitve_error = abs(output_array - resolution_data)/ np.max(resolution_data)
+img_output = axs[2].imshow((realitve_error), extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[2].set_title('Relative Error')
 axs[2].set_xlabel('X')
 axs[2].set_ylabel('Y')
 cbar_output = plt.colorbar(img_output, ax=axs[2], label='Magnitude')
 plt.tight_layout()
 os.makedirs('results', exist_ok=True)
-plt.savefig(os.path.join(plots_dir, f'Test 8.png'))
+plt.savefig(os.path.join(plots_dir, f'Test 14.png'))

@@ -37,15 +37,67 @@ class DirichletBoundaryLoss(nn.Module):
         return bnd_loss * self.weight
     
 
+
+    
+    
+
 class InterfaceBoundaryLoss(nn.Module):
-    def __init__(self, bound_weight, interface):
+    def __init__(self, bound_weight, interface_mask, epsilon_1, epsilon_2, dx, dy, interface_center):
         super().__init__()
         self.weight = bound_weight
-        self.interface = interface
+        self.interface_mask = interface_mask
+        self.epsilon_1 = epsilon_1
+        self.epsilon_2 = epsilon_2
+        self.dx = dx
+        self.dy = dy
+        self.interface_center = interface_center
+
+        # Compute the interface boundary coordinates once during initialization
+        self.interface_boundary_coords = torch.nonzero(interface_mask, as_tuple=False)
 
     def forward(self, output_in, output_out):
-        bnd_loss = F.mse_loss(output_in[:, 0, self.interface], output_out[:, 0, self.interface])  
-        return bnd_loss * self.weight
+        # Continuity of potential
+        bnd_loss_potential = F.mse_loss(output_in[:, 0, self.interface_mask], output_out[:, 0, self.interface_mask])
+
+        # Compute normal derivatives at the interface
+        dphi1_dn = self.compute_normal_derivative(output_in[:, 0])
+        dphi2_dn = self.compute_normal_derivative(output_out[:, 0])
+
+        # Continuity of normal component of displacement field
+        normal_derivative_mismatch = self.epsilon_1 * dphi1_dn - self.epsilon_2 * dphi2_dn
+        bnd_loss_derivative = torch.mean(normal_derivative_mismatch[self.interface_mask] ** 2)
+
+        # Total boundary loss
+        total_loss = self.weight * (bnd_loss_potential + bnd_loss_derivative)
+        return total_loss
+
+    def compute_normal_derivative(self, phi):
+        # Get the coordinates of the boundary points
+        boundary_coords = self.interface_boundary_coords
+
+        normal_x = (boundary_coords[:, 1].float() - self.interface_center[0])
+        normal_y = (boundary_coords[:, 0].float() - self.interface_center[1])
+        norm = torch.sqrt(normal_x**2 + normal_y**2)
+        normal_x /= norm
+        normal_y /= norm
+
+        # Compute derivatives using central differences
+        dphi_dx = (phi[:, 2:] - phi[:, :-2]) / (2 * self.dx)
+        dphi_dy = (phi[2:, :] - phi[:-2, :]) / (2 * self.dy)
+
+        # Pad derivatives to match original phi shape
+        dphi_dx = F.pad(dphi_dx, (0, 0, 1, 1), mode='replicate')
+        dphi_dy = F.pad(dphi_dy, (1, 1, 0, 0), mode='replicate')
+
+        # Initialize normal derivatives with zeros
+        dphi_dn = torch.zeros_like(phi)
+
+        # Assign normal derivatives at boundary coordinates
+        for i, coord in enumerate(boundary_coords):
+            dphi_dn[coord[0], coord[1]] = normal_x[i] * dphi_dx[coord[0], coord[1]] + normal_y[i] * dphi_dy[coord[0], coord[1]]
+
+        return dphi_dn
+
     
 
 
@@ -93,37 +145,37 @@ def lapl(field, dx, dy, interface, epsilon_in, epsilon_out, b=0):
         / (2 * dx**2)
 
     
-    laplacian[:, 0, 0, 1:-1] = \
-            (2 * field[:, 0, 0, 1:-1] - 5 * field[:, 0, 1, 1:-1] + 4 * field[:, 0, 2, 1:-1] - field[:, 0, 3, 1:-1]) / dy**2 + \
-            (field[:, 0, 0, 2:] + field[:, 0, 0, :-2] - 2 * field[:, 0, 0, 1:-1]) / dx**2
+    # laplacian[:, 0, 0, 1:-1] = \
+    #         (2 * field[:, 0, 0, 1:-1] - 5 * field[:, 0, 1, 1:-1] + 4 * field[:, 0, 2, 1:-1] - field[:, 0, 3, 1:-1]) / dy**2 + \
+    #         (field[:, 0, 0, 2:] + field[:, 0, 0, :-2] - 2 * field[:, 0, 0, 1:-1]) / dx**2
         
-    laplacian[:, 0, -1, 1:-1] = \
-        (2 * field[:, 0, -1, 1:-1] - 5 * field[:, 0, -2, 1:-1] + 4 * field[:, 0, -3, 1:-1] - field[:, 0, -4, 1:-1]) / dy**2 + \
-        (field[:, 0, -1, 2:] + field[:, 0, -1, :-2] - 2 * field[:, 0, -1, 1:-1]) / dx**2
-    laplacian[:, 0, 1:-1, 0] = \
-        (field[:, 0, 2:, 0] + field[:, 0, :-2, 0] - 2 * field[:, 0, 1:-1, 0]) / dy**2 + \
-        (2 * field[:, 0, 1:-1, 0] - 5 * field[:, 0, 1:-1, 1] + 4 * field[:, 0, 1:-1, 2] - field[:, 0, 1:-1, 3]) / dx**2
-    laplacian[:, 0, 1:-1, -1] = \
-        (field[:, 0, 2:, -1] + field[:, 0, :-2, -1] - 2 * field[:, 0, 1:-1, -1]) / dy**2 + \
-        (2 * field[:, 0, 1:-1, -1] - 5 * field[:, 0, 1:-1, -2] + 4 * field[:, 0, 1:-1, -3] - field[:, 0, 1:-1, -4]) / dx**2
+    # laplacian[:, 0, -1, 1:-1] = \
+    #     (2 * field[:, 0, -1, 1:-1] - 5 * field[:, 0, -2, 1:-1] + 4 * field[:, 0, -3, 1:-1] - field[:, 0, -4, 1:-1]) / dy**2 + \
+    #     (field[:, 0, -1, 2:] + field[:, 0, -1, :-2] - 2 * field[:, 0, -1, 1:-1]) / dx**2
+    # laplacian[:, 0, 1:-1, 0] = \
+    #     (field[:, 0, 2:, 0] + field[:, 0, :-2, 0] - 2 * field[:, 0, 1:-1, 0]) / dy**2 + \
+    #     (2 * field[:, 0, 1:-1, 0] - 5 * field[:, 0, 1:-1, 1] + 4 * field[:, 0, 1:-1, 2] - field[:, 0, 1:-1, 3]) / dx**2
+    # laplacian[:, 0, 1:-1, -1] = \
+    #     (field[:, 0, 2:, -1] + field[:, 0, :-2, -1] - 2 * field[:, 0, 1:-1, -1]) / dy**2 + \
+    #     (2 * field[:, 0, 1:-1, -1] - 5 * field[:, 0, 1:-1, -2] + 4 * field[:, 0, 1:-1, -3] - field[:, 0, 1:-1, -4]) / dx**2
 
     
-    laplacian[:, 0, 0, 0] = \
-            (2 * field[:, 0, 0, 0] - 5 * field[:, 0, 1, 0] + 4 * field[:, 0, 2, 0] - field[:, 0, 3, 0]) / dy**2 + \
-            (2 * field[:, 0, 0, 0] - 5 * field[:, 0, 0, 1] + 4 * field[:, 0, 0, 2] - field[:, 0, 0, 3]) / dx**2
-    laplacian[:, 0, 0, -1] = \
-            (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 1, -1] + 4 * field[:, 0, 2, -1] - field[:, 0, 3, -1]) / dy**2 + \
-            (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
+    # laplacian[:, 0, 0, 0] = \
+    #         (2 * field[:, 0, 0, 0] - 5 * field[:, 0, 1, 0] + 4 * field[:, 0, 2, 0] - field[:, 0, 3, 0]) / dy**2 + \
+    #         (2 * field[:, 0, 0, 0] - 5 * field[:, 0, 0, 1] + 4 * field[:, 0, 0, 2] - field[:, 0, 0, 3]) / dx**2
+    # laplacian[:, 0, 0, -1] = \
+    #         (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 1, -1] + 4 * field[:, 0, 2, -1] - field[:, 0, 3, -1]) / dy**2 + \
+    #         (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
 
-    laplacian[:, 0, -1, 0] = \
-        (2 * field[:, 0, -1, 0] - 5 * field[:, 0, -2, 0] + 4 * field[:, 0, -3, 0] - field[:, 0, -4, 0]) / dy**2 + \
-        (2 * field[:, 0, -1, 0] - 5 * field[:, 0, -1, 1] + 4 * field[:, 0, -1, 2] - field[:, 0, -1, 3]) / dx**2
-    laplacian[:, 0, -1, -1] = \
-        (2 * field[:, 0, -1, -1] - 5 * field[:, 0, -2, -1] + 4 * field[:, 0, -3, -1] - field[:, 0, -4, -1]) / dy**2 + \
-        (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
+    # laplacian[:, 0, -1, 0] = \
+    #     (2 * field[:, 0, -1, 0] - 5 * field[:, 0, -2, 0] + 4 * field[:, 0, -3, 0] - field[:, 0, -4, 0]) / dy**2 + \
+    #     (2 * field[:, 0, -1, 0] - 5 * field[:, 0, -1, 1] + 4 * field[:, 0, -1, 2] - field[:, 0, -1, 3]) / dx**2
+    # laplacian[:, 0, -1, -1] = \
+    #     (2 * field[:, 0, -1, -1] - 5 * field[:, 0, -2, -1] + 4 * field[:, 0, -3, -1] - field[:, 0, -4, -1]) / dy**2 + \
+    #     (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
 
-    laplacian[:, 0, interface] *= epsilon_in
-    laplacian[:, 0, ~interface] *= epsilon_out
+    # laplacian[:, 0, interface] *= epsilon_in
+    # laplacian[:, 0, ~interface] *= epsilon_out
 
     return laplacian
 

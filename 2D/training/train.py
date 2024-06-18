@@ -31,15 +31,16 @@ Lx = xmax-xmin
 Ly = ymax-ymin
 save_dir = os.getcwd()
 data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data_5.npy')
+save_dir = os.path.join(save_dir, 'models')
 
 
 #Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly)
-
+print(ratio_max)
 
 #Create Data
-dataset = np.load(data_dir).astype(np.float32) 
+dataset = np.load(data_dir).astype(np.float32) / ratio_max
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
@@ -60,13 +61,13 @@ for epoch in range (num_epochs):
         data = torch.FloatTensor(data) 
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
         output = model(data)
-        # loss = laplacian_loss(output, data = data, data_norm = data_norm)
-        loss = dirichlet_loss_function(output)
+        loss = laplacian_loss(output, data = data, data_norm = data_norm)
+        loss += dirichlet_loss_function(output, data_norm)
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'test_9.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'test_14.pth'))
 

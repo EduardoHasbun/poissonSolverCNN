@@ -1,4 +1,4 @@
-n_it: 5
+n_it: 500
 output_dir: 'C:\Codigos\poissonSolverCNN\dataset\generated\'
 
 domain:
@@ -6,14 +6,14 @@ domain:
   mat: 'cart_dirichlet'
   bcs: 'dirichlet'
   xmin: 0.0
-  xmax: 3.52
+  xmax: 5.0
   nnx: 101
   ymin: 0.0
-  ymax: 3.52
+  ymax: 5.0
   nny: 101
   interface_center:
     x: 0.5e-2
     y: 0.5e-2
-  interface_radius: 2.0e-3
+  interface_radius: 1.5
   epsilon_in: 1
   epsilon_out: 80

@@ -8,7 +8,7 @@ globals:                                    # Domain sizes and others, used to c
     interface_center:
         x: 0.5e-2
         y: 0.5e-2
-    interface_radius: 2.0e-3
+    interface_radius: 1.5
     epsilon_inside: 1
     epsilon_outside: 80
 
@@ -28,9 +28,16 @@ data_loader:
 
 loss:
     args:
-        bound_weight: 5.0e+13                   # Weighting of the loss on the boundaries (float)
-        lapl_weight: 2.0e+15                 # Weighting of the loss on the Laplacian (float)
-        optimizer_lr: 1.e-9    
+        bound_weight: 5.0e+1                  # Weighting of the loss on the boundaries (float)
+        lapl_weight: 2.0e+1                 # Weighting of the loss on the Laplacian (float)
+        optimizer_lr: 5.e-9    
 
 trainer:
-    epochs: 500                              # Number of epochs
+    epochs: 100                              # Number of epochs
+
+
+loss_riginal:
+    args:
+        bound_weight: 5.0e+8                  # Weighting of the loss on the boundaries (float)
+        lapl_weight: 2.0e+6                 # Weighting of the loss on the Laplacian (float)
+        optimizer_lr: 5.e-3
