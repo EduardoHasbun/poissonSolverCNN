@@ -3,7 +3,7 @@ from unet import UNet
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
-from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, InterfaceBoundaryLoss
+from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss
 import torch.optim as optim
 import os
 import argparse
@@ -63,7 +63,7 @@ model = UNet(scales, kernel_sizes=kernel_size, input_res = nnx)
 model = model.float()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-interface_loss = InterfaceBoundaryLoss(interface_mask, epsilon_inside, epsilon_outside, dx, dy, interface_center)
+# interface_loss = InterfaceBoundaryLoss(interface_mask, epsilon_inside, epsilon_outside, dx, dy, interface_center)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
 #Train loop
