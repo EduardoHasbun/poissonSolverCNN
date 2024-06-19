@@ -174,8 +174,8 @@ def lapl(field, dx, dy, interface, epsilon_in, epsilon_out, b=0):
     #     (2 * field[:, 0, -1, -1] - 5 * field[:, 0, -2, -1] + 4 * field[:, 0, -3, -1] - field[:, 0, -4, -1]) / dy**2 + \
     #     (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
 
-    # laplacian[:, 0, interface] *= epsilon_in
-    # laplacian[:, 0, ~interface] *= epsilon_out
+    laplacian[:, 0, interface] *= epsilon_in
+    laplacian[:, 0, ~interface] *= epsilon_out
 
     return laplacian
 
@@ -187,25 +187,19 @@ def ratio_potrhs(alpha, Lx, Ly):
 
 
 
+# class InterfaceBoundaryLoss(nn.Module):
+#     def __init__(self, bound_weight, interface_mask, epsilon_1, epsilon_2, dx, dy, interface_center):
+#         super().__init__()
+#         self.weight = bound_weight
+#         self.interface_mask = interface_mask
+#         self.epsilon_1 = epsilon_1
+#         self.epsilon_2 = epsilon_2
+#         self.dx = dx
+#         self.dy = dy
+#         self.interface_center = interface_center
 
-
-
-
-
-
-class InterfaceBoundaryLoss(nn.Module):
-    def __init__(self, bound_weight, interface_mask, epsilon_1, epsilon_2, dx, dy, interface_center):
-        super().__init__()
-        self.weight = bound_weight
-        self.interface_mask = interface_mask
-        self.epsilon_1 = epsilon_1
-        self.epsilon_2 = epsilon_2
-        self.dx = dx
-        self.dy = dy
-        self.interface_center = interface_center
-
-    def forward(self, output_in, output_out):
-        # Continuity of potential
-        bnd_loss_potential = F.mse_loss(output_in[:, 0, self.interface_mask], output_out[:, 0, self.interface_mask])
-        total_loss = self.weight * (bnd_loss_potential )
-        return total_loss
+#     def forward(self, output_in, output_out, data_norm):
+#         # Continuity of potential
+#         bnd_loss_potential = F.mse_loss(output_in[:, 0, self.interface_mask], output_out[:, 0, self.interface_mask])
+#         total_loss = self.weight * (bnd_loss_potential)
+#         return total_loss

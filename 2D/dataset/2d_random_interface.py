@@ -73,10 +73,13 @@ if __name__ == '__main__':
         inside_domain[~interface_mask] = 0
         outside_domain[interface_mask] = 0
 
-        data_array[idx, interface_mask] = inside_domain[interface_mask] / e_in
-        data_array[idx, ~interface_mask] = outside_domain[~interface_mask] /e_out
-        inside_domain_array[idx] = inside_domain / e_in
-        outside_domain_array[idx] = outside_domain /e_out
+        data_array[idx, interface_mask] = inside_domain[interface_mask] 
+        data_array[idx, ~interface_mask] = outside_domain[~interface_mask] 
+        # inside_domain_array[idx] = inside_domain 
+        # outside_domain_array[idx] = outside_domain 
+
+        plt.imshow(data_array[idx])
+        plt.show()
         
         if ploting and idx%100==0:
             plt.figure(figsize=(8, 6))
@@ -93,5 +96,5 @@ if __name__ == '__main__':
     file_path_outside = os.path.join('generated', 'outside.npy')
     os.makedirs('generated', exist_ok=True)
     np.save(file_path_domain, data_array)
-    np.save(file_path_inside, inside_domain_array)
-    np.save(file_path_outside, outside_domain_array)
+    # np.save(file_path_inside, inside_domain_array)
+    # np.save(file_path_outside, outside_domain_array)

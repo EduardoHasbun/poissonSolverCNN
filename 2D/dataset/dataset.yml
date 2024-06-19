@@ -1,4 +1,4 @@
-n_it: 5000
+n_it: 10000
 output_dir: 'C:\Codigos\poissonSolverCNN\dataset\generated\'
 
 domain:
@@ -12,8 +12,8 @@ domain:
   ymax: 5.0
   nny: 101
   interface_center:
-    x: 0.5e-2
-    y: 0.5e-2
+    x: 2.5
+    y: 2.5
   interface_radius: 1.5
   epsilon_in: 1
   epsilon_out: 80
