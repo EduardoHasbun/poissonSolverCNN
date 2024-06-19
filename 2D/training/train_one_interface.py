@@ -61,7 +61,7 @@ dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 #Create model and losses
 model = UNet(scales, kernel_sizes=kernel_size, input_res = nnx)
 model = model.float()
-laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
+laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight, e_in= epsilon_inside, e_out=epsilon_outside)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 # interface_loss = InterfaceBoundaryLoss(interface_mask, epsilon_inside, epsilon_outside, dx, dy, interface_center)
 optimizer = optim.Adam(model.parameters(), lr = lr)
@@ -75,7 +75,7 @@ for epoch in range (num_epochs):
         data = torch.FloatTensor(data) 
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
         output = model(data)
-        loss = laplacian_loss(output, data = data, data_norm = data_norm, epsilon_inside = epsilon_inside, epsilon_outside = epsilon_outside)
+        loss = laplacian_loss(output, data = data, data_norm = data_norm)
         loss += dirichlet_loss(output)
         loss.backward()
         optimizer.step()
