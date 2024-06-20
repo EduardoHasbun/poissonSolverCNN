@@ -35,6 +35,8 @@ dx, dy = Lx / nnx, Ly / nny
 save_dir = os.getcwd()
 data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'domain.npy')
 save_dir = os.path.join(save_dir, 'models')
+if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
 
 
 x, y= torch.linspace(xmin, xmax, nnx), torch.linspace(ymin, ymax, nny)
