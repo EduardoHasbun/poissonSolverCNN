@@ -5,7 +5,7 @@ init:
   #              1.0e+11, 0.6e-2, 0.4e-2, 1.0e-3, 1.0e-3,
   #              1.0e+11, 0.6e-2, 0.6e-2, 1.0e-3, 1.0e-3,
   #              1.0e+11, 0.4e-2, 0.4e-2, 1.0e-3, 1.0e-3]
-  args : [1.8e+3, 0.5e-2, 0.5e-2, 5.0e-3, 5.0e-3]   
+  args : [1.8e+3, 2.5, 2.5, 0.5, 0.5]   
 
 
 mesh:
@@ -16,9 +16,9 @@ mesh:
   nnx: 101
   nny: 101
   interface_center:
-    x: 0.5e-2
-    y: 0.5e-2
-  interface_radius: 2.0e-3
+    x: 2.5
+    y: 2.5
+  interface_radius: 1.5
 
 # This block is useful only if poisson/type = 'network'
 network:
