@@ -28,9 +28,9 @@ data_loader:
 
 loss:
     args:
-        bound_weight: 5.0e+2                  # Weighting of the loss on the boundaries (float)
-        lapl_weight: 2.0e+10                 # Weighting of the loss on the Laplacian (float)
-        optimizer_lr: 5.e-8    
+        bound_weight: 5.0e+1                  # Weighting of the loss on the boundaries (float)
+        lapl_weight: 2.0e+11                 # Weighting of the loss on the Laplacian (float)
+        optimizer_lr: 5.e-7    
 
 trainer:
     epochs: 200                              # Number of epochs

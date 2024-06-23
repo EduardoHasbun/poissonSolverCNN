@@ -26,6 +26,8 @@ X, Y = np.meshgrid(x_1d, y_1d)
 
 # Interface
 interface_mask = (X - interface_center[0])**2 + (Y - interface_center[1])**2 <= interface_radius**2
+domain = np.ones((nnx, nny))
+domain[~interface_mask] *= 0
 
 
 # Define Gaussians's Functions
@@ -42,14 +44,14 @@ def gaussians(x, y, params):
 
 
 input_data = gaussians(X, Y, cfg['init']['args'])
-input_data[interface_mask] /= 1
-input_data[~interface_mask] /= 80
+# input_data[interface_mask] /= 1
+# input_data[~interface_mask] /= 80
 input_data = input_data[np.newaxis, np.newaxis, :, :]
 input_data = torch.from_numpy(input_data).float()
 
 # Create Model
 model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/interface_1.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/interface_2.pth'))
 model = model.float()
 model.eval() 
 
@@ -59,23 +61,39 @@ output_array = output.detach().numpy()[0, 0, :, :]
 
 
 # Plots
-fig, axs = plt.subplots(1, 2, figsize=(10, 5)) 
-fig.suptitle('Interface model 1', fontsize=16)  
+fig, axs = plt.subplots(2, 2, figsize=(12, 10))
+fig.suptitle('Interface model 1', fontsize=16)
 
 # Plot Input
-img_input = axs[0].imshow(input_data.numpy()[0, 0, :, :], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-axs[0].set_title('Input')
-axs[0].set_xlabel('X')
-axs[0].set_ylabel('Y')
-cbar_input = plt.colorbar(img_input, ax=axs[0], label='Magnitude')
+img_input = axs[0, 0].imshow(input_data[0, 0, :, :], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+axs[0, 0].set_title('Input')
+axs[0, 0].set_xlabel('X')
+axs[0, 0].set_ylabel('Y')
+cbar_input = plt.colorbar(img_input, ax=axs[0, 0], label='Magnitude')
 
 # Plot Output
-img_output = axs[1].imshow(output_array, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-axs[1].set_title('Output')
-axs[1].set_xlabel('X')
-axs[1].set_ylabel('Y')
-cbar_output = plt.colorbar(img_output, ax=axs[1], label='Magnitude')
-plt.tight_layout()
-os.makedirs('results', exist_ok=True)
-plt.savefig(os.path.join(plots_dir, f'Interface 1.png'))
+img_output = axs[0, 1].imshow(output_array, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+axs[0, 1].set_title('Output')
+axs[0, 1].set_xlabel('X')
+axs[0, 1].set_ylabel('Y')
+cbar_output = plt.colorbar(img_output, ax=axs[0, 1], label='Magnitude')
 
+# Plot Reference of the Domain
+img_domain = axs[1, 0].imshow(domain, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+axs[1, 0].set_title('Domain Reference')
+axs[1, 0].set_xlabel('X')
+axs[1, 0].set_ylabel('Y')
+cbar_domain = plt.colorbar(img_domain, ax=axs[1, 0], label='Magnitude')
+
+# Plot One line
+line = output_array[0:nnx, nny//2]
+x_line = np.linspace(0, xmax, len(line))
+axs[1, 1].plot(x_line, line)
+axs[1, 1].set_title('Line')
+axs[1, 1].set_xlabel('X')
+axs[1, 1].set_ylabel('Y')
+
+# Adjust layout
+plt.tight_layout(rect=[0, 0, 1, 0.96])  # Leave space for suptitle
+os.makedirs(plots_dir, exist_ok=True)
+plt.savefig(os.path.join(plots_dir, 'Interface 2 epsilon.png'))

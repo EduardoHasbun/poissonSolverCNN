@@ -56,7 +56,7 @@ alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 #Create Data
-dataset = np.load(data_dir).astype(np.float32) / ratio_max
+dataset = np.load(data_dir).astype(np.float32) 
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
@@ -85,5 +85,5 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_2.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_3.pth'))
 
