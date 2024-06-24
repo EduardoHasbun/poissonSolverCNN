@@ -57,13 +57,16 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 #Create Data
 dataset = np.load(data_dir).astype(np.float32) 
+dataset[:, interface_mask] /= epsilon_inside
+dataset[:, ~interface_mask] /= epsilon_outside
+dataset /= ratio_max
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
 #Create model and losses
 model = UNet(scales, kernel_sizes=kernel_size, input_res = nnx)
 model = model.float()
-laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight, e_in= epsilon_inside, e_out=epsilon_outside)
+laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 # interface_loss = InterfaceBoundaryLoss(interface_mask, epsilon_inside, epsilon_outside, dx, dy, interface_center)
 optimizer = optim.Adam(model.parameters(), lr = lr)
@@ -85,5 +88,5 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_3.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_4.pth'))
 
