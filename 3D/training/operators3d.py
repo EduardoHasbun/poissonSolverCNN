@@ -40,22 +40,25 @@ class DirichletBoundaryLoss(nn.Module):
     
 
 class NewDirichletBoundaryLoss(nn.Module):
-    def __init__(self, bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz, batch):
+    def __init__(self, bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz):
         super().__init__()
         self.weight = bound_weight
         self.xmin, self.xmax, self.ymin, self.ymax, self.zmin, self.zmax = xmin, xmax, ymin, ymax, zmin, zmax
         x = torch.linspace(self.xmin, self.xmax, nnx)
         y = torch.linspace(self.ymin, self.ymax, nny)
         z = torch.linspace(self.zmin, self.zmax, nnz)
-        def function2solve(x, y, z):
-            return torch.sin(x) + torch.sin(y) + torch.sin(z) 
         X, Y, Z = torch.meshgrid(x, y, z)
+
+        def function2solve(x, y, z):
+            return torch.pow(x, 3) + torch.pow(y, 3) + torch.pow(z, 3)
+        
         domain = function2solve(X, Y, Z)
         self.domain = domain.unsqueeze(0)
 
-    def forward(self, output):
+    def forward(self, output, data_norm = 1.):
         batch, _, _, _, _ = output.size()
         domain = self.domain.repeat(batch, 1, 1, 1, 1)
+        output /= data_norm
         bnd_loss = F.mse_loss(output[:, 0, -1, :, :], domain[:, 0, -1, :, :])
         bnd_loss += F.mse_loss(output[:, 0, :, 0, :], domain[:, 0, :, 0, :])
         bnd_loss += F.mse_loss(output[:, 0, :, -1, :], domain[:, 0, :, -1, :])

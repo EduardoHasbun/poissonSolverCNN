@@ -1,13 +1,13 @@
 globals:                                    # Domain sizes and others, used to compute global attributes
-    nnx: 70                                # Number of points in x direction
-    nny: 70                                # Number of points in y direction
-    nnz: 70
+    nnx: 51                                # Number of points in x direction
+    nny: 51                                # Number of points in y direction
+    nnz: 51
     xmin: 0.0
-    xmax: 1.0e-2
+    xmax: 5.0
     ymin: 0.0
-    ymax: 1.0e-2
+    ymax: 5.0
     zmin: 0.0
-    zmax: 1.0e-2
+    zmax: 5.0
     
 
 # arch:
@@ -39,9 +39,9 @@ loss:
     type: laplacian
     args:
         bound_weight: 5.0e+7                 # Weighting of the loss on the boundaries (float)
-        lapl_weight: 2.0e+15                # Weighting of the loss on the Laplacian (float)
+        lapl_weight: 2.0e+8                # Weighting of the loss on the Laplacian (float)
         optimizer_lr: 4.e-6 
         inside_weight: 1.0e+7
 
 trainer:
-    epochs: 500                              # Number of epochs
+    epochs: 200                              # Number of epochs

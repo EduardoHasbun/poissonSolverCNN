@@ -48,12 +48,10 @@ alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 #Create Data
-dataset = np.load(data_dir)
-# dataset = np.tile(dataset, (1000, 1, 1, 1))
+dataset = np.load(data_dir) / ratio_max
 dataset = torch.tensor(dataset)
 if loss_type == 'inside':
     target  = np.load(target_dir) 
-    target = np.tile(target, (1000, 1, 1, 1))
     target = torch.tensor(target)
     data_set = TensorDataset(dataset, target)
     dataloader = DataLoader(data_set, batch_size=batch_size, shuffle=True)
@@ -80,7 +78,7 @@ elif loss_type == 'inside':
     inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
     print('Using Inside Loss \n')
 # dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-dirichlet_loss = NewDirichletBoundaryLoss(bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz, batch_size)
+dirichlet_loss = NewDirichletBoundaryLoss(bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
 #Train loop
@@ -100,11 +98,11 @@ for epoch in range (num_epochs):
             loss = laplacian_loss(output, data = data, data_norm = data_norm)
         elif loss_type == 'inside':
             loss = inside_loss(output, target)
-        loss += dirichlet_loss(output)
+        loss += dirichlet_loss(output, data_norm)
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
-        if batch_idx % 10 ==0:
+        if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'laplacian_loss.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'model_1.pth'))
