@@ -90,15 +90,20 @@ for epoch in range (num_epochs):
             target = target[:, np.newaxis, :, :].float()
         else:
             data = batch_data
+
         data = data[:, np.newaxis, :, :, :].float()
         optimizer.zero_grad()
-        data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
+
+        # Adjust data_norm shape to match output shape for broadcasting
+        data_norm = torch.ones((data.size(0), 1, 1, 1, 1)) / ratio_max
+
         output = model(data)
-        print(np.shape(data_norm))
-        if loss_type =='laplacian':
-            loss = laplacian_loss(output, data = data, data_norm = data_norm)
+        
+        if loss_type == 'laplacian':
+            loss = laplacian_loss(output, data=data, data_norm=data_norm)
         elif loss_type == 'inside':
             loss = inside_loss(output, target)
+
         loss += dirichlet_loss(output, data_norm)
         loss.backward()
         optimizer.step()
