@@ -94,7 +94,7 @@ for epoch in range (num_epochs):
         optimizer.zero_grad()
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
         output = model(data)
-        print(torch.shape(output))
+        print(np.shape(output))
         if loss_type =='laplacian':
             loss = laplacian_loss(output, data = data, data_norm = data_norm)
         elif loss_type == 'inside':
