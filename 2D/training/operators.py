@@ -139,10 +139,8 @@ def lapl(field, dx, dy, interface, epsilon_in, epsilon_out, b=0):
     assert field.is_contiguous() and laplacian.is_contiguous(), 'Input is not contiguous'
 
     laplacian[:, 0, 1:-1, 1:-1] = \
-        (1 - b) * ((field[:, 0, 2:, 1:-1] + field[:, 0, :-2, 1:-1] - 2 * field[:, 0, 1:-1, 1:-1]) / dy**2 +
-        (field[:, 0, 1:-1, 2:] + field[:, 0, 1:-1, :-2] - 2 * field[:, 0, 1:-1, 1:-1]) / dx**2) + \
-        b * (field[:, 0, 2:, 2:] + field[:, 0, 2:, :-2] + field[:, 0, :-2, :-2] + field[:, 0, :-2, 2:] - 4 * field[:, 0, 1:-1, 1:-1]) \
-        / (2 * dx**2)
+        (field[:, 0, 2:, 1:-1] + field[:, 0, :-2, 1:-1] - 2 * field[:, 0, 1:-1, 1:-1]) / dy**2 + \
+        (field[:, 0, 1:-1, 2:] + field[:, 0, 1:-1, :-2] - 2 * field[:, 0, 1:-1, 1:-1]) / dx**2 
 
     
     # laplacian[:, 0, 0, 1:-1] = \

@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 import numpy as np
@@ -6,7 +5,6 @@ import yaml
 import matplotlib.pyplot as plt
 from unet import UNet
 import os
-# from ..training.operators import ratio_potrhs
 
 
 with open('C:\Codigos/poissonSolverCNN/2D/solver/solver.yml', 'r') as file:
@@ -26,12 +24,6 @@ plots_dir = os.path.join('results')
 if not os.path.exists(plots_dir):
     os.makedirs(plots_dir)
 
-
-
-#Parameters to Nomalize
-alpha = 0.1
-# ratio_max = ratio_potrhs(alpha, Lx, Ly)
-
 # Define Gaussians's Functions
 def gaussian(x, y, amplitude, x0, y0, sigma_x, sigma_y):
     return amplitude * np.exp(-((x - x0) / sigma_x)**2
@@ -45,12 +37,16 @@ def gaussians(x, y, params):
     return profile
 
 def function2solve(x, y):
-    return 6 * (x + y)
-    # return np.sin(x) + np.sin(y)
+    return -6 * (x + y)
 
 def resolution(x, y):
     return x**3 + y**3 
-    # return np.sin(x) + np.sin(y)
+
+def ratio_potrhs(alpha, Lx, Ly):
+    return alpha / (np.pi**2 / 4)**2 / (1 / Lx**2 + 1 / Ly**2)
+
+alpha = 0.1
+ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 # Create input data and resolution data for the error
 input_data = function2solve(X, Y)
@@ -66,22 +62,18 @@ model.eval()
 
 # Solver
 output = model(input_data) 
-output_array = output.detach().numpy()[0, 0, :, :] * 0.205319645
-
-print(output_array[100, 100])
-print(resolution_data[100, 100])
-
+output_array = output.detach().numpy()[0, 0, :, :] * ratio_max
 
 # Plots
 fig, axs = plt.subplots(1, 3, figsize=(10, 5)) 
 fig.suptitle('Power 3', fontsize=16) 
 
 # Plot Input
-img_input = axs[0].imshow(output_array, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+img_output = axs[0].imshow(output_array, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[0].set_title('Ouput')
 axs[0].set_xlabel('X')
 axs[0].set_ylabel('Y')
-cbar_input = plt.colorbar(img_input, ax=axs[0], label='Magnitude')
+cbar_input = plt.colorbar(img_output, ax=axs[0], label='Magnitude')
 
 # Plot Resolution
 img_resolution = axs[1].imshow(resolution_data, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
@@ -92,11 +84,11 @@ cbar_input = plt.colorbar(img_resolution, ax=axs[1], label='Magnitude')
 
 # Plot Output
 realitve_error = abs(output_array - resolution_data)/ np.max(resolution_data)
-img_output = axs[2].imshow((realitve_error), extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+img_error = axs[2].imshow((realitve_error), extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[2].set_title('Relative Error')
 axs[2].set_xlabel('X')
 axs[2].set_ylabel('Y')
-cbar_output = plt.colorbar(img_output, ax=axs[2], label='Magnitude')
+cbar_output = plt.colorbar(img_error, ax=axs[2], label='Magnitude')
 plt.tight_layout()
 os.makedirs('results', exist_ok=True)
 plt.savefig(os.path.join(plots_dir, f'Test 14.png'))

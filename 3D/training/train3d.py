@@ -4,7 +4,7 @@ from msnet3d import MSNet3D
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
-from operators3d import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, InsideLoss, NewDirichletBoundaryLoss
+from operators3d import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, InsideLoss, DirichletBoundaryLossFunction
 import torch.optim as optim
 import os
 import argparse
@@ -49,10 +49,8 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 #Create Data
 dataset = np.load(data_dir) / ratio_max
-dataset = torch.tensor(dataset)
 if loss_type == 'inside':
-    target  = np.load(target_dir) 
-    target = torch.tensor(target)
+    target  = np.load(target_dir)
     data_set = TensorDataset(dataset, target)
     dataloader = DataLoader(data_set, batch_size=batch_size, shuffle=True)
 else:
@@ -78,25 +76,21 @@ elif loss_type == 'inside':
     inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
     print('Using Inside Loss \n')
 # dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-dirichlet_loss = NewDirichletBoundaryLoss(bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz)
+dirichlet_loss = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
 #Train loop
 for epoch in range (num_epochs):
     total_loss = 0
-    for batch_idx, batch_data in enumerate(dataloader):
+    for batch_idx, batch in enumerate(dataloader):
         if loss_type == 'inside':   
-            data, target = batch_data
+            data, target = batch
             target = target[:, np.newaxis, :, :].float()
         else:
-            data = batch_data
-
-        data = data[:, np.newaxis, :, :, :].float()
+            data = batch[:, np.newaxis, :, :, :].float()
         optimizer.zero_grad()
-
-        # Adjust data_norm shape to match output shape for broadcasting
+        data = torch.FloatTensor(data)
         data_norm = torch.ones((data.size(0), 1, 1, 1, 1)) / ratio_max
-
         output = model(data)
         
         if loss_type == 'laplacian':
@@ -111,4 +105,4 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'model_1.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'model_2.pth'))

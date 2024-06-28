@@ -12,12 +12,12 @@ mesh:
   xmin: 0
   ymin: 0
   zmin: 0
-  xmax: 1.0e-2
-  ymax: 1.0e-2
-  zmax: 1.0e-2
-  nnx: 70
-  nny: 70
-  nnz: 70
+  xmax: 5
+  ymax: 5
+  zmax: 5
+  nnx: 51
+  nny: 51
+  nnz: 51
 
 
 arch: 

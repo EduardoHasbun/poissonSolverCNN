@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# Create the model
 class CustomPadLayer3D(nn.Module):
     def __init__(self, kernel_size):
         super(CustomPadLayer3D, self).__init__()
