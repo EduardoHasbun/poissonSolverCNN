@@ -1,0 +1,73 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{formatmain}[Setup para formato]
+
+\RequirePackage{anysize}
+\RequirePackage{fancyhdr}  %configuracion
+\RequirePackage[T1]{fontenc}  %tildes y cosas
+\RequirePackage{ae,aecompl}
+\RequirePackage[utf8]{inputenc}  %tildes
+\RequirePackage{graphicx}  %imagenes
+\graphicspath{{img/}}  %donde van a estar (carpeta)
+\RequirePackage{parskip}
+\RequirePackage{subfigure}
+
+\RequirePackage[spanish]{varioref}
+\RequirePackage[activeacute,spanish]{babel}
+
+\RequirePackage{caption}
+\RequirePackage{lipsum}
+
+%indice
+\RequirePackage{color} 
+\RequirePackage{hyperref}
+\hypersetup{
+    colorlinks=false, 
+    linktoc=all,     
+    linkcolor=black,
+    urlcolor=black,
+}
+
+%importar pdfs
+\RequirePackage[export]{adjustbox}
+\RequirePackage{pdfpages}
+
+\RequirePackage{fancyvrb}
+%importar csv a tabla
+\RequirePackage{booktabs} % For \toprule, \midrule and \bottomrule
+\RequirePackage{siunitx} % Formats the units and values
+\RequirePackage{pgfplotstable} % Generates table from .csv
+% Setup siunitx:
+\sisetup{
+  round-mode          = places, % Rounds numbers
+  round-precision     = 2, % to 2 places
+}
+
+\RequirePackage{csvsimple,longtable,booktabs}
+
+
+%invisible section
+\newcommand\invisiblesection[1]{%
+  \refstepcounter{section}%
+  \addcontentsline{toc}{section}{\protect\numberline{\thesection}#1}%
+  \sectionmark{#1}}
+
+\newcommand\invisiblesubsection[1]{
+    \refstepcounter{subsection} 
+     \addcontentsline{toc}{subsection}{\protect\numberline{\thesubsection}#1}
+      \sectionmark{#1}}
+
+\renewcommand{\headrulewidth}{0.5pt} 
+\renewcommand{\footrulewidth}{0.5pt} 
+
+\patchcmd{\thebibliography}{\section*}{\section}{}{}
+
+\newcommand{\q}[1]{``#1''}
+
+\AtBeginDocument{%
+\renewcommand\tablename{Tabla}
+\def\figurename{Figura}}
+
+\newenvironment{resumen}[1]{\begin{center}
+    \Large \textbf{Resumen}
+\end{center} #1}
+  
