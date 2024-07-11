@@ -46,9 +46,10 @@ if loss_type == 'inside':
 #Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
+ratio_max = 5
 
 #Create Data
-dataset = np.load(data_dir) 
+dataset = np.load(data_dir) / ratio_max
 if loss_type == 'inside':
     target  = np.load(target_dir)
     data_set = TensorDataset(dataset, target)
@@ -105,4 +106,4 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'model_4.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'model_5.pth'))
