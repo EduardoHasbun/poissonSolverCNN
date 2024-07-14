@@ -37,8 +37,8 @@ Lx = xmax-xmin
 Ly = ymax-ymin
 Lz = zmax-zmin
 save_dir = os.getcwd()
-save_dir = os.path.join(save_dir, 'models')
 data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'data.npy')
+save_dir = os.path.join(save_dir, 'models')
 if loss_type == 'inside':
     target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.npy')
 
