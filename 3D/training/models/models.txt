@@ -5,3 +5,4 @@ model_4 = Same as model 3 but without ratio in the dataset
 model_5 = Domain 5.0, 51 nodes, same concept as working in 2D, bound_weight: 5.0e+5, lapl_weight: 2.0e2 , optimizer_lr: 4.e-3, ratio as 5
 model_6 = Domain 5.0, 51 nodes, same concept as working 2D, bound_weight: 5.0e+5, lapl_weight: 2.0e2 , optimizer_lr: 4.e-3, alpha = 1.0
 model_7 = Domain 5.0, 51 nodes, same concept as working 2D, bound_weight: 5.0e+5, lapl_weight: 2.0e2 , optimizer_lr: 4.e-3, alpha = 0.5
+model_8 = Domain 5.0, 51 nodes, same concept as working 2D, bound_weight: 5.0e+5, lapl_weight: 2.0e2 , optimizer_lr: 4.e-3, alpha = 0.3
