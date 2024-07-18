@@ -42,14 +42,12 @@ save_dir = os.path.join(save_dir, 'models')
 if loss_type == 'inside':
     target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.npy')
 
-
-
-#Parameters to Nomalize
-alpha = 1.0
+# Parameters to Nomalize
+alpha = 0.5
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 
-#Create Data
+# Create Data
 dataset = np.load(data_dir) 
 if loss_type == 'inside':
     target  = np.load(target_dir)
@@ -59,7 +57,7 @@ else:
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
-#Create model and losses
+# Create model and losses
 if model_type == 'UNet':
     model = UNet3D(scales, kernel_sizes=kernel_size, input_res=nnx)
     print('Using UNet model \n')
@@ -81,7 +79,7 @@ elif loss_type == 'inside':
 dirichlet_loss = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
-#Train loop
+# Train loop
 for epoch in range (num_epochs):
     total_loss = 0
     for batch_idx, batch in enumerate(dataloader):
@@ -107,4 +105,4 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'model_6.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'model_7.pth'))
