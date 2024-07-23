@@ -2,7 +2,5 @@ env/
 2D/dataset/generated/
 3D/dataset/generated/
 2D/training/unet_model.pth
-3D/working_models
 results
-2D/training/models
 Tesis/
