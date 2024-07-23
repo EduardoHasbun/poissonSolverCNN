@@ -42,7 +42,7 @@ def resolution(x,y,z):
 def ratio_potrhs(alpha, Lx, Ly, Lz):
     return alpha / (np.pi**2 / 8)**2 / (1 / Lx**2 + 1 / Ly**2 + 1 / Lz**2)
 
-alpha = 0.5
+alpha = 0.3
 ratio = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 input_data = function2Solve(X,Y,Z)

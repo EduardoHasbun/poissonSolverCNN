@@ -24,6 +24,7 @@ train_13_1 = Same as 13 but without ratio in the data
 test_13_2 = Same a 13 but with dataset scaled * 100
 test_14 = Same as 13_2 but with dataset divided by ratio max
 test_15 = Working model with domain 0.1 
+test_16 = WOrking model with domain 0.1 optimizer = 4e-6
 
 
 
