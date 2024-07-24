@@ -4,3 +4,5 @@ env/
 2D/training/unet_model.pth
 results
 Tesis/
+2D/training/models
+3D/training/models
