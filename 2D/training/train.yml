@@ -2,9 +2,9 @@ globals:                                    # Domain sizes and others, used to c
     nnx: 101                                # Number of points in x direction
     nny: 101                                # Number of points in y direction
     xmin: 0.0
-    xmax: 0.1
+    xmax: 5.0
     ymin: 0.0
-    ymax: 0.1
+    ymax: 5.0
     interface_center:
         x: 2.5
         y: 2.5
@@ -30,7 +30,7 @@ loss:
     args:
         bound_weight: 5.0e+8                  # Weighting of the loss on the boundaries (float)
         lapl_weight: 2.0e+7                # Weighting of the loss on the Laplacian (float)
-        optimizer_lr: 4.e-8   
+        optimizer_lr: 2.e-7   
 
 trainer:
     epochs: 200                              # Number of epochs

@@ -25,6 +25,7 @@ test_13_2 = Same a 13 but with dataset scaled * 100
 test_14 = Same as 13_2 but with dataset divided by ratio max
 test_15 = Working model with domain 0.1 
 test_16 = WOrking model with domain 0.1 optimizer = 4e-6
+test_17 = Working model with domain 5.0, bound_weight: 5.0e+8, lapl_weight: 2.0e+7, optimizer_lr: 2.e-7 
 
 
 
