@@ -39,7 +39,7 @@ alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 #Create Data
-dataset = np.load(data_dir).astype(np.float32) / ratio_max
+dataset = np.load(data_dir).astype(np.float32) * 10**6 / ratio_max
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
