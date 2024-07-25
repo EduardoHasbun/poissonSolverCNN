@@ -37,9 +37,10 @@ save_dir = os.path.join(save_dir, 'models')
 #Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly)
+ratio2 = ratio_max / 10**6
 
 #Create Data
-dataset = np.load(data_dir).astype(np.float32) / ratio_max * 1000000
+dataset = np.load(data_dir).astype(np.float32) / ratio2
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
