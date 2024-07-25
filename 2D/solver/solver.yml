@@ -27,9 +27,9 @@ network:
     nnx: 101
     nny: 101
     xmin: 0.0
-    xmax: 1.0e-2
+    xmax: 5.0
     ymin: 0.0
-    ymax: 1.0e-2
+    ymax: 5.0
 
   
   arch:
