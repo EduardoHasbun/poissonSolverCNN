@@ -8,7 +8,7 @@ import torch.optim as optim
 import os
 import argparse
 
-#Import external parameteres
+# Import external parameteres
 parser = argparse.ArgumentParser(description='Training')
 parser.add_argument('-c', '--cfg', type=str, default=None, help='Config filename')
 args = parser.parse_args()
@@ -34,25 +34,24 @@ data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data_5.n
 save_dir = os.path.join(save_dir, 'models')
 
 
-#Parameters to Nomalize
+# Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly)
-ratio2 = ratio_max / 10**6
 
-#Create Data
-dataset = np.load(data_dir).astype(np.float32) / ratio2
+# Create Data
+dataset = np.load(data_dir).astype(np.float32) / ratio_max
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
-#Create model and losses
+# Create model and losses
 model = UNet(scales, kernel_sizes=kernel_size, input_res = nnx)
 model = model.float()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
-# dirichlet_loss = DirichletBoundaryLoss(bound_weight)
+# Dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, nnx, nny)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
-#Train loop
+# Train loop
 for epoch in range (num_epochs):
     total_loss = 0
     for batch_idx, batch in enumerate(dataloader):
@@ -69,5 +68,5 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'test_20.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'test_21.pth'))
 
