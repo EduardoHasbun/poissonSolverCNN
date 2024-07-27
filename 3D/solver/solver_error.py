@@ -42,7 +42,7 @@ def resolution(x,y,z):
 def ratio_potrhs(alpha, Lx, Ly, Lz):
     return alpha / (np.pi**2 / 8)**2 / (1 / Lx**2 + 1 / Ly**2 + 1 / Lz**2)
 
-alpha = 0.5
+alpha = 0.4
 ratio = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 input_data = function2Solve(X,Y,Z)
@@ -56,7 +56,7 @@ if network_type == 'UNet':
     model = UNet(scales=scales, kernel_sizes=kernel_size, input_res=nnx)
 elif network_type == 'MSNet':
     model = MSnet(scales=scales, kernel_sizes=kernel_size, input_res=nnx)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/3D/training/models/model_7.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/3D/training/models/model_10.pth'))
 model = model.float()
 for param in model.parameters():
     param.data = param.data.float()
@@ -96,4 +96,4 @@ axs[2].set_ylabel('Y')
 cbar_output = plt.colorbar(img_error, ax=axs[2], label='Magnitude')
 plt.tight_layout()
 os.makedirs('results', exist_ok=True)
-plt.savefig(os.path.join(plots_dir, f'model3d_7.png'))
+plt.savefig(os.path.join(plots_dir, f'model3d_10.png'))
