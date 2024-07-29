@@ -47,7 +47,7 @@ model = model.float()
 model.eval() 
 
 # Solver
-output = model(input_data)
+output = model(input_data) 
 output_array = output.detach().numpy()[0, 0, :, :] 
 
 

@@ -30,7 +30,7 @@ test_18 = Working model with domain 5.0, bound_weight: 5.0e+8, lapl_weight: 2.0e
 test_19 = Working model with domain 5.0, bound_weight: 5.0e+8, lapl_weight: 2.0e+6, optimizer_lr: 5.e-3 THIS CONFIGURATION WORKS
 test_20 = Working model with domain 0.1, bound_weight: 5.0e+8, lapl_weight: 2.0e+6, optimizer_lr: 5.e-3 
 test_21 = Working model with domain 0.1, bound_weight: 5.0e+12, lapl_weight: 2.0e+6, optimizer_lr: 5.e-3 
-test_22 = Working model with domain 0.1, bound_weight: 5.0e+8, lapl_weight: 2.0e+4, optimizer_lr: 5.e-4 
+test_22 = Working model with domain 0.1, bound_weight: 5.0e+4, lapl_weight: 2.0e+1, optimizer_lr: 4.e-4 
 
 
 
