@@ -56,7 +56,7 @@ resolution_data = resolution(X, Y)
 
 # Create Model
 model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/test_21.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/test_22.pth'))
 model = model.float()
 model.eval() 
 
