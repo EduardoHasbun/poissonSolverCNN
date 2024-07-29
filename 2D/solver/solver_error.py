@@ -62,7 +62,7 @@ model.eval()
 
 # Solver
 output = model(input_data) 
-output_array = output.detach().numpy()[0, 0, :, :] * ratio_max
+output_array = output.detach().numpy()[0, 0, :, :] * ratio_max 
 
 # Plots
 fig, axs = plt.subplots(1, 3, figsize=(10, 5)) 
