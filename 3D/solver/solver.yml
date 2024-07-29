@@ -15,9 +15,9 @@ mesh:
   xmax: 5
   ymax: 5
   zmax: 5
-  nnx: 51
-  nny: 51
-  nnz: 51
+  nnx: 35
+  nny: 35
+  nnz: 35
 
 
 arch: 

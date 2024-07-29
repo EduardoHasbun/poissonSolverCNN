@@ -9,3 +9,7 @@ model_8 = Domain 5.0, 51 nodes, same concept as working 2D, bound_weight: 5.0e+5
 model_9 = Domain 5.0, 51 nodes, same concept as working 2D, bound_weight: 5.0e+5, lapl_weight: 2.0e2 , optimizer_lr: 4.e-4, alpha = 0.6
 model_10 = Domain 5.0, 51 nodes, same concept as wotking 2d, bound_weight: 5.0e+5, lapl_weight: 2.0e2 , optimizer_lr: 4.e-4, alpha = 0.4
 model_11 = Domain 5.0, 51 nodes, same concept as working 2D, bound_weight: 5.0e+5, lapl_weight: 2.0e2 , optimizer_lr: 4.e-4, alpha = 0.5
+
+
+
+test3d_1 = DOmain 5.0, 35 nodes, same concept as working 2D, bound_weight: 5.0e+2, lapl_weight: 2.0e1 , optimizer_lr: 4.e-4, alpha = 0.1
