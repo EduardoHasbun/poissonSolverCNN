@@ -113,7 +113,7 @@ class DirichletBoundaryLossFunction(nn.Module):
         def function2solve(x, y):
             return torch.pow(x,3) + torch.pow(y,3)
         
-        domain = function2solve(X, Y) * 10**6
+        domain = function2solve(X, Y) 
         self.domain = domain.unsqueeze(0)
 
     def forward(self, output, data_norm = 1.):
