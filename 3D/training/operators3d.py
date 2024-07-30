@@ -50,7 +50,7 @@ class DirichletBoundaryLossFunction(nn.Module):
         X, Y, Z = torch.meshgrid(x, y, z)
 
         def function2solve(x, y, z):
-            return torch.pow(x, 3) + torch.pow(y, 3) + torch.pow(z, 3) 
+            return torch.pow(x, 3) + torch.pow(y, 3) + torch.pow(z, 3) * 0.001
         
         domain = function2solve(X, Y, Z)
         self.domain = domain.unsqueeze(0)
