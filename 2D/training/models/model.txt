@@ -1,37 +1,4 @@
-interface_model_1: model considering epsilon only in the laplacian and without interfaceboundaryloss
-interface_model_2: model considering epsilon in the data and the laplacian, without interfaceboundaryloss
-interface_model_3: model considering epsilon only in the dataset, without interfaceloss
-interface_model_4: model considering epsilon only in data, without interfaceloss and ratio
-model_dirichlet_power3: boundary data of the funciton x^3 + y^3
-model_dirichlet_power3_without_ratio: boundary data of the function x^3 + y^3 without ratio
-
-
-
-test_1 = Domain 5.0, with ratio = 1
-test_2 = Domain 5.0, with ratio in output all = 5.0
-test_3 = Domain 5.0, with ratio in output laplacian = 10.0
-test_4 = Domain 5.0, with ratio in output all = 1 / 5.0
-test_5 = Domain 5.0, with ratio in output laplacian = 1 / 5.0
-test_6 = Domain 5.0, with ratio in output and boundary 
-test_7 = Domain 5.0, with ratio in output and boundary with lower optimizer and higher boudnary loss
-test_8 = Domain 5.0, without laplacian loss with data norm in the boudnary, its a control test 
-test_9 = Domain 5.0, without laplacian loss, with data norma in the boundary, control test
-test_10 = Domain 5.0, without boudnary in laplacian, more weight on boundary and all output is normalized
-test_11 = Domain 5.0, same weight as test_10, same epochs (30) considering boundary in the laplacian
-train_12 = Same as test_10, with greater value of optimizer and 150 epochs
-train_13 = Same as test_12 but with ratio in dataset
-train_13_1 = Same as 13 but without ratio in the data
-test_13_2 = Same a 13 but with dataset scaled * 100
-test_14 = Same as 13_2 but with dataset divided by ratio max
-test_15 = Working model with domain 0.1 
-test_16 = WOrking model with domain 0.1 optimizer = 4e-6
-test_17 = Working model with domain 5.0, bound_weight: 5.0e+8, lapl_weight: 2.0e+7, optimizer_lr: 2.e-7 
-test_18 = Working model with domain 5.0, bound_weight: 5.0e+8, lapl_weight: 2.0e+6, optimizer_lr: 2.e-9 
-test_19 = Working model with domain 5.0, bound_weight: 5.0e+8, lapl_weight: 2.0e+6, optimizer_lr: 5.e-3 THIS CONFIGURATION WORKS
-test_20 = Working model with domain 0.1, bound_weight: 5.0e+8, lapl_weight: 2.0e+6, optimizer_lr: 5.e-3 
-test_21 = Working model with domain 0.1, bound_weight: 5.0e+12, lapl_weight: 2.0e+6, optimizer_lr: 5.e-3 
-test_22 = Working model with domain 0.1, bound_weight: 5.0e+8, lapl_weight: 2.0e+6, optimizer_lr: 5.e-3 
-
+test_11 = Working model with domain 5.0, bound_weight: 5.0e+8, lapl_weight: 2.0e+6, optimizer_lr: 5.e-3 THIS CONFIGURATION WORKS
 
 
 
