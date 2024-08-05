@@ -13,5 +13,5 @@ model_11 = Domain 5.0, 51 nodes, same concept as working 2D, bound_weight: 5.0e+
 
 
 test3d_1 = Domain 5.0, 35 nodes, same concept as working 2D, bound_weight: 5.0e+3, lapl_weight: 2.0e+1 , optimizer_lr: 4.e-4, alpha = 0.1
-test3d_2 = Domain 5.0, 35 nodes, same concept as working 2D, bound_weight: 5.0e+2, lapl_weight: 2.0e+0 , optimizer_lr: 4.e-4, alpha = 0.1 boundary 
-test3d_3 = 5.0, 35, same, bound_weight: 5.0e+3, lapl_weight: 2.0e+1 , optimizer_lr: 4.e-4, alpha = 0.1
+test3d_2 = Domain 5.0, 35 nodes, same concept as working 2D, bound_weight: 5.0e+2, lapl_weight: 2.0e+0 , optimizer_lr: 4.e-4, alpha = 0.1 
+test3d_3 = 5.0, 35, same, bound_weight: 5.0e+3, lapl_weight: 2.0e+1 , optimizer_lr: 4.e-4, alpha = 0.1, boundary * 0.001 

@@ -56,7 +56,7 @@ if network_type == 'UNet':
     model = UNet(scales=scales, kernel_sizes=kernel_size, input_res=nnx)
 elif network_type == 'MSNet':
     model = MSnet(scales=scales, kernel_sizes=kernel_size, input_res=nnx)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/3D/training/models/test3d_2.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/3D/training/models/test3d_3.pth'))
 model = model.float()
 for param in model.parameters():
     param.data = param.data.float()
