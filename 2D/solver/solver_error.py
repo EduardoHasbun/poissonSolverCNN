@@ -46,8 +46,7 @@ def ratio_potrhs(alpha, Lx, Ly):
     return alpha / (np.pi**2 / 4)**2 / (1 / Lx**2 + 1 / Ly**2)
 
 alpha = 0.1
-# ratio_max = ratio_potrhs(alpha, Lx, Ly)
-ratio_max = 0.2
+ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 # Create input data and resolution data for the error
 input_data = function2solve(X, Y)
@@ -57,7 +56,7 @@ resolution_data = resolution(X, Y)
 
 # Create Model
 model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/test2d_1.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/test2d_3.pth'))
 model = model.float()
 model.eval() 
 
@@ -92,4 +91,4 @@ axs[2].set_ylabel('Y')
 cbar_output = plt.colorbar(img_error, ax=axs[2], label='Magnitude')
 plt.tight_layout()
 os.makedirs('results', exist_ok=True)
-plt.savefig(os.path.join(plots_dir, f'Test_2D 1.png'))
+plt.savefig(os.path.join(plots_dir, f'Test_2D 3.png'))
