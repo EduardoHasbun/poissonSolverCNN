@@ -37,6 +37,7 @@ save_dir = os.path.join(save_dir, 'models')
 # Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly)
+print(ratio_max)
 
 # Create Data
 dataset = np.load(data_dir).astype(np.float32) / ratio_max
