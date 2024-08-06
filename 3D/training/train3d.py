@@ -44,7 +44,9 @@ if loss_type == 'inside':
 
 # Parameters to Nomalize
 alpha = 0.1
-ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
+# ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
+ratio_max = 0.20531964
+
 
 
 # Create Data
