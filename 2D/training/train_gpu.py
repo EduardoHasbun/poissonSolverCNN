@@ -1,4 +1,2 @@
-tf.test.is_gpu_available(
-    cuda_only: bool = False,
-    min_cuda_compute_capability: Optional[tuple[int, int]] = None
-) -> bool
+import tensorflow as tf
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
