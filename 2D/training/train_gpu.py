@@ -43,10 +43,8 @@ dataloader = DataLoader(TensorDataset(torch.tensor(dataset)), batch_size=batch_s
 
 # Check for GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-if torch.cuda.is_available():
-    print(f"GPU: {torch.cuda.get_device_name(0)} is available.")
-else:
-    print("No GPU available. Training will run on CPU.")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(device)
 
 # Create model and losses
 model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx).to(device)
