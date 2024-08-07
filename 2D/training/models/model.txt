@@ -2,6 +2,7 @@ test2d_1 = Working model with domain 5.0, bound_weight: 5.0e+8, lapl_weight: 2.0
 test2d_2 = Working model with domain 0.1, bound_weight: 5.0e+8, lapl_weight: 2.0e+6, optimizer_lr: 5.e-3
 test2d_3 = Working model with domain 0.1, bound_weight: 5.0e+8, lapl_weight: 2.0e+6, optimizer_lr: 5.e-3, ratio = 0.2
 test2d_4 = Working model with domain 0.1, bound_weight: 5.0e+6, lapl_weight: 2.0e+2, optimizer_lr: 4.e-4
+test2d_5 = Configuration that works with gpu
 
 
 
