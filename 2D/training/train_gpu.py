@@ -1,12 +1,12 @@
 import torch
 from unet import UNet  # Make sure the 'unet' module is available in your working environment
-import yaml
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
 from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLossFunction
 import torch.optim as optim
 import os
 import argparse
+import yaml
 
 # Import external parameters
 parser = argparse.ArgumentParser(description='Training')
