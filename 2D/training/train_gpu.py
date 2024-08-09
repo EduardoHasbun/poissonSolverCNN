@@ -63,10 +63,10 @@ for epoch in range(num_epochs):
     for batch_idx, batch in enumerate(dataloader):
         data = batch[0].unsqueeze(1).to(device)  # Move data to device and add channel dimension
         optimizer.zero_grad()
-        data_norm = torch.ones((data.size(0), data.size(1), 1, 1), device=device) #/ ratio_max
+        # data_norm = torch.ones((data.size(0), data.size(1), 1, 1), device=device) #/ ratio_max
         output = model(data)
-        loss = laplacian_loss(output, data=data, data_norm=data_norm)
-        loss += dirichlet_loss_function(output, data_norm)
+        loss = laplacian_loss(output, data=data)
+        loss += dirichlet_loss_function(output)
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
