@@ -51,8 +51,8 @@ else:
 
 
 # Create model and losses
-model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx).to(device)
-model = model.float()
+model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
+model = model.float().to(device)
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, nnx, nny)
 optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -80,5 +80,5 @@ for epoch in range(num_epochs):
     total_loss = 0
     for batch_idx, batch in enumerate(dataloader):
         data = batch[0].unsqueeze(1).to(device)
-        data_norm = torch.ones((data.size(0), data.size(1), 1, 1))
-        print(batch_idx)
+        data_norm = torch.ones(data.size(0), data.size(1), 1, 1)
+        output = model(data)
