@@ -80,5 +80,4 @@ for epoch in range(num_epochs):
     total_loss = 0
     for batch_idx, batch in enumerate(dataloader):
         data = batch[0].unsqueeze(1).to(device)
-        data_norm = torch.ones(data.size(0), data.size(1), 1, 1)
-        output = model(data)
+        
