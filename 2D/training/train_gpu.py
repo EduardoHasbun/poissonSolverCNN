@@ -74,3 +74,10 @@ optimizer = optim.Adam(model.parameters(), lr=lr)
 #             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
 #     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
 #     torch.save(model.state_dict(), os.path.join(save_dir, 'test2d_4.pth'))
+
+
+for epoch in range(num_epochs):
+    total_loss = 0
+    for batch_idx, batch in enumerate(dataloader):
+        data = batch[0].unsqueeze(1).to(device)
+        data_norm = torch.ones((data.size(0), data.size(1), 1, 1))
