@@ -15,3 +15,8 @@ domain:
   ymax: 5.0
   zmin: 0.0
   zmax: 5.0
+  interface_center:
+        x: 2.5
+        y: 2.5
+        z: 2.5
+  interface_radius: 1.5
