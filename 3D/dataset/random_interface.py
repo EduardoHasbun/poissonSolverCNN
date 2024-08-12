@@ -82,12 +82,9 @@ if __name__ == '__main__':
 
         data_array[idx, interface_mask] = inside_domain[interface_mask] 
         data_array[idx, ~interface_mask] = outside_domain[~interface_mask] 
-        # inside_domain_array[idx] = inside_domain 
-        # outside_domain_array[idx] = outside_domain 
+        inside_domain_array[idx] = inside_domain 
+        outside_domain_array[idx] = outside_domain 
 
-        plt.imshow(data_array[idx])
-        plt.show()
-        
         if ploting and idx%100==0:
             plt.figure(figsize=(8, 6))
             plt.imshow(data_array[idx], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
