@@ -1,3 +1,8 @@
+general:
+    name_case: 'interface3d_1'
+    data_dir: 'dataset/generated/domain.npy'
+
+
 globals:                                    # Domain sizes and others, used to compute global attributes
     nnx: 35                                # Number of points in x direction
     nny: 35                                # Number of points in y direction

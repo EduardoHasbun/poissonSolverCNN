@@ -1,5 +1,5 @@
 import torch
-from unet import UNet  # Make sure the 'unet' module is available in your working environment
+from unet import SimpleUNet 
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
 from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLossFunction
@@ -51,7 +51,8 @@ else:
 
 
 # Create model and losses
-model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
+# model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
+model = SimpleUNet()
 model = model.float().to(device)
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, nnx, nny)

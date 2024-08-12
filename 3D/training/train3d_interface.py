@@ -32,6 +32,7 @@ interface_radius = cfg['globals']['interface_radius']
 epsilon_inside, epsilon_outside = cfg['globals']['epsilon_inside'], cfg['globals']['epsilon_outside']
 Lx, Ly, Lz = xmax - xmin, ymax - ymin, zmax - zmin
 dx, dy = Lx / nnx, Ly / nny
+name_case = cfg['general']['name_case']
 save_dir = os.getcwd()
 data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'domain.npy')
 save_dir = os.path.join(save_dir, 'models')
@@ -91,5 +92,5 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_4.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, name_case))
 

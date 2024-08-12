@@ -4,4 +4,4 @@ test3d_2 = Domain 5.0, 35 nodes, bound_weight: 5.0e+3, lapl_weight: 2.0e+1 , opt
 
 
 
-interface_1 = Domain 5.0, 35 nodes, 
+interface3d_1 = Domain 5.0, 35 nodes, 
