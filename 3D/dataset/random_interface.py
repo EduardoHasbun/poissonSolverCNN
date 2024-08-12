@@ -56,8 +56,8 @@ def generate_random(i):
 
     data_lower_inside = 2 * np.random.random((nnx_lower, nny_lower, nnz_lower)) - 1
     data_lower_outside = 2 * np.random.random((nnx_lower, nny_lower, nnz_lower)) - 1
-    f_inside = rgi((x_lower, y_lower,), data_lower_inside, method='cubic')
-    f_outside = rgi((x_lower, y_lower,), data_lower_outside, method='cubic')
+    f_inside = rgi((x_lower, y_lower, z_lower), data_lower_inside, method='cubic')
+    f_outside = rgi((x_lower, y_lower, z_lower), data_lower_outside, method='cubic')
     return f_inside(points).reshape((nnx, nny, nnz)), f_outside(points).reshape((nnx, nny, nnz))
 
 
