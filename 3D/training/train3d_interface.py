@@ -1,5 +1,5 @@
 import torch
-from unet3d import UNet
+from unet3d import UNet3D
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
