@@ -27,7 +27,7 @@ scales = [value for key, value in sorted(scales_data.items())]
 kernel_sizes = cfg['arch']['kernel_sizes']
 xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz = cfg['globals']['xmin'], cfg['globals']['xmax'], cfg['globals']['ymin'], cfg['globals']['ymax'],\
             cfg['globals']['zmin'], cfg['globals']['zmax'], cfg['globals']['nnx'], cfg['globals']['nny'], cfg['globals']['nnz']
-interface_center = (cfg['globals']['interface_center']['x'], cfg['globals']['interface_center']['y'])
+interface_center = (cfg['globals']['interface_center']['x'], cfg['globals']['interface_center']['y'], cfg['globals']['z'])
 interface_radius = cfg['globals']['interface_radius']
 epsilon_inside, epsilon_outside = cfg['globals']['epsilon_inside'], cfg['globals']['epsilon_outside']
 Lx, Ly, Lz = xmax - xmin, ymax - ymin, zmax - zmin
@@ -92,5 +92,5 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, name_case))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'interface3d_1.pth'))
 
