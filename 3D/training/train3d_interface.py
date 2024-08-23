@@ -1,14 +1,14 @@
 import torch
-from unet3d import UNet3D
+from unet3d_interface import UNet3D
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
-from operators3d import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss
+from operators3d import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, InterfaceBoundaryLoss
 import torch.optim as optim
 import os
 import argparse
 
-#Import external parameteres
+# Import external parameteres
 parser = argparse.ArgumentParser(description='Training')
 parser.add_argument('-c', '--cfg', type=str, default=None, help='Config filename')
 args = parser.parse_args()
@@ -31,7 +31,7 @@ interface_center = (cfg['globals']['interface_center']['x'], cfg['globals']['int
 interface_radius = cfg['globals']['interface_radius']
 epsilon_inside, epsilon_outside = cfg['globals']['epsilon_inside'], cfg['globals']['epsilon_outside']
 Lx, Ly, Lz = xmax - xmin, ymax - ymin, zmax - zmin
-dx, dy = Lx / nnx, Ly / nny
+dx, dy, dz = Lx / nnx, Ly / nny, Lz / nnz
 name_case = cfg['general']['name_case']
 save_dir = os.getcwd()
 data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'domain.npy')
@@ -55,11 +55,11 @@ for i in range(1, interface_mask.shape[0]):
                 interface_boundary[i, j, k] = True
 
 
-#Parameters to Nomalize
+# Parameters to Nomalize
 alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
-#Create Data
+# Create Data
 dataset = np.load(data_dir).astype(np.float32) 
 dataset[:, interface_mask] /= epsilon_inside
 dataset[:, ~interface_mask] /= epsilon_outside
@@ -67,15 +67,15 @@ dataset /= ratio_max
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
-#Create model and losses
-model = UNet3D(scales, kernel_sizes=kernel_size, input_res = nnx)
+# Create model and losses
+model = UNet3D(scales, kernel_sizes=kernel_size, input_res = nnx, mask = interface_mask)
 model = model.float()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-# interface_loss = InterfaceBoundaryLoss(interface_mask, epsilon_inside, epsilon_outside, dx, dy, interface_center)
+interface_loss = InterfaceBoundaryLoss(bound_weight, interface_boundary, epsilon_inside, epsilon_outside, dx, dy, dz)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
-#Train loop
+# Train loop
 for epoch in range (num_epochs):
     total_loss = 0
     for batch_idx, batch in enumerate(dataloader):
@@ -83,14 +83,16 @@ for epoch in range (num_epochs):
         optimizer.zero_grad()
         data = torch.FloatTensor(data) 
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
-        output = model(data)
-        loss = laplacian_loss(output, data = data, data_norm = data_norm)
-        loss += dirichlet_loss(output)
+        subdomain_in, subdomain_out = model(data)
+        loss = laplacian_loss(subdomain_in, data = data, data_norm = data_norm)
+        loss += laplacian_loss(subdomain_out, data = data, data_norm = data_norm)
+        loss += dirichlet_loss(subdomain_out)
+        loss += interface_loss(subdomain_in, subdomain_out)
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'interface3d_1.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'interface3d_2.pth'))
 

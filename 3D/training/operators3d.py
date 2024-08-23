@@ -38,6 +38,41 @@ class DirichletBoundaryLoss(nn.Module):
         bnd_loss += F.mse_loss(output[:, 0, :, :, -1], torch.zeros_like(output[:, 0, :, :, -1]))
         return bnd_loss * self.weight
     
+class InterfaceBoundaryLoss(nn.module):
+    def __init__(self, bound_weight, boundary, e_in, e_out, dx, dy, dz):
+        super().__init__()
+        self.weight = bound_weight
+        self.boudnary = boundary
+        self.e_in = e_in
+        self.e_out = e_out
+        self.dx = dx
+        self.dy = dy
+        self.dz = dz
+
+    def compute_gradients(output, dx, dy, dz):
+        # Calcular gradientes en la dirección x
+        grad_x = (output[:, 0, 1:, :, :] - output[:, 0, :-1, :, :]) / dx
+        # Calcular gradientes en la dirección y
+        grad_y = (output[:, 0, :, 1:, :] - output[:, 0, :, :-1, :]) / dy
+        # Calcular gradientes en la dirección z
+        grad_z = (output[:, 0, :, :, 1:] - output[:, 0, :, :, :-1]) / dz
+        return grad_x, grad_y, grad_z
+
+
+    def forward(self, subdomain1, subdomain2, constant_value = 1.0):
+        loss = F.mse_loss(subdomain1[self.boudnary], subdomain2[self.boudnary])
+        grad_x_sub1, grad_y_sub1, grad_z_sub1 = self.compute_gradients(subdomain1, self.dx, self.dy, self.dz)
+        grad_x_sub2, grad_y_sub2, grad_z_sub2 = self.compute_gradients(subdomain2, self.dx, self.dy, self.dz)
+        grad_x_sub1_interface, grad_y_sub1_interface, grad_z_sub1_interface = grad_x_sub1[self.boundary], grad_y_sub1[self.boundary], grad_z_sub1[self.boundary]
+        grad_x_sub2_interface, grad_y_sub2_interface, grad_z_sub2_interface = grad_x_sub2[self.boundary], grad_y_sub2[self.boundary], grad_z_sub2[self.boundary]
+        loss += torch.mean((self.e_in * grad_x_sub1_interface - constant_value) ** 2)
+        loss += torch.mean((self.e_in * grad_y_sub1_interface - constant_value) ** 2)
+        loss += torch.mean((self.e_in * grad_z_sub1_interface - constant_value) ** 2)
+        loss += torch.mean((self.e_in * grad_x_sub2_interface - constant_value) ** 2)
+        loss += torch.mean((self.e_in * grad_y_sub2_interface - constant_value) ** 2)
+        loss += torch.mean((self.e_in * grad_z_sub2_interface - constant_value) ** 2)
+        return loss * self.weight
+    
 
 class DirichletBoundaryLossFunction(nn.Module):
     def __init__(self, bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz):
@@ -76,8 +111,6 @@ class InsideLoss(nn.Module):
 
     def forward(self, output, target):
         return F.mse_loss(output[:, 0, 1:-1, 1:-1, 1:-1], target[:, 0, 1:-1, 1:-1, 1:-1]) * self.weight
-
-
 
 
 def lapl(field, dx, dy, dz):
@@ -175,8 +208,6 @@ def lapl(field, dx, dy, dz):
     #     (2 * field[:, 0, -1, -1, -1] - 5 * field[:, 0, -1, -1, -2] + 4 * field[:, 0, -1, -1, -3] - field[:, 0, -1, -1, -4]) / dz**2
 
     return laplacian
-
-
 
 
 def ratio_potrhs(alpha, Lx, Ly, Lz):

@@ -23,7 +23,8 @@ if not os.path.exists(plots_dir):
 xmin, xmax, nnx = cfg['mesh']['xmin'], cfg['mesh']['xmax'], cfg['mesh']['nnx']
 ymin, ymax, nny = cfg['mesh']['ymin'], cfg['mesh']['ymax'], cfg['mesh']['nny']
 zmin, zmax, nnz = cfg['mesh']['zmin'], cfg['mesh']['zmax'], cfg['mesh']['nnz']
-interface_center, interface_radius = (cfg['globals']['interface_center']['x'], cfg['globals']['interface_center']['y'], cfg['globals']['z']), cfg['globals']['interface_radius']
+interface_center, interface_radius = (cfg['mesh']['interface_center']['x'], cfg['mesh']['interface_center']['y'], cfg['mesh']['interface_center']['z']), \
+    cfg['mesh']['interface_radius']
 x_1d = np.linspace(xmin, xmax, nnx)
 y_1d = np.linspace(ymin, ymax, nny)
 z_1d = np.linspace(zmin, zmax, nnz)
@@ -59,7 +60,7 @@ if network_type == 'UNet':
     model = UNet(scales=scales, kernel_sizes=kernel_size, input_res=nnx)
 elif network_type == 'MSNet':
     model = MSnet(scales=scales, kernel_sizes=kernel_size, input_res=nnx)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/3D/training/laplacian_loss.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/3D/training/models/interface3d_1.pth'))
 model = model.float()
 for param in model.parameters():
     param.data = param.data.float()
@@ -80,7 +81,7 @@ fig, axs = plt.subplots(2, 2, figsize=(12, 10))
 fig.suptitle('Interface model 1', fontsize=16)
 
 # Plot Input
-img_input = axs[0, 0].imshow(input_data_slice[0, 0, :, :], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+img_input = axs[0, 0].imshow(input_data_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[0, 0].set_title('Input')
 axs[0, 0].set_xlabel('X')
 axs[0, 0].set_ylabel('Y')
@@ -111,4 +112,4 @@ axs[1, 1].set_ylabel('Y')
 # Adjust layout
 plt.tight_layout(rect=[0, 0, 1, 0.96])  # Leave space for suptitle
 os.makedirs(plots_dir, exist_ok=True)
-plt.savefig(os.path.join(plots_dir, 'Interface 3D: 1.png'))
+plt.savefig(os.path.join(plots_dir, 'Interface_3D 1.png'))

@@ -48,7 +48,6 @@ alpha = 0.1
 ratio_max = 0.20531964
 
 
-
 # Create Data
 dataset = np.load(data_dir) 
 if loss_type == 'inside':
