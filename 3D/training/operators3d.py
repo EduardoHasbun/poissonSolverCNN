@@ -60,7 +60,7 @@ class InterfaceBoundaryLoss(nn.Module):
 
 
     def forward(self, subdomain1, subdomain2, constant_value = 1.0):
-        loss = F.mse_loss(subdomain1[self.boudnary], subdomain2[self.boudnary])
+        loss = F.mse_loss(subdomain1[:, 0, self.boudnary], subdomain2[:, 0, self.boudnary])
         grad_x_sub1, grad_y_sub1, grad_z_sub1 = self.compute_gradients(subdomain1, self.dx, self.dy, self.dz)
         grad_x_sub2, grad_y_sub2, grad_z_sub2 = self.compute_gradients(subdomain2, self.dx, self.dy, self.dz)
         grad_x_sub1_interface, grad_y_sub1_interface, grad_z_sub1_interface = grad_x_sub1[self.boundary], grad_y_sub1[self.boundary], grad_z_sub1[self.boundary]
