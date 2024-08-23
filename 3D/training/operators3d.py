@@ -42,7 +42,7 @@ class InterfaceBoundaryLoss(nn.Module):
     def __init__(self, bound_weight, boundary, e_in, e_out, dx, dy, dz):
         super().__init__()
         self.weight = bound_weight
-        self.boudnary = boundary
+        self.boundary = boundary
         self.e_in = e_in
         self.e_out = e_out
         self.dx = dx
@@ -60,7 +60,7 @@ class InterfaceBoundaryLoss(nn.Module):
 
 
     def forward(self, subdomain1, subdomain2, constant_value = 1.0):
-        loss = F.mse_loss(subdomain1[:, 0, self.boudnary], subdomain2[:, 0, self.boudnary])
+        loss = F.mse_loss(subdomain1[:, 0, self.boudnary], subdomain2[:, 0, self.boundary])
         grad_x_sub1, grad_y_sub1, grad_z_sub1 = self.compute_gradients(subdomain1)
         grad_x_sub2, grad_y_sub2, grad_z_sub2 = self.compute_gradients(subdomain2)
         grad_x_sub1_interface, grad_y_sub1_interface, grad_z_sub1_interface = grad_x_sub1[self.boundary], grad_y_sub1[self.boundary], grad_z_sub1[self.boundary]
