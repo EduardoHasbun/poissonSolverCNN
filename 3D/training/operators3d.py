@@ -49,20 +49,20 @@ class InterfaceBoundaryLoss(nn.Module):
         self.dy = dy
         self.dz = dz
 
-    def compute_gradients(output, dx, dy, dz):
+    def compute_gradients(self, output):
         # Calcular gradientes en la dirección x
-        grad_x = (output[:, 0, 1:, :, :] - output[:, 0, :-1, :, :]) / dx
+        grad_x = (output[:, 0, 1:, :, :] - output[:, 0, :-1, :, :]) / self.dx
         # Calcular gradientes en la dirección y
-        grad_y = (output[:, 0, :, 1:, :] - output[:, 0, :, :-1, :]) / dy
+        grad_y = (output[:, 0, :, 1:, :] - output[:, 0, :, :-1, :]) / self.dy
         # Calcular gradientes en la dirección z
-        grad_z = (output[:, 0, :, :, 1:] - output[:, 0, :, :, :-1]) / dz
+        grad_z = (output[:, 0, :, :, 1:] - output[:, 0, :, :, :-1]) / self.dz
         return grad_x, grad_y, grad_z
 
 
     def forward(self, subdomain1, subdomain2, constant_value = 1.0):
         loss = F.mse_loss(subdomain1[:, 0, self.boudnary], subdomain2[:, 0, self.boudnary])
-        grad_x_sub1, grad_y_sub1, grad_z_sub1 = self.compute_gradients(subdomain1, self.dx, self.dy, self.dz)
-        grad_x_sub2, grad_y_sub2, grad_z_sub2 = self.compute_gradients(subdomain2, self.dx, self.dy, self.dz)
+        grad_x_sub1, grad_y_sub1, grad_z_sub1 = self.compute_gradients(subdomain1)
+        grad_x_sub2, grad_y_sub2, grad_z_sub2 = self.compute_gradients(subdomain2)
         grad_x_sub1_interface, grad_y_sub1_interface, grad_z_sub1_interface = grad_x_sub1[self.boundary], grad_y_sub1[self.boundary], grad_z_sub1[self.boundary]
         grad_x_sub2_interface, grad_y_sub2_interface, grad_z_sub2_interface = grad_x_sub2[self.boundary], grad_y_sub2[self.boundary], grad_z_sub2[self.boundary]
         loss += torch.mean((self.e_in * grad_x_sub1_interface - constant_value) ** 2)
