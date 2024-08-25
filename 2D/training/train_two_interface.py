@@ -61,7 +61,7 @@ dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
 # Create models and losses
-model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
+model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, mask = interface_mask)
 model = model.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
