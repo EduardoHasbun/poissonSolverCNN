@@ -32,7 +32,7 @@ class ConvBlock(nn.Module):
             else:
                 layers.append(nn.Conv2d(fmaps[i], fmaps[i + 1], 
                     kernel_size=kernel_size, 
-                    padding=(int((kernel_size - 1) / 2), int((kernel_size - 1) / 2), int((kernel_size - 1) / 2)), 
+                    padding=(int((kernel_size - 1) / 2), int((kernel_size - 1) / 2)), 
                     padding_mode=padding_mode))
             # No ReLu at the very last layer
             if i != len(fmaps) - 2 or block_type != 'out':
