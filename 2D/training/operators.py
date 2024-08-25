@@ -53,7 +53,7 @@ class InterfaceBoundaryLoss(nn.Module):
     def compute_gradients(self, output, interface_mask):
         grad_x = torch.zeros_like(output)
         grad_y = torch.zeros_like(output)
-        interface_mask[self.boundary] = True
+        interface_mask[self.boundary] == True
         for i in range(1, output.shape[2]):
             for j in range(1, output.shape[3]):
                 if interface_mask[i, j] == interface_mask[i - 1, j]:
