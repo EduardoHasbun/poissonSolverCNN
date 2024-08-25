@@ -52,14 +52,14 @@ class UNet_Submodel(nn.Module):
     # Este será un submodelo UNet para cada subdominio
     def __init__(self, scales, kernel_sizes, input_res, 
                     padding_mode='zeros', upsample_mode='nearest'):
-        super(UNet_Submodel, self).__init__()
+        super(UNet, self).__init__()
         self.scales = scales
         self.max_scale = len(scales) - 1
         if isinstance(kernel_sizes, int):   
             self.kernel_sizes = [kernel_sizes] * len(scales)
         else:   
             self.kernel_sizes = kernel_sizes
-
+        
         # create down_blocks, bottom_fmaps and up_blocks
         in_fmaps = self.scales[0][0]
 
@@ -74,7 +74,7 @@ class UNet_Submodel(nn.Module):
             up_blocks.append(self.scales[local_depth][1])
         
         out_fmaps = self.scales[0][1]
-
+        
         # For upsample the list of resolution is needed when 
         # the number of points is not a power of 2
         if isinstance(input_res, list):
@@ -102,7 +102,7 @@ class UNet_Submodel(nn.Module):
         for iup, up_fmaps in enumerate(up_blocks):
             self.ConvsUp.append(ConvBlock(up_fmaps, 'up', self.kernel_sizes[-2 - iup], 
                 padding_mode=padding_mode, upsample_mode=upsample_mode, out_size=list_res.pop()))
-
+        
         # Out layer
         self.ConvsUp.append(ConvBlock(out_fmaps, 'out', self.kernel_sizes[0],
                 padding_mode=padding_mode))
