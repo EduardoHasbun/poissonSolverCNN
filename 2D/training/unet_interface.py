@@ -5,11 +5,12 @@ import torch.nn.functional as F
 class CustomPadLayer(nn.Module):
     def __init__(self, kernel_size):
         super(CustomPadLayer, self).__init__()
-        self.padx = int((kernel_size - 1) / 2)
-        self.pady = int((kernel_size - 1) / 2)
+        self.padx = int((kernel_size[1] - 1) / 2)
+        self.pady = int((kernel_size[0] - 1) / 2)
 
     def forward(self, x):
-        x = F.pad(x, (self.padx, self.padx, self.pady, self.pady), "constant", 0)
+        x = F.pad(x, (0, 0, self.pady, 0), "replicate")
+        x = F.pad(x, (self.padx, self.padx, 0, self.pady), "constant", 0)
         return x
 
 class ConvBlock(nn.Module):
