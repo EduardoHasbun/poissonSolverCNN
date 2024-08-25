@@ -52,7 +52,7 @@ class UNet_Submodel(nn.Module):
     # Este será un submodelo UNet para cada subdominio
     def __init__(self, scales, kernel_sizes, input_res, 
                     padding_mode='zeros', upsample_mode='nearest'):
-        super(UNet, self).__init__()
+        super(UNet_Submodel, self).__init__()
         self.scales = scales
         self.max_scale = len(scales) - 1
         if isinstance(kernel_sizes, int):   
