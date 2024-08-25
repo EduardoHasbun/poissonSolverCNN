@@ -108,6 +108,7 @@ class UNet_Submodel(nn.Module):
                 padding_mode=padding_mode))
 
     def forward(self, x):
+        # List of the temporary x that are used for linking with the up branch
         inputs_down = list()
 
         # Apply the down loop
