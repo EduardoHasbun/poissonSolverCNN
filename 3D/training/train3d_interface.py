@@ -83,7 +83,9 @@ for epoch in range (num_epochs):
         optimizer.zero_grad()
         data = torch.FloatTensor(data) 
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
+
         subdomain_in, subdomain_out = model(data)
+        
         loss = laplacian_loss(subdomain_in, data = data, data_norm = data_norm)
         loss += laplacian_loss(subdomain_out, data = data, data_norm = data_norm)
         loss += dirichlet_loss(subdomain_out)

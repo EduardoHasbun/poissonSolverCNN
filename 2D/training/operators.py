@@ -38,65 +38,48 @@ class DirichletBoundaryLoss(nn.Module):
     
 
 
-    
-    
 
-# class InterfaceBoundaryLoss(nn.Module):
-#     def __init__(self, bound_weight, interface_mask, epsilon_1, epsilon_2, dx, dy, interface_center):
-#         super().__init__()
-#         self.weight = bound_weight
-#         self.interface_mask = interface_mask
-#         self.epsilon_1 = epsilon_1
-#         self.epsilon_2 = epsilon_2
-#         self.dx = dx
-#         self.dy = dy
-#         self.interface_center = interface_center
+class InterfaceBoundaryLoss(nn.Module):
+    def __init__(self, bound_weight, boundary, interface, e_in, e_out, dx, dy):
+        super().__init__()
+        self.weight = bound_weight
+        self.boundary = boundary
+        self.interface = interface
+        self.e_in = e_in
+        self.e_out = e_out
+        self.dx = dx
+        self.dy = dy
 
-#         # Compute the interface boundary coordinates once during initialization
-#         self.interface_boundary_coords = torch.nonzero(interface_mask, as_tuple=False)
+    def compute_gradients(self, output, interface_mask):
+        grad_x = torch.zeros_like(output)
+        grad_y = torch.zeros_like(output)
+        interface_mask[self.boundary] = True
+        for i in range(1, output.shape[2]):
+            for j in range(1, output.shape[3]):
+                if interface_mask[i, j] == interface_mask[i - 1, j]:
+                    grad_x[:, 0, i, j] = (output[:, 0, i, j] - output[:, 0, i - 1, j]) / self.dx
+                elif interface_mask[i, j] == interface_mask[i + 1, j]:
+                    grad_x[:, 0, i, j] = (output[:, 0, i, j] - output[:, 0, i + 1, j]) / self.dx
 
-#     def forward(self, output_in, output_out):
-#         # Continuity of potential
-#         bnd_loss_potential = F.mse_loss(output_in[:, 0, self.interface_mask], output_out[:, 0, self.interface_mask])
+                if interface_mask[i, j] == interface_mask[i, j - 1]:
+                    grad_y[:, 0, i, j] = (output[:, 0, i, j] - output[:, 0, i, j - 1]) / self.dy
+                elif interface_mask[i, j] == interface_mask[i, j + 1]:
+                    grad_y[:, 0, i, j] = (output[:, 0, i, j] - output[:, 0, i, j + 1]) / self.dy
+                
+        return grad_x, grad_y
 
-#         # Compute normal derivatives at the interface
-#         dphi1_dn = self.compute_normal_derivative(output_in[:, 0])
-#         dphi2_dn = self.compute_normal_derivative(output_out[:, 0])
 
-#         # Continuity of normal component of displacement field
-#         normal_derivative_mismatch = self.epsilon_1 * dphi1_dn - self.epsilon_2 * dphi2_dn
-#         bnd_loss_derivative = torch.mean(normal_derivative_mismatch[self.interface_mask] ** 2)
-
-#         # Total boundary loss
-#         total_loss = self.weight * (bnd_loss_potential + bnd_loss_derivative)
-#         return total_loss
-
-#     def compute_normal_derivative(self, phi):
-#         # Get the coordinates of the boundary points
-#         boundary_coords = self.interface_boundary_coords
-
-#         normal_x = (boundary_coords[:, 1].float() - self.interface_center[0])
-#         normal_y = (boundary_coords[:, 0].float() - self.interface_center[1])
-#         norm = torch.sqrt(normal_x**2 + normal_y**2)
-#         normal_x /= norm
-#         normal_y /= norm
-
-#         # Compute derivatives using central differences
-#         dphi_dx = (phi[:, 2:] - phi[:, :-2]) / (2 * self.dx)
-#         dphi_dy = (phi[2:, :] - phi[:-2, :]) / (2 * self.dy)
-
-#         # Pad derivatives to match original phi shape
-#         dphi_dx = F.pad(dphi_dx, (0, 0, 1, 1), mode='replicate')
-#         dphi_dy = F.pad(dphi_dy, (1, 1, 0, 0), mode='replicate')
-
-#         # Initialize normal derivatives with zeros
-#         dphi_dn = torch.zeros_like(phi)
-
-#         # Assign normal derivatives at boundary coordinates
-#         for i, coord in enumerate(boundary_coords):
-#             dphi_dn[coord[0], coord[1]] = normal_x[i] * dphi_dx[coord[0], coord[1]] + normal_y[i] * dphi_dy[coord[0], coord[1]]
-
-#         return dphi_dn
+    def forward(self, subdomain1, subdomain2, constant_value = 1.0):
+        loss = F.mse_loss(subdomain1[:, 0, self.boundary], subdomain2[:, 0, self.boundary])
+        grad_x_sub1, grad_y_sub1 = self.compute_gradients(subdomain1, self.interface)
+        grad_x_sub2, grad_y_sub2 = self.compute_gradients(subdomain2, ~self.interface)
+        grad_x_sub1_interface, grad_y_sub1_interface = grad_x_sub1[:, self.boundary], grad_y_sub1[:, self.boundary]
+        grad_x_sub2_interface, grad_y_sub2_interface = grad_x_sub2[:, self.boundary], grad_y_sub2[:, self.boundary]
+        loss += torch.mean((self.e_in * grad_x_sub1_interface - constant_value) ** 2)
+        loss += torch.mean((self.e_in * grad_y_sub1_interface - constant_value) ** 2)
+        loss += torch.mean((self.e_in * grad_x_sub2_interface - constant_value) ** 2)
+        loss += torch.mean((self.e_in * grad_y_sub2_interface - constant_value) ** 2)
+        return loss * self.weight
 
     
 
