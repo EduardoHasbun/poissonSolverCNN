@@ -45,6 +45,7 @@ class InterfaceBoundaryLoss(nn.Module):
         self.weight = bound_weight
         self.boundary = boundary
         self.interface = interface
+        print(self.interface)
         self.e_in = e_in
         self.e_out = e_out
         self.dx = dx
