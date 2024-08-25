@@ -45,7 +45,6 @@ class InterfaceBoundaryLoss(nn.Module):
         self.weight = bound_weight
         self.boundary = boundary
         self.interface = interface
-        print(self.interface)
         self.e_in = e_in
         self.e_out = e_out
         self.dx = dx
@@ -74,8 +73,8 @@ class InterfaceBoundaryLoss(nn.Module):
         loss = F.mse_loss(subdomain1[:, 0, self.boundary], subdomain2[:, 0, self.boundary])
         grad_x_sub1, grad_y_sub1 = self.compute_gradients(subdomain1, self.interface)
         grad_x_sub2, grad_y_sub2 = self.compute_gradients(subdomain2, ~self.interface)
-        grad_x_sub1_interface, grad_y_sub1_interface = grad_x_sub1[:, self.boundary], grad_y_sub1[:, self.boundary]
-        grad_x_sub2_interface, grad_y_sub2_interface = grad_x_sub2[:, self.boundary], grad_y_sub2[:, self.boundary]
+        grad_x_sub1_interface, grad_y_sub1_interface = grad_x_sub1[:, 0, self.boundary], grad_y_sub1[:, 0, self.boundary]
+        grad_x_sub2_interface, grad_y_sub2_interface = grad_x_sub2[:, 0, self.boundary], grad_y_sub2[:, 0, self.boundary]
         loss += torch.mean((self.e_in * grad_x_sub1_interface - constant_value) ** 2)
         loss += torch.mean((self.e_in * grad_y_sub1_interface - constant_value) ** 2)
         loss += torch.mean((self.e_in * grad_x_sub2_interface - constant_value) ** 2)
