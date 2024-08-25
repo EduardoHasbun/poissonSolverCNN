@@ -71,14 +71,14 @@ class InterfaceBoundaryLoss(nn.Module):
 
     def forward(self, subdomain1, subdomain2, constant_value = 1.0):
         loss = F.mse_loss(subdomain1[:, 0, self.boundary], subdomain2[:, 0, self.boundary])
-        grad_x_sub1, grad_y_sub1 = self.compute_gradients(subdomain1, self.interface)
-        grad_x_sub2, grad_y_sub2 = self.compute_gradients(subdomain2, ~self.interface)
-        grad_x_sub1_interface, grad_y_sub1_interface = grad_x_sub1[:, 0, self.boundary], grad_y_sub1[:, 0, self.boundary]
-        grad_x_sub2_interface, grad_y_sub2_interface = grad_x_sub2[:, 0, self.boundary], grad_y_sub2[:, 0, self.boundary]
-        loss += torch.mean((self.e_in * grad_x_sub1_interface - constant_value) ** 2)
-        loss += torch.mean((self.e_in * grad_y_sub1_interface - constant_value) ** 2)
-        loss += torch.mean((self.e_in * grad_x_sub2_interface - constant_value) ** 2)
-        loss += torch.mean((self.e_in * grad_y_sub2_interface - constant_value) ** 2)
+        # grad_x_sub1, grad_y_sub1 = self.compute_gradients(subdomain1, self.interface)
+        # grad_x_sub2, grad_y_sub2 = self.compute_gradients(subdomain2, ~self.interface)
+        # grad_x_sub1_interface, grad_y_sub1_interface = grad_x_sub1[:, 0, self.boundary], grad_y_sub1[:, 0, self.boundary]
+        # grad_x_sub2_interface, grad_y_sub2_interface = grad_x_sub2[:, 0, self.boundary], grad_y_sub2[:, 0, self.boundary]
+        # loss += torch.mean((self.e_in * grad_x_sub1_interface - constant_value) ** 2)
+        # loss += torch.mean((self.e_in * grad_y_sub1_interface - constant_value) ** 2)
+        # loss += torch.mean((self.e_in * grad_x_sub2_interface - constant_value) ** 2)
+        # loss += torch.mean((self.e_in * grad_y_sub2_interface - constant_value) ** 2)
         return loss * self.weight
 
     
