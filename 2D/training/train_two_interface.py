@@ -54,7 +54,7 @@ for i in range(1, interface_mask.shape[0]):
         elif interface_mask[i, j] != interface_mask[i, j - 1]:
             interface_boundary[i, j] = True
 
-
+print(interface_mask)
 # Load Data
 dataset = np.load(data_dir) / ratio_max
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
