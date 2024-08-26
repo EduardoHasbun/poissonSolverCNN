@@ -57,8 +57,8 @@ class InterfaceBoundaryLoss(nn.Module):
         grad_y = torch.zeros_like(output)
 
         # Domain interior: normal gradient computation as before
-        mask_x = (interface_mask[:, 1:, :] == interface_mask[:, :-1, :])
-        mask_y = (interface_mask[:, :, 1:] == interface_mask[:, :, :-1])
+        mask_x = (interface_mask[1:, :] == interface_mask[:-1, :])
+        mask_y = (interface_mask[:, 1:] == interface_mask[:, :-1])
 
         grad_x[:, :, 1:, :] = ((output[:, :, 1:, :] - output[:, :, :-1, :]) / self.dx) * mask_x
         grad_y[:, :, :, 1:] = ((output[:, :, :, 1:] - output[:, :, :, :-1]) / self.dy) * mask_y
