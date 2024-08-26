@@ -40,7 +40,7 @@ class DirichletBoundaryLoss(nn.Module):
 
 
 class InterfaceBoundaryLoss(nn.Module):
-    def __init__(self, bound_weight, boundary, interface, e_in, e_out, dx, dy):
+    def __init__(self, bound_weight, boundary, interface, center, e_in, e_out, dx, dy):
         super().__init__()
         self.weight = bound_weight
         self.boundary = boundary
@@ -49,24 +49,46 @@ class InterfaceBoundaryLoss(nn.Module):
         self.e_out = e_out
         self.dx = dx
         self.dy = dy
+        self.center = center
 
     def compute_gradients(self, output, interface_mask):
+        # Prepare gradient tensors
         grad_x = torch.zeros_like(output)
         grad_y = torch.zeros_like(output)
-        interface_mask[self.boundary] == True
-        for i in range(1, output.shape[2]):
-            for j in range(1, output.shape[3]):
-                if interface_mask[i, j] == interface_mask[i - 1, j]:
-                    grad_x[:, 0, i, j] = (output[:, 0, i, j] - output[:, 0, i - 1, j]) / self.dx
-                elif interface_mask[i, j] == interface_mask[i + 1, j]:
-                    grad_x[:, 0, i, j] = (output[:, 0, i, j] - output[:, 0, i + 1, j]) / self.dx
 
-                if interface_mask[i, j] == interface_mask[i, j - 1]:
-                    grad_y[:, 0, i, j] = (output[:, 0, i, j] - output[:, 0, i, j - 1]) / self.dy
-                elif interface_mask[i, j] == interface_mask[i, j + 1]:
-                    grad_y[:, 0, i, j] = (output[:, 0, i, j] - output[:, 0, i, j + 1]) / self.dy
-                
-        return grad_x, grad_y
+        # Domain interior: normal gradient computation as before
+        mask_x = (interface_mask[:, 1:, :] == interface_mask[:, :-1, :])
+        mask_y = (interface_mask[:, :, 1:] == interface_mask[:, :, :-1])
+
+        grad_x[:, :, 1:, :] = ((output[:, :, 1:, :] - output[:, :, :-1, :]) / self.dx) * mask_x
+        grad_y[:, :, :, 1:] = ((output[:, :, :, 1:] - output[:, :, :, :-1]) / self.dy) * mask_y
+
+        # Handle the boundary nodes
+        boundary_indices = torch.nonzero(self.boundary, as_tuple=True)
+
+        for idx in zip(*boundary_indices):
+            x_idx, y_idx = idx[2], idx[3]
+            x_node, y_node = x_idx * self.dx, y_idx * self.dy
+
+            # Compute normal vector
+            normal_x = (x_node - self.center[0])
+            normal_y = (y_node - self.center[1])
+            norm = torch.sqrt(normal_x**2 + normal_y**2)
+            normal_x /= norm
+            normal_y /= norm
+
+            # Determine which neighbor to use for gradient
+            if normal_x > 0:  # Use node to the right
+                grad_x[idx] = (output[idx] - output[idx[0], idx[1], x_idx + 1, y_idx]) / self.dx
+            else:  # Use node to the left
+                grad_x[idx] = (output[idx] - output[idx[0], idx[1], x_idx - 1, y_idx]) / self.dx
+
+            if normal_y > 0:  # Use node above
+                grad_y[idx] = (output[idx] - output[idx[0], idx[1], x_idx, y_idx + 1]) / self.dy
+            else:  # Use node below
+                grad_y[idx] = (output[idx] - output[idx[0], idx[1], x_idx, y_idx - 1]) / self.dy
+
+            return grad_x, grad_y
 
 
     def forward(self, subdomain1, subdomain2, constant_value = 1.0):

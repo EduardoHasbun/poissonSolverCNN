@@ -65,7 +65,7 @@ model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, mask = interface_m
 model = model.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-interface_loss = InterfaceBoundaryLoss(bound_weight, interface_boundary, interface_mask, epsilon_inside, epsilon_outside, dx, dy)
+interface_loss = InterfaceBoundaryLoss(bound_weight, interface_boundary, interface_mask,interface_center, epsilon_inside, epsilon_outside, dx, dy)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
 #Train loop
