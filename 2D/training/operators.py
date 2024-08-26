@@ -63,9 +63,10 @@ class InterfaceBoundaryLoss(nn.Module):
         grad_x[:, :, 1:, :] = ((output[:, :, 1:, :] - output[:, :, :-1, :]) / self.dx) * mask_x
         grad_y[:, :, :, 1:] = ((output[:, :, :, 1:] - output[:, :, :, :-1]) / self.dy) * mask_y
 
+        print(np.shape(self.boundary))
         # Handle the boundary nodes
         boundary_indices = torch.nonzero(self.boundary, as_tuple=True)
-
+        print(np.shape(self.boundary))
         for idx in zip(*boundary_indices):
             x_idx, y_idx = idx[2], idx[3]
             x_node, y_node = x_idx * self.dx, y_idx * self.dy
