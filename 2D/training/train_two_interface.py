@@ -34,6 +34,7 @@ epsilon_inside, epsilon_outside = cfg['globals']['epsilon_inside'], cfg['globals
 Lx, Ly = xmax-xmin, ymax-ymin
 dx, dy = Lx / nnx, Ly / nny
 save_dir = os.getcwd()
+save_dir = os.path.join(save_dir, 'models')
 data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'domain.npy')
 
 
