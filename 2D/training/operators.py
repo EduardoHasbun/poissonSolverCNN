@@ -63,10 +63,8 @@ class InterfaceBoundaryLoss(nn.Module):
         grad_x[:, :, 1:, :] = ((output[:, :, 1:, :] - output[:, :, :-1, :]) / self.dx) * mask_x
         grad_y[:, :, :, 1:] = ((output[:, :, :, 1:] - output[:, :, :, :-1]) / self.dy) * mask_y
 
-        print(np.shape(self.boundary))
         # Handle the boundary nodes
         boundary_indices = torch.nonzero(self.boundary, as_tuple=True)
-        print(np.shape(self.boundary))
         for idx in zip(*boundary_indices):
             x_idx, y_idx = idx[0], idx[1]
             x_node, y_node = x_idx * self.dx, y_idx * self.dy
@@ -80,14 +78,15 @@ class InterfaceBoundaryLoss(nn.Module):
 
             # Determine which neighbor to use for gradient
             if normal_x > 0:  # Use node to the right
-                grad_x[idx] = (output[idx] - output[idx[0], idx[1], x_idx + 1, y_idx]) / self.dx
+                grad_x[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, x_idx + 1, y_idx]) / self.dx
             else:  # Use node to the left
-                grad_x[idx] = (output[idx] - output[idx[0], idx[1], x_idx - 1, y_idx]) / self.dx
+                grad_x[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, x_idx - 1, y_idx]) / self.dx
 
             if normal_y > 0:  # Use node above
-                grad_y[idx] = (output[idx] - output[idx[0], idx[1], x_idx, y_idx + 1]) / self.dy
+                grad_y[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, x_idx, y_idx + 1]) / self.dy
             else:  # Use node below
-                grad_y[idx] = (output[idx] - output[idx[0], idx[1], x_idx, y_idx - 1]) / self.dy
+                grad_y[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, x_idx, y_idx - 1]) / self.dy
+
 
             return grad_x, grad_y
 
