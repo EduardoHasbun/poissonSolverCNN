@@ -40,7 +40,7 @@ class DirichletBoundaryLoss(nn.Module):
 
 
 class InterfaceBoundaryLoss(nn.Module):
-    def __init__(self, bound_weight, boundary, interface, center, e_in, e_out, dx, dy):
+    def __init__(self, bound_weight, boundary, interface, center, radius, e_in, e_out, dx, dy):
         super().__init__()
         self.weight = bound_weight
         self.boundary = boundary
@@ -50,6 +50,7 @@ class InterfaceBoundaryLoss(nn.Module):
         self.dx = dx
         self.dy = dy
         self.center = center
+        self.radius = radius
 
     def is_inside(self, x_idx, y_idx):
     # Calculate the real position of the node in physical space
