@@ -65,7 +65,7 @@ model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, mask = interface_m
 model = model.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-interface_loss = InterfaceBoundaryLoss(bound_weight, interface_boundary, interface_mask,interface_center, epsilon_inside, epsilon_outside, dx, dy)
+interface_loss = InterfaceBoundaryLoss(bound_weight, interface_boundary, interface_mask, interface_center, epsilon_inside, epsilon_outside, dx, dy)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
 #Train loop
@@ -94,4 +94,4 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_1.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_2.pth'))

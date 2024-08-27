@@ -3,7 +3,7 @@ import torch.nn as nn
 import numpy as np
 import yaml
 import matplotlib.pyplot as plt
-from unet import UNet
+from unet_interface import UNet
 import os
 
 
@@ -44,19 +44,22 @@ def gaussians(x, y, params):
 
 
 input_data = gaussians(X, Y, cfg['init']['args'])
-input_data[interface_mask] /= 1
-input_data[~interface_mask] /= 80
+# input_data[interface_mask] /= 1
+# input_data[~interface_mask] /= 80
 input_data = input_data[np.newaxis, np.newaxis, :, :]
 input_data = torch.from_numpy(input_data).float()
 
 # Create Model
-model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/interface_4.pth'))
+model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, mask = interface_mask)
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/interface_1.pth'))
 model = model.float()
 model.eval() 
 
 # Solver
-output = model(input_data)
+out_in, out_out = model(input_data)
+output = torch.zeros_like(out_in)
+output[0, 0, interface_mask] = out_in[0, 0, interface_mask]
+output[0, 0, ~interface_mask] = out_out[0, 0, ~interface_mask]
 output_array = output.detach().numpy()[0, 0, :, :] 
 
 
@@ -94,6 +97,6 @@ axs[1, 1].set_xlabel('X')
 axs[1, 1].set_ylabel('Y')
 
 # Adjust layout
-plt.tight_layout(rect=[0, 0, 1, 0.96])  # Leave space for suptitle
+plt.tight_layout(rect=[0, 0, 1, 0.96])  
 os.makedirs(plots_dir, exist_ok=True)
-plt.savefig(os.path.join(plots_dir, 'Interface 4 epsilon.png'))
+plt.savefig(os.path.join(plots_dir, 'Interface 1.png'))
