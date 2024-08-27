@@ -51,6 +51,18 @@ class InterfaceBoundaryLoss(nn.Module):
         self.dy = dy
         self.center = center
 
+    def is_inside(self, x_idx, y_idx):
+    # Calculate the real position of the node in physical space
+        x_node = x_idx * self.dx
+        y_node = y_idx * self.dy
+        
+        # Compute the distance of the node from the center of the circle
+        distance_to_center = torch.sqrt((x_node - self.center[0]) ** 2 + (y_node - self.center[1]) ** 2)
+        
+        # Check if the node is inside the circle (i.e., distance is less than the radius)
+        return distance_to_center < self.radius
+
+
     def compute_gradients(self, output, interface_mask):
         # Prepare gradient tensors
         grad_x = torch.zeros_like(output)
