@@ -64,12 +64,11 @@ class InterfaceBoundaryLoss(nn.Module):
         return distance_to_center < self.radius
 
 
-    def compute_gradients(self, output, interface_mask, inside = True):
+    def compute_gradients(self, output, interface_mask):
         # Prepare gradient tensors
         grad_x = torch.zeros_like(output)
         grad_y = torch.zeros_like(output)
-
-        # Compute mask for inner nodes
+        
         mask_x = (interface_mask[1:, :] == interface_mask[:-1, :])
         mask_y = (interface_mask[:, 1:] == interface_mask[:, :-1])
 
@@ -104,7 +103,7 @@ class InterfaceBoundaryLoss(nn.Module):
     def forward(self, subdomain1, subdomain2, constant_value = 1.0):
         loss = F.mse_loss(subdomain1[:, 0, self.boundary], subdomain2[:, 0, self.boundary])
         grad_x_sub1, grad_y_sub1 = self.compute_gradients(subdomain1, self.interface)
-        grad_x_sub2, grad_y_sub2 = self.compute_gradients(subdomain2, ~self.interface)
+        grad_x_sub2, grad_y_sub2 = self.compute_gradients(subdomain2, self.interface)
         grad_x_sub1_interface, grad_y_sub1_interface = grad_x_sub1[:, 0, self.boundary], grad_y_sub1[:, 0, self.boundary]
         grad_x_sub2_interface, grad_y_sub2_interface = grad_x_sub2[:, 0, self.boundary], grad_y_sub2[:, 0, self.boundary]
         loss += torch.mean((self.e_in * grad_x_sub1_interface - constant_value) ** 2)
