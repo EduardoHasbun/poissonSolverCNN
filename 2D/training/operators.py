@@ -64,7 +64,7 @@ class InterfaceBoundaryLoss(nn.Module):
         return distance_to_center < self.radius
 
 
-    def compute_gradients(self, output, interface_mask):
+    def compute_gradients(self, output, interface_mask, inside = True):
         # Prepare gradient tensors
         grad_x = torch.zeros_like(output)
         grad_y = torch.zeros_like(output)
@@ -82,30 +82,23 @@ class InterfaceBoundaryLoss(nn.Module):
             x_idx, y_idx = idx[0], idx[1]
             x_node, y_node = x_idx * self.dx, y_idx * self.dy
 
-            # Compute normal vector to the circle boundary
-            normal_x = x_node - self.center[0]
-            normal_y = y_node - self.center[1]
+            # Compute normal vector
+            normal_x = (x_node - self.center[0])
+            normal_y = (y_node - self.center[1])
             norm = torch.sqrt(normal_x**2 + normal_y**2)
             normal_x /= norm
             normal_y /= norm
 
-            # Compute the dot products to decide which node to use (inside or outside the circle)
-            # Compute positions of neighbors
-            inner_node_x = x_idx - normal_x  # Move inwards along the normal
-            inner_node_y = y_idx - normal_y
-            outer_node_x = x_idx + normal_x  # Move outwards along the normal
-            outer_node_y = y_idx + normal_y
+            # Determine which neighbor to use for gradient
+            if normal_x > 0:  # Use node to the right
+                grad_x[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, x_idx + 1, y_idx]) / self.dx
+            else:  # Use node to the left
+                grad_x[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, x_idx - 1, y_idx]) / self.dx
 
-            # Calculate gradients based on neighbors
-            if self.is_inside(inner_node_x, inner_node_y):  # Check if it's inside the circle
-                grad_x[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, int(inner_node_x), int(inner_node_y)]) / self.dx
-                grad_y[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, int(inner_node_x), int(inner_node_y)]) / self.dy
-            else:  # Otherwise, use the outer node
-                grad_x[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, int(outer_node_x), int(outer_node_y)]) / self.dx
-                grad_y[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, int(outer_node_x), int(outer_node_y)]) / self.dy
-
-        return grad_x, grad_y
-
+            if normal_y > 0:  # Use node above
+                grad_y[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, x_idx, y_idx + 1]) / self.dy
+            else:  # Use node below
+                grad_y[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, x_idx, y_idx - 1]) / self.dy
 
 
     def forward(self, subdomain1, subdomain2, constant_value = 1.0):
