@@ -51,7 +51,7 @@ input_data = torch.from_numpy(input_data).float()
 
 # Create Model
 model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, mask = interface_mask)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/interface_1.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/interface_3.pth'))
 model = model.float()
 model.eval() 
 
@@ -99,4 +99,4 @@ axs[1, 1].set_ylabel('Y')
 # Adjust layout
 plt.tight_layout(rect=[0, 0, 1, 0.96])  
 os.makedirs(plots_dir, exist_ok=True)
-plt.savefig(os.path.join(plots_dir, 'Interface 1.png'))
+plt.savefig(os.path.join(plots_dir, 'Interface 3.png'))
