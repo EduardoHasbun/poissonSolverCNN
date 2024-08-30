@@ -7,7 +7,7 @@ from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, Interf
 import torch.optim as optim
 import os
 import argparse
-from scipy import ndimage
+import matplotlib.pyplot as plt
 
 #Import external parameteres
 parser = argparse.ArgumentParser(description='Training')
@@ -48,12 +48,19 @@ x, y= torch.linspace(xmin, xmax, nnx), torch.linspace(ymin, ymax, nny)
 X, Y = torch.meshgrid(x,y)
 interface_mask = (X - interface_center[0])**2 + (Y - interface_center[1])**2 <= interface_radius**2
 interface_boundary = torch.zeros_like(interface_mask, dtype=bool)
-for i in range(1, interface_mask.shape[0]):
-    for j in range(1, interface_mask.shape[1]):
-        if interface_mask[i, j] != interface_mask[i - 1, j]:
-            interface_boundary[i, j] = True
-        elif interface_mask[i, j] != interface_mask[i, j - 1]:
-            interface_boundary[i, j] = True
+for i in range(1, interface_mask.shape[0] - 1):
+    for j in range(1, interface_mask.shape[1] - 1):
+        # Check for boundary change and mark only the outside node
+        if interface_mask[i, j] != interface_mask[i - 1, j] or interface_mask[i, j] != interface_mask[i + 1, j]:
+            if interface_mask[i, j]:  # If current node is outside the interface
+                interface_boundary[i, j] = True
+        elif interface_mask[i, j] != interface_mask[i, j - 1] or interface_mask[i, j] != interface_mask[i, j + 1]:
+            if interface_mask[i, j]:  # If current node is outside the interface
+                interface_boundary[i, j] = True
+
+inner_mask = interface_mask
+outer_mask = interface_mask | interface_boundary
+
 
 # Load Data
 dataset = np.load(data_dir) / ratio_max
@@ -61,11 +68,12 @@ dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
 # Create models and losses
-model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, mask = interface_mask)
+model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, inner_mask = inner_mask, outer_mask = outer_mask)
 model = model.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-interface_loss = InterfaceBoundaryLoss(bound_weight, interface_boundary, interface_mask, interface_center, interface_radius, epsilon_inside, epsilon_outside, dx, dy)
+interface_loss = InterfaceBoundaryLoss(bound_weight, interface_boundary, inner_mask, outer_mask, interface_center, interface_radius,\
+                                        epsilon_inside, epsilon_outside, dx, dy)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
 #Train loop
@@ -94,4 +102,4 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_6.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_7.pth'))

@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class LaplacianLoss(nn.Module):
@@ -40,11 +41,12 @@ class DirichletBoundaryLoss(nn.Module):
 
 
 class InterfaceBoundaryLoss(nn.Module):
-    def __init__(self, bound_weight, boundary, interface, center, radius, e_in, e_out, dx, dy):
+    def __init__(self, bound_weight, boundary, inner_mask, outer_mask, center, radius, e_in, e_out, dx, dy):
         super().__init__()
         self.weight = bound_weight
         self.boundary = boundary
-        self.interface = interface
+        self.inner_mask = inner_mask
+        self.outer_mask = outer_mask
         self.e_in = e_in
         self.e_out = e_out
         self.dx = dx
@@ -52,75 +54,67 @@ class InterfaceBoundaryLoss(nn.Module):
         self.center = center
         self.radius = radius
 
-    def is_inside(self, x_idx, y_idx):
-    # Calculate the real position of the node in physical space
-        x_node = x_idx * self.dx
-        y_node = y_idx * self.dy
+    # def is_inside(self, x_idx, y_idx):
+    # # Calculate the real position of the node in physical space
+    #     x_node = x_idx * self.dx
+    #     y_node = y_idx * self.dy
         
-        # Compute the distance of the node from the center of the circle
-        distance_to_center = torch.sqrt((x_node - self.center[0]) ** 2 + (y_node - self.center[1]) ** 2)
+    #     # Compute the distance of the node from the center of the circle
+    #     distance_to_center = torch.sqrt((x_node - self.center[0]) ** 2 + (y_node - self.center[1]) ** 2)
         
-        # Check if the node is inside the circle (i.e., distance is less than the radius)
-        return distance_to_center < self.radius
+    #     # Check if the node is inside the circle (i.e., distance is less than the radius)
+    #     return distance_to_center < self.radius
 
 
-    def compute_gradients(self, output, interface_mask):
-        # Prepare gradient tensors
-        grad_x = torch.zeros_like(output)
-        grad_y = torch.zeros_like(output)
+    def compute_gradients(self, subdomain_in, subdomain_out):
+        # Initialize gradient tensors for the boundary
+        gradients_x_boundary_inner, gradients_x_boundary_outer = torch.zeros_like(subdomain_in), torch.zeros_like(subdomain_out)
+        gradients_y_boundary_inner, gradients_y_boundary_outer = torch.zeros_like(subdomain_in), torch.zeros_like(subdomain_out)
+        
+        # Inner and outer boundaries
+        # boundary_inner = self.boundary & self.inner_mask  # Boundary nodes in the inner region
+        # boundary_outer = self.boundary & self.outer_mask  # Boundary nodes in the outer region
 
-        # Compute mask for inner nodes
-        mask_x = (interface_mask[1:, :] == interface_mask[:-1, :])
-        mask_y = (interface_mask[:, 1:] == interface_mask[:, :-1])
-
-        grad_x[:, :, 1:, :] = ((output[:, :, 1:, :] - output[:, :, :-1, :]) / self.dx) * mask_x
-        grad_y[:, :, :, 1:] = ((output[:, :, :, 1:] - output[:, :, :, :-1]) / self.dy) * mask_y
-
-        # Handle the boundary nodes
         boundary_indices = torch.nonzero(self.boundary, as_tuple=True)
         for idx in zip(*boundary_indices):
             x_idx, y_idx = idx[0], idx[1]
             x_node, y_node = x_idx * self.dx, y_idx * self.dy
-
-            # Compute normal vector to the circle boundary
             normal_x = x_node - self.center[0]
             normal_y = y_node - self.center[1]
             norm = torch.sqrt(normal_x**2 + normal_y**2)
             normal_x /= norm
             normal_y /= norm
 
-            # Compute the dot products to decide which node to use (inside or outside the circle)
-            # Compute positions of neighbors
-            inner_node_x = x_idx - normal_x  # Move inwards along the normal
-            inner_node_y = y_idx - normal_y
-            outer_node_x = x_idx + normal_x  # Move outwards along the normal
-            outer_node_y = y_idx + normal_y
+            if normal_x > 0: # Use the node of the right for the inside and the left for the outside
+                gradients_x_boundary_inner[:, 0, x_idx, y_idx] = (subdomain_in[:, 0, x_idx, y_idx] - subdomain_in[:, 0, x_idx + 1, y_idx]) / self.dx
+                gradients_x_boundary_outer[:, 0, x_idx, y_idx] = (subdomain_out[:, 0, x_idx, y_idx] - subdomain_out[:, 0, x_idx - 1, y_idx]) / self.dx
+            else: # Use node to the left for the inside and the right for the outside
+                gradients_x_boundary_inner[:, 0, x_idx, y_idx] = (subdomain_in[:, 0, x_idx, y_idx] - subdomain_in[:, 0, x_idx - 1, y_idx]) / self.dx
+                gradients_x_boundary_outer[:, 0, x_idx, y_idx] = (subdomain_out[:, 0, x_idx, y_idx] - subdomain_out[:, 0, x_idx + 1, y_idx]) / self.dx
 
-            # Calculate gradients based on neighbors
-            if self.is_inside(inner_node_x, inner_node_y):  # Check if it's inside the circle
-                grad_x[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, int(inner_node_x), int(inner_node_y)]) / self.dx
-                grad_y[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, int(inner_node_x), int(inner_node_y)]) / self.dy
-            else:  # Otherwise, use the outer node
-                grad_x[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, int(outer_node_x), int(outer_node_y)]) / self.dx
-                grad_y[:, 0, x_idx, y_idx] = (output[:, 0, x_idx, y_idx] - output[:, 0, int(outer_node_x), int(outer_node_y)]) / self.dy
+            if normal_y > 0: # Use the node of above for the inside and below for the outside
+                gradients_y_boundary_inner[:, 0, x_idx, y_idx] = (subdomain_in[:, 0, x_idx, y_idx] - subdomain_in[:, 0, x_idx + 1, y_idx]) / self.dy
+                gradients_y_boundary_outer[:, 0, x_idx, y_idx] = (subdomain_out[:, 0, x_idx, y_idx] - subdomain_out[:, 0, x_idx - 1, y_idx]) / self.dy
+            else: # Use node of below for the inside and of above for the outside
+                gradients_y_boundary_inner[:, 0, x_idx, y_idx] = (subdomain_in[:, 0, x_idx, y_idx] - subdomain_in[:, 0, x_idx, y_idx - 1]) / self.dy
+                gradients_y_boundary_outer[:, 0, x_idx, y_idx] = (subdomain_out[:, 0, x_idx, y_idx] - subdomain_out[:, 0, x_idx, y_idx + 1]) / self.dy
 
-        return grad_x, grad_y
-
+        return gradients_x_boundary_inner, gradients_y_boundary_inner, gradients_x_boundary_outer, gradients_y_boundary_outer
 
 
-    def forward(self, subdomain1, subdomain2, constant_value = 1.0):
-        loss = F.mse_loss(subdomain1[:, 0, self.boundary], subdomain2[:, 0, self.boundary])
-        grad_x_sub1, grad_y_sub1 = self.compute_gradients(subdomain1, self.interface)
-        grad_x_sub2, grad_y_sub2 = self.compute_gradients(subdomain2, ~self.interface)
-        grad_x_sub1_interface, grad_y_sub1_interface = grad_x_sub1[:, 0, self.boundary], grad_y_sub1[:, 0, self.boundary]
-        grad_x_sub2_interface, grad_y_sub2_interface = grad_x_sub2[:, 0, self.boundary], grad_y_sub2[:, 0, self.boundary]
+
+    def forward(self, subdomain_in, subdomain_out, constant_value = 1.0):
+        loss = F.mse_loss(subdomain_in[:, 0, self.boundary], subdomain_out[:, 0, self.boundary])
+        grad_x_sub_in, grad_y_sub_in, grad_x_sub_out, grad_y_sub_out = self.compute_gradients(subdomain_in, subdomain_out)
+        grad_x_sub1_interface, grad_y_sub1_interface = grad_x_sub_in[:, 0, self.boundary], grad_y_sub_in[:, 0, self.boundary]
+        grad_x_sub2_interface, grad_y_sub2_interface = grad_x_sub_out[:, 0, self.boundary], grad_y_sub_out[:, 0, self.boundary]
         loss += torch.mean((self.e_in * grad_x_sub1_interface - constant_value) ** 2)
         loss += torch.mean((self.e_in * grad_y_sub1_interface - constant_value) ** 2)
         loss += torch.mean((self.e_in * grad_x_sub2_interface - constant_value) ** 2)
         loss += torch.mean((self.e_in * grad_y_sub2_interface - constant_value) ** 2)
         return loss * self.weight
 
-    
+
 
 
 class DirichletBoundaryLossFunction(nn.Module):
@@ -194,8 +188,8 @@ def lapl(field, dx, dy, interface, epsilon_in, epsilon_out, b=0):
     #     (2 * field[:, 0, -1, -1] - 5 * field[:, 0, -2, -1] + 4 * field[:, 0, -3, -1] - field[:, 0, -4, -1]) / dy**2 + \
     #     (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
 
-    # laplacian[:, 0, interface] *= epsilon_in
-    # laplacian[:, 0, ~interface] *= epsilon_out
+    laplacian[:, 0, interface] *= epsilon_in
+    laplacian[:, 0, ~interface] *= epsilon_out
 
     return laplacian
 
