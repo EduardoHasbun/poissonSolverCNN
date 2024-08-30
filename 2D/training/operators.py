@@ -54,17 +54,6 @@ class InterfaceBoundaryLoss(nn.Module):
         self.center = center
         self.radius = radius
 
-    # def is_inside(self, x_idx, y_idx):
-    # # Calculate the real position of the node in physical space
-    #     x_node = x_idx * self.dx
-    #     y_node = y_idx * self.dy
-        
-    #     # Compute the distance of the node from the center of the circle
-    #     distance_to_center = torch.sqrt((x_node - self.center[0]) ** 2 + (y_node - self.center[1]) ** 2)
-        
-    #     # Check if the node is inside the circle (i.e., distance is less than the radius)
-    #     return distance_to_center < self.radius
-
 
     def compute_gradients(self, subdomain_in, subdomain_out):
         # Initialize gradient tensors for the boundary
@@ -85,33 +74,32 @@ class InterfaceBoundaryLoss(nn.Module):
             normal_x /= norm
             normal_y /= norm
 
-            if normal_x > 0: # Use the node of the right for the inside and the left for the outside
-                gradients_x_boundary_inner[:, 0, x_idx, y_idx] = (subdomain_in[:, 0, x_idx, y_idx] - subdomain_in[:, 0, x_idx + 1, y_idx]) / self.dx
-                gradients_x_boundary_outer[:, 0, x_idx, y_idx] = (subdomain_out[:, 0, x_idx, y_idx] - subdomain_out[:, 0, x_idx - 1, y_idx]) / self.dx
-            else: # Use node to the left for the inside and the right for the outside
+            if normal_x > 0: # Use the node of the left for the inside and the right for the outside
                 gradients_x_boundary_inner[:, 0, x_idx, y_idx] = (subdomain_in[:, 0, x_idx, y_idx] - subdomain_in[:, 0, x_idx - 1, y_idx]) / self.dx
-                gradients_x_boundary_outer[:, 0, x_idx, y_idx] = (subdomain_out[:, 0, x_idx, y_idx] - subdomain_out[:, 0, x_idx + 1, y_idx]) / self.dx
+                gradients_x_boundary_outer[:, 0, x_idx, y_idx] = (-subdomain_out[:, 0, x_idx, y_idx] + subdomain_out[:, 0, x_idx + 1, y_idx]) / self.dx
+            else: # Use node to the left for the inside and the right for the outside
+                gradients_x_boundary_inner[:, 0, x_idx, y_idx] = (-subdomain_in[:, 0, x_idx, y_idx] + subdomain_in[:, 0, x_idx + 1, y_idx]) / self.dx
+                gradients_x_boundary_outer[:, 0, x_idx, y_idx] = (subdomain_out[:, 0, x_idx, y_idx] - subdomain_out[:, 0, x_idx - 1, y_idx]) / self.dx
 
             if normal_y > 0: # Use the node of above for the inside and below for the outside
-                gradients_y_boundary_inner[:, 0, x_idx, y_idx] = (subdomain_in[:, 0, x_idx, y_idx] - subdomain_in[:, 0, x_idx + 1, y_idx]) / self.dy
-                gradients_y_boundary_outer[:, 0, x_idx, y_idx] = (subdomain_out[:, 0, x_idx, y_idx] - subdomain_out[:, 0, x_idx - 1, y_idx]) / self.dy
+                gradients_y_boundary_inner[:, 0, x_idx, y_idx] = (subdomain_in[:, 0, x_idx, y_idx] - subdomain_in[:, 0, x_idx - 1, y_idx]) / self.dy
+                gradients_y_boundary_outer[:, 0, x_idx, y_idx] = (-subdomain_out[:, 0, x_idx, y_idx] - subdomain_out[:, 0, x_idx + 1, y_idx]) / self.dy
             else: # Use node of below for the inside and of above for the outside
-                gradients_y_boundary_inner[:, 0, x_idx, y_idx] = (subdomain_in[:, 0, x_idx, y_idx] - subdomain_in[:, 0, x_idx, y_idx - 1]) / self.dy
-                gradients_y_boundary_outer[:, 0, x_idx, y_idx] = (subdomain_out[:, 0, x_idx, y_idx] - subdomain_out[:, 0, x_idx, y_idx + 1]) / self.dy
+                gradients_y_boundary_inner[:, 0, x_idx, y_idx] = (-subdomain_in[:, 0, x_idx, y_idx] - subdomain_in[:, 0, x_idx, y_idx + 1]) / self.dy
+                gradients_y_boundary_outer[:, 0, x_idx, y_idx] = (subdomain_out[:, 0, x_idx, y_idx] - subdomain_out[:, 0, x_idx, y_idx - 1]) / self.dy
 
-        return gradients_x_boundary_inner, gradients_y_boundary_inner, gradients_x_boundary_outer, gradients_y_boundary_outer
+            normal_derivate_inner = gradients_x_boundary_inner * normal_x + gradients_y_boundary_inner * normal_y
+            normal_derivate_outer = gradients_x_boundary_outer * normal_x + gradients_y_boundary_outer * normal_y
+
+        return normal_derivate_inner, normal_derivate_outer
 
 
 
     def forward(self, subdomain_in, subdomain_out, constant_value = 1.0):
         loss = F.mse_loss(subdomain_in[:, 0, self.boundary], subdomain_out[:, 0, self.boundary])
-        grad_x_sub_in, grad_y_sub_in, grad_x_sub_out, grad_y_sub_out = self.compute_gradients(subdomain_in, subdomain_out)
-        grad_x_sub1_interface, grad_y_sub1_interface = grad_x_sub_in[:, 0, self.boundary], grad_y_sub_in[:, 0, self.boundary]
-        grad_x_sub2_interface, grad_y_sub2_interface = grad_x_sub_out[:, 0, self.boundary], grad_y_sub_out[:, 0, self.boundary]
-        loss += torch.mean((self.e_in * grad_x_sub1_interface - constant_value) ** 2)
-        loss += torch.mean((self.e_in * grad_y_sub1_interface - constant_value) ** 2)
-        loss += torch.mean((self.e_in * grad_x_sub2_interface - constant_value) ** 2)
-        loss += torch.mean((self.e_in * grad_y_sub2_interface - constant_value) ** 2)
+        normal_derivate_inner, normal_derivate_outer = self.compute_gradients(subdomain_in, subdomain_out)
+        norm_d_in, norm_d_out = normal_derivate_inner[:, 0, self.boundary], normal_derivate_outer[:, 0, self.boundary]
+        loss += F.mse_loss((norm_d_in), (norm_d_out))
         return loss * self.weight
 
 

@@ -61,11 +61,9 @@ for i in range(1, interface_mask.shape[0] - 1):
 inner_mask = interface_mask
 outer_mask = interface_mask | interface_boundary
 
-
 # Load Data
 dataset = np.load(data_dir) / ratio_max
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-
 
 # Create models and losses
 model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, inner_mask = inner_mask, outer_mask = outer_mask)
@@ -76,7 +74,7 @@ interface_loss = InterfaceBoundaryLoss(bound_weight, interface_boundary, inner_m
                                         epsilon_inside, epsilon_outside, dx, dy)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
-#Train loop
+# Train loop
 for epoch in range (num_epochs):
     total_loss = 0
     for batch_idx, batch in enumerate(dataloader):
@@ -102,4 +100,4 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_7.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_8.pth'))

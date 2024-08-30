@@ -76,8 +76,6 @@ if __name__ == '__main__':
         data_array[idx, interface_mask] = inside_domain[interface_mask] 
         data_array[idx, ~interface_mask] = outside_domain[~interface_mask] 
 
-        plt.imshow(data_array[idx])
-        plt.show()
         
         if ploting and idx%100==0:
             plt.figure(figsize=(8, 6))
