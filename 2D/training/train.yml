@@ -34,5 +34,5 @@ loss:
         optimizer_lr: 4.e-3   
 
 trainer:
-    epochs: 70                            # Number of epochs
+    epochs: 300                            # Number of epochs
 
