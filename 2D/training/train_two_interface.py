@@ -22,6 +22,7 @@ batch_size = cfg['data_loader']['batch_size']
 num_epochs = cfg['trainer']['epochs']
 lapl_weight = cfg['loss']['args']['lapl_weight']
 bound_weight = cfg['loss']['args']['bound_weight']
+interface_weight = cfg['loss']['args']['interface_weight']
 lr = cfg['loss']['args']['optimizer_lr']
 scales_data = cfg.get('arch', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
@@ -70,7 +71,7 @@ model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, inner_mask = inner
 model = model.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-interface_loss = InterfaceBoundaryLoss(bound_weight, interface_boundary, inner_mask, outer_mask, interface_center, interface_radius,\
+interface_loss = InterfaceBoundaryLoss(interface_weight, interface_boundary, inner_mask, outer_mask, interface_center, interface_radius,\
                                         epsilon_inside, epsilon_outside, dx, dy)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 

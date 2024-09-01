@@ -56,40 +56,60 @@ class InterfaceBoundaryLoss(nn.Module):
 
 
     def compute_gradients(self, subdomain_in, subdomain_out):
-        # Initialize gradient tensors for the boundary
-        gradients_x_boundary_inner, gradients_x_boundary_outer = torch.zeros_like(subdomain_in), torch.zeros_like(subdomain_out)
-        gradients_y_boundary_inner, gradients_y_boundary_outer = torch.zeros_like(subdomain_in), torch.zeros_like(subdomain_out)
-        
-        # Inner and outer boundaries
-        # boundary_inner = self.boundary & self.inner_mask  # Boundary nodes in the inner region
-        # boundary_outer = self.boundary & self.outer_mask  # Boundary nodes in the outer region
+        gradients_x_boundary_inner = torch.zeros_like(subdomain_in)
+        gradients_x_boundary_outer = torch.zeros_like(subdomain_out)
+        gradients_y_boundary_inner = torch.zeros_like(subdomain_in)
+        gradients_y_boundary_outer = torch.zeros_like(subdomain_out)
 
+        # Get boundary indices
         boundary_indices = torch.nonzero(self.boundary, as_tuple=True)
-        for idx in zip(*boundary_indices):
-            x_idx, y_idx = idx[0], idx[1]
-            x_node, y_node = x_idx * self.dx, y_idx * self.dy
-            normal_x = x_node - self.center[0]
-            normal_y = y_node - self.center[1]
-            norm = torch.sqrt(normal_x**2 + normal_y**2)
-            normal_x /= norm
-            normal_y /= norm
 
-            if normal_x > 0: # Use the node of the left for the inside and the right for the outside
-                gradients_x_boundary_inner[:, 0, x_idx, y_idx] = (subdomain_in[:, 0, x_idx, y_idx] - subdomain_in[:, 0, x_idx - 1, y_idx]) / self.dx
-                gradients_x_boundary_outer[:, 0, x_idx, y_idx] = (-subdomain_out[:, 0, x_idx, y_idx] + subdomain_out[:, 0, x_idx + 1, y_idx]) / self.dx
-            else: # Use node to the left for the inside and the right for the outside
-                gradients_x_boundary_inner[:, 0, x_idx, y_idx] = (-subdomain_in[:, 0, x_idx, y_idx] + subdomain_in[:, 0, x_idx + 1, y_idx]) / self.dx
-                gradients_x_boundary_outer[:, 0, x_idx, y_idx] = (subdomain_out[:, 0, x_idx, y_idx] - subdomain_out[:, 0, x_idx - 1, y_idx]) / self.dx
+        # Calculate the position of boundary nodes
+        x_idx, y_idx = boundary_indices[0], boundary_indices[1]
+        x_node, y_node = x_idx * self.dx, y_idx * self.dy
 
-            if normal_y > 0: # Use the node of above for the inside and below for the outside
-                gradients_y_boundary_inner[:, 0, x_idx, y_idx] = (subdomain_in[:, 0, x_idx, y_idx] - subdomain_in[:, 0, x_idx - 1, y_idx]) / self.dy
-                gradients_y_boundary_outer[:, 0, x_idx, y_idx] = (-subdomain_out[:, 0, x_idx, y_idx] - subdomain_out[:, 0, x_idx + 1, y_idx]) / self.dy
-            else: # Use node of below for the inside and of above for the outside
-                gradients_y_boundary_inner[:, 0, x_idx, y_idx] = (-subdomain_in[:, 0, x_idx, y_idx] - subdomain_in[:, 0, x_idx, y_idx + 1]) / self.dy
-                gradients_y_boundary_outer[:, 0, x_idx, y_idx] = (subdomain_out[:, 0, x_idx, y_idx] - subdomain_out[:, 0, x_idx, y_idx - 1]) / self.dy
+        # Calculate normal vectors for all boundary nodes
+        normal_x = x_node - self.center[0]
+        normal_y = y_node - self.center[1]
+        norm = torch.sqrt(normal_x**2 + normal_y**2)
+        normal_x /= norm
+        normal_y /= norm
 
-            normal_derivate_inner = gradients_x_boundary_inner * normal_x + gradients_y_boundary_inner * normal_y
-            normal_derivate_outer = gradients_x_boundary_outer * normal_x + gradients_y_boundary_outer * normal_y
+        # Calculate the gradient for the x-direction
+        left_inner = subdomain_in[:, 0, x_idx - 1, y_idx]
+        right_inner = subdomain_in[:, 0, x_idx + 1, y_idx]
+        left_outer = subdomain_out[:, 0, x_idx - 1, y_idx]
+        right_outer = subdomain_out[:, 0, x_idx + 1, y_idx]
+
+        gradients_x_boundary_inner[:, 0, x_idx, y_idx] = torch.where(normal_x > 0, 
+            (subdomain_in[:, 0, x_idx, y_idx] - left_inner) / self.dx, 
+            (right_inner - subdomain_in[:, 0, x_idx, y_idx]) / self.dx
+        )
+        
+        gradients_x_boundary_outer[:, 0, x_idx, y_idx] = torch.where(normal_x > 0, 
+            (-subdomain_out[:, 0, x_idx, y_idx] + right_outer) / self.dx, 
+            (subdomain_out[:, 0, x_idx, y_idx] - left_outer) / self.dx
+        )
+
+        # Calculate the gradient for the y-direction
+        above_inner = subdomain_in[:, 0, x_idx, y_idx + 1]
+        below_inner = subdomain_in[:, 0, x_idx, y_idx - 1]
+        above_outer = subdomain_out[:, 0, x_idx, y_idx + 1]
+        below_outer = subdomain_out[:, 0, x_idx, y_idx - 1]
+
+        gradients_y_boundary_inner[:, 0, x_idx, y_idx] = torch.where(normal_y > 0, 
+            (subdomain_in[:, 0, x_idx, y_idx] - below_inner) / self.dy, 
+            (above_inner - subdomain_in[:, 0, x_idx, y_idx]) / self.dy
+        )
+        
+        gradients_y_boundary_outer[:, 0, x_idx, y_idx] = torch.where(normal_y > 0, 
+            (-subdomain_out[:, 0, x_idx, y_idx] + above_outer) / self.dy, 
+            (subdomain_out[:, 0, x_idx, y_idx] - below_outer) / self.dy
+        )
+
+        # Compute the normal derivatives
+        normal_derivate_inner = gradients_x_boundary_inner * normal_x + gradients_y_boundary_inner * normal_y
+        normal_derivate_outer = gradients_x_boundary_outer * normal_x + gradients_y_boundary_outer * normal_y
 
         return normal_derivate_inner, normal_derivate_outer
 
