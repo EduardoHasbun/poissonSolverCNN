@@ -99,4 +99,4 @@ axs[1, 1].set_ylabel('Y')
 # Adjust layout
 plt.tight_layout(rect=[0, 0, 1, 0.96])  
 os.makedirs(plots_dir, exist_ok=True)
-plt.savefig(os.path.join(plots_dir, 'Interface 8.png'))
+plt.savefig(os.path.join(plots_dir, 'Interface 9.png'))
