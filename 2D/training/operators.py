@@ -115,9 +115,9 @@ class InterfaceBoundaryLoss(nn.Module):
 
     def forward(self, subdomain_in, subdomain_out):
         loss = F.mse_loss(subdomain_in[:, 0, self.boundary], subdomain_out[:, 0, self.boundary])
-        normal_derivate_inner, normal_derivate_outer = self.compute_gradients(subdomain_in, subdomain_out)
-        norm_d_in, norm_d_out = normal_derivate_inner[:, 0, self.boundary], normal_derivate_outer[:, 0, self.boundary]
-        loss += F.mse_loss((norm_d_in), (norm_d_out))
+        # normal_derivate_inner, normal_derivate_outer = self.compute_gradients(subdomain_in, subdomain_out)
+        # norm_d_in, norm_d_out = normal_derivate_inner[:, 0, self.boundary], normal_derivate_outer[:, 0, self.boundary]
+        # loss += F.mse_loss((norm_d_in), (norm_d_out))
         return loss * self.weight
 
 
