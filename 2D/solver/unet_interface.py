@@ -127,19 +127,20 @@ class UNet_Submodel(nn.Module):
         return x
 
 class UNet(nn.Module):
-    def __init__(self, scales, kernel_sizes, input_res, mask,
+    def __init__(self, scales, kernel_sizes, input_res, inner_mask, outer_mask,
                     padding_mode='zeros', upsample_mode='nearest'):
         super(UNet, self).__init__()
-        self.mask = mask
+        self.inner_mask = inner_mask
+        self.outer_mask = outer_mask
 
-        # Crear dos submodelos para cada subdominio
+        # Create the 2 submodels for each subdomain
         self.submodel1 = UNet_Submodel(scales, kernel_sizes, input_res, 
                                          padding_mode, upsample_mode)
         self.submodel2 = UNet_Submodel(scales, kernel_sizes, input_res, 
                                          padding_mode, upsample_mode)
 
     def forward(self, x):
-        x1, x2 = x * self.mask, x * (~self.mask) # Dividir el input en dos partes 
+        x1, x2 = x * self.inner_mask, x * (self.outer_mask) # Divide the domain into 2 parts
 
         out1 = self.submodel1(x1)
         out2 = self.submodel2(x2)

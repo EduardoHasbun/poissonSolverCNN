@@ -19,15 +19,26 @@ if not os.path.exists(plots_dir):
 xmin, xmax, nnx = cfg['mesh']['xmin'], cfg['mesh']['xmax'], cfg['mesh']['nnx']
 ymin, ymax, nny  = cfg['mesh']['ymin'], cfg['mesh']['ymax'], cfg['mesh']['nny']
 interface_center, interface_radius = (cfg['mesh']['interface_center']['x'], cfg['mesh']['interface_center']['y']), cfg['mesh']['interface_radius']
-x_1d = np.linspace(xmin, xmax, nnx)
-y_1d = np.linspace(ymin, ymax, nny)
-X, Y = np.meshgrid(x_1d, y_1d)
 
-
-# Interface
+# Parameters for data
+x_1d, y_1d = np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
+X_np, Y_np = np.meshgrid(x_1d, y_1d)
+x, y = torch.linspace(xmin, xmax, nnx), torch.linspace(ymin, ymax, nny)
+X, Y = torch.meshgrid(x, y, indexing="ij")
 interface_mask = (X - interface_center[0])**2 + (Y - interface_center[1])**2 <= interface_radius**2
-domain = np.ones((nnx, nny))
-domain[~interface_mask] *= 0
+interface_boundary = torch.zeros_like(interface_mask, dtype=bool)
+for i in range(1, interface_mask.shape[0] - 1):
+    for j in range(1, interface_mask.shape[1] - 1):
+        # Check for boundary change and mark only the outside node
+        if interface_mask[i, j] != interface_mask[i - 1, j] or interface_mask[i, j] != interface_mask[i + 1, j]:
+            if interface_mask[i, j]:  # If current node is outside the interface
+                interface_boundary[i, j] = True
+        elif interface_mask[i, j] != interface_mask[i, j - 1] or interface_mask[i, j] != interface_mask[i, j + 1]:
+            if interface_mask[i, j]:  # If current node is outside the interface
+                interface_boundary[i, j] = True
+
+inner_mask = interface_mask
+outer_mask = ~interface_mask | interface_boundary
 
 
 # Define Gaussians's Functions
@@ -43,15 +54,13 @@ def gaussians(x, y, params):
     return profile
 
 
-input_data = gaussians(X, Y, cfg['init']['args'])
-# input_data[interface_mask] /= 1
-# input_data[~interface_mask] /= 80
+input_data = gaussians(X_np, Y_np, cfg['init']['args'])
 input_data = input_data[np.newaxis, np.newaxis, :, :]
 input_data = torch.from_numpy(input_data).float()
 
 # Create Model
-model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, mask = interface_mask)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/interface_9.pth'))
+model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, inner_mask = inner_mask, outer_mask = outer_mask)
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/interface_8.pth'))
 model = model.float()
 model.eval() 
 
@@ -82,21 +91,22 @@ axs[0, 1].set_ylabel('Y')
 cbar_output = plt.colorbar(img_output, ax=axs[0, 1], label='Magnitude')
 
 # Plot Reference of the Domain
-img_domain = axs[1, 0].imshow(domain, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-axs[1, 0].set_title('Domain Reference')
+line = output_array[nnx//2, 0 : nny]
+y_line = np.linspace(0, ymax, len(line))
+axs[1, 0].plot(y_line, line)
+axs[1, 0].set_title('Line in Y')
 axs[1, 0].set_xlabel('X')
 axs[1, 0].set_ylabel('Y')
-cbar_domain = plt.colorbar(img_domain, ax=axs[1, 0], label='Magnitude')
 
 # Plot One line
-line = output_array[0:nnx, nny//2]
-x_line = np.linspace(0, xmax, len(line))
-axs[1, 1].plot(x_line, line)
-axs[1, 1].set_title('Line')
+line_2 = output_array[0 : nnx, nny//2]
+x_line = np.linspace(0, xmax, len(line_2))
+axs[1, 1].plot(x_line, line_2)
+axs[1, 1].set_title('Line in X')
 axs[1, 1].set_xlabel('X')
 axs[1, 1].set_ylabel('Y')
 
 # Adjust layout
 plt.tight_layout(rect=[0, 0, 1, 0.96])  
 os.makedirs(plots_dir, exist_ok=True)
-plt.savefig(os.path.join(plots_dir, 'Interface 9.png'))
+plt.savefig(os.path.join(plots_dir, 'Interface 8.png'))

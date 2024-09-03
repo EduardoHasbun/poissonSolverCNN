@@ -46,7 +46,7 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 # Parameters for data
 x, y= torch.linspace(xmin, xmax, nnx), torch.linspace(ymin, ymax, nny)
-X, Y = torch.meshgrid(x,y)
+X, Y = torch.meshgrid(x, y, indexing="ij")
 interface_mask = (X - interface_center[0])**2 + (Y - interface_center[1])**2 <= interface_radius**2
 interface_boundary = torch.zeros_like(interface_mask, dtype=bool)
 for i in range(1, interface_mask.shape[0] - 1):
@@ -83,7 +83,6 @@ for epoch in range (num_epochs):
         optimizer.zero_grad()
         insside = torch.DoubleTensor(data)
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
-
         
         # Getting Outputs
         subdomain_in, subdomain_out = model(data)
@@ -101,4 +100,4 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_10.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_11.pth'))
