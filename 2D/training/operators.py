@@ -115,9 +115,9 @@ class InterfaceBoundaryLoss(nn.Module):
 
     def forward(self, subdomain_in, subdomain_out):
         loss = F.mse_loss(subdomain_in[:, 0, self.boundary], subdomain_out[:, 0, self.boundary])
-        # normal_derivate_inner, normal_derivate_outer = self.compute_gradients(subdomain_in, subdomain_out)
-        # norm_d_in, norm_d_out = normal_derivate_inner[:, 0, self.boundary], normal_derivate_outer[:, 0, self.boundary]
-        # loss += F.mse_loss((norm_d_in), (norm_d_out))
+        normal_derivate_inner, normal_derivate_outer = self.compute_gradients(subdomain_in, subdomain_out)
+        norm_d_in, norm_d_out = normal_derivate_inner[:, 0, self.boundary], normal_derivate_outer[:, 0, self.boundary]
+        loss += F.mse_loss((norm_d_in), (norm_d_out))
         return loss * self.weight
 
 
@@ -194,8 +194,8 @@ def lapl(field, dx, dy, interface, epsilon_in, epsilon_out, b=0):
     #     (2 * field[:, 0, -1, -1] - 5 * field[:, 0, -2, -1] + 4 * field[:, 0, -3, -1] - field[:, 0, -4, -1]) / dy**2 + \
     #     (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
 
-    laplacian[:, 0, interface] *= epsilon_in
-    laplacian[:, 0, ~interface] *= epsilon_out
+    # laplacian[:, 0, interface] *= epsilon_in
+    # laplacian[:, 0, ~interface] *= epsilon_out
 
     return laplacian
 
