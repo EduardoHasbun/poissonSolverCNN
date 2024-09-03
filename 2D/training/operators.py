@@ -81,13 +81,11 @@ class InterfaceBoundaryLoss(nn.Module):
 
         gradients_x_boundary_inner[:, 0, x_idx, y_idx] = torch.where(normal_x > 0, 
             (subdomain_in[:, 0, x_idx, y_idx] - left_inner) / self.dx, 
-            (right_inner - subdomain_in[:, 0, x_idx, y_idx]) / self.dx
-        )
+            (right_inner - subdomain_in[:, 0, x_idx, y_idx]) / self.dx)
         
         gradients_x_boundary_outer[:, 0, x_idx, y_idx] = torch.where(normal_x > 0, 
             (-subdomain_out[:, 0, x_idx, y_idx] + right_outer) / self.dx, 
-            (subdomain_out[:, 0, x_idx, y_idx] - left_outer) / self.dx
-        )
+            (subdomain_out[:, 0, x_idx, y_idx] - left_outer) / self.dx)
 
         # Calculate the gradient for the y-direction
         above_inner = subdomain_in[:, 0, x_idx, y_idx + 1]
@@ -97,17 +95,15 @@ class InterfaceBoundaryLoss(nn.Module):
 
         gradients_y_boundary_inner[:, 0, x_idx, y_idx] = torch.where(normal_y > 0, 
             (subdomain_in[:, 0, x_idx, y_idx] - below_inner) / self.dy, 
-            (above_inner - subdomain_in[:, 0, x_idx, y_idx]) / self.dy
-        )
+            (above_inner - subdomain_in[:, 0, x_idx, y_idx]) / self.dy)
         
         gradients_y_boundary_outer[:, 0, x_idx, y_idx] = torch.where(normal_y > 0, 
             (-subdomain_out[:, 0, x_idx, y_idx] + above_outer) / self.dy, 
-            (subdomain_out[:, 0, x_idx, y_idx] - below_outer) / self.dy
-        )
+            (subdomain_out[:, 0, x_idx, y_idx] - below_outer) / self.dy)
 
         # Compute the normal derivatives
-        normal_derivate_inner = gradients_x_boundary_inner * normal_x + gradients_y_boundary_inner * normal_y
-        normal_derivate_outer = gradients_x_boundary_outer * normal_x + gradients_y_boundary_outer * normal_y
+        normal_derivate_inner = gradients_x_boundary_inner[:, 0, self.boundary] * normal_x + gradients_y_boundary_inner[:, 0, self.boundary] * normal_y
+        normal_derivate_outer = gradients_x_boundary_outer[:, 0, self.boundary] * normal_x + gradients_y_boundary_outer[:, 0, self.boundary] * normal_y
 
         return normal_derivate_inner, normal_derivate_outer
 
@@ -115,9 +111,8 @@ class InterfaceBoundaryLoss(nn.Module):
 
     def forward(self, subdomain_in, subdomain_out):
         loss = F.mse_loss(subdomain_in[:, 0, self.boundary], subdomain_out[:, 0, self.boundary])
-        # normal_derivate_inner, normal_derivate_outer = self.compute_gradients(subdomain_in, subdomain_out)
-        # norm_d_in, norm_d_out = normal_derivate_inner[:, 0, self.boundary], normal_derivate_outer[:, 0, self.boundary]
-        # loss += F.mse_loss((norm_d_in), (norm_d_out))
+        normal_derivate_inner, normal_derivate_outer = self.compute_gradients(subdomain_in, subdomain_out)
+        loss += F.mse_loss((normal_derivate_inner), (normal_derivate_outer))
         return loss * self.weight
 
 
@@ -194,8 +189,8 @@ def lapl(field, dx, dy, interface, epsilon_in, epsilon_out, b=0):
     #     (2 * field[:, 0, -1, -1] - 5 * field[:, 0, -2, -1] + 4 * field[:, 0, -3, -1] - field[:, 0, -4, -1]) / dy**2 + \
     #     (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
 
-    laplacian[:, 0, interface] *= epsilon_in
-    laplacian[:, 0, ~interface] *= epsilon_out
+    # laplacian[:, 0, interface] *= epsilon_in
+    # laplacian[:, 0, ~interface] *= epsilon_out
 
     return laplacian
 
