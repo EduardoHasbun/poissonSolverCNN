@@ -5,7 +5,7 @@ import numpy as np
 
 
 class LaplacianLoss(nn.Module):
-    def __init__(self, cfg, lapl_weight):
+    def __init__(self, cfg, lapl_weight, e_in = 1., e_out = 1.):
         super().__init__()
         self.weight = lapl_weight
         xmin, xmax, ymin, ymax, zmax, zmin, nnx, nny, nnz = cfg['globals']['xmin'], cfg['globals']['xmax'],\
@@ -17,9 +17,11 @@ class LaplacianLoss(nn.Module):
         self.dx = self.Lx/nnx
         self.dy = self.Ly/nny
         self.dz = self.Lz/nnz
+        self.epsilon_inside = e_in
+        self.epsilon_outside = e_out
 
-    def forward(self, output, data=None, data_norm=1.):
-        laplacian = lapl(output / data_norm, self.dx, self.dy, self.dz)
+    def forward(self, output, data=None, data_norm=1., mask = 1.):
+        laplacian = lapl(output / data_norm, self.dx, self.dy, self.dz, mask, self.epsilon_inside, self.epsilon_outside)
         return self.Lx**2 * self.Ly**2 * self.Lz**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1, 1:-1]) * self.weight
     
 
@@ -39,7 +41,7 @@ class DirichletBoundaryLoss(nn.Module):
         return bnd_loss * self.weight
     
 class InterfaceBoundaryLoss(nn.Module):
-    def __init__(self, bound_weight, boundary, e_in, e_out, dx, dy, dz):
+    def __init__(self, bound_weight, boundary, center, radius, e_in, e_out, dx, dy, dz):
         super().__init__()
         self.weight = bound_weight
         self.boundary = boundary
@@ -48,29 +50,89 @@ class InterfaceBoundaryLoss(nn.Module):
         self.dx = dx
         self.dy = dy
         self.dz = dz
+        self.center = center
+        self.radius = radius
 
-    def compute_gradients(self, output):
-        # Calcular gradientes en la dirección x
-        grad_x = (output[:, 0, 1:, :, :] - output[:, 0, :-1, :, :]) / self.dx
-        # Calcular gradientes en la dirección y
-        grad_y = (output[:, 0, :, 1:, :] - output[:, 0, :, :-1, :]) / self.dy
-        # Calcular gradientes en la dirección z
-        grad_z = (output[:, 0, :, :, 1:] - output[:, 0, :, :, :-1]) / self.dz
-        return grad_x, grad_y, grad_z
+        # Get boudnary indices
+        boundary_indices = torch.nonzero(self.boundary, as_tuple=True)
+
+        # Calculate the position of boundary nodes
+        x_idx, y_idx, z_idx = boundary_indices[0], boundary_indices[1], boundary_indices[2]
+        x_node, y_node, z_node = x_idx * self.dx, y_idx * self.dy, z_idx * self.dz
+
+        # Calculate normal vectors for all boundary nodes
+        normal_x = x_node - self.center[0]
+        normal_y = y_node - self.center[1]
+        normal_z = z_node - self.center[2]
+        norm = torch.sqrt(normal_x**2 + normal_y**2 + normal_z**2)
+        normal_x /= norm
+        normal_y /= norm
+        normal_z /= norm
+
+        self.x_idx, self.y_idx, self.z_idx = x_idx, y_idx, z_idx
+        self.normal_x, self.normal_y, self.normal_z = normal_x, normal_y, normal_z
+
+    def compute_gradients(self,  subdomain_in, subdomain_out):
+        gradients_x_boundary_inner = torch.zeros_like(subdomain_in)
+        gradients_x_boundary_outer = torch.zeros_like(subdomain_out)
+        gradients_y_boundary_inner = torch.zeros_like(subdomain_in)
+        gradients_y_boundary_outer = torch.zeros_like(subdomain_out)
+        gradients_z_boudnary_inner = torch.zeros_like(subdomain_in)
+        gradients_z_boudnary_outer = torch.zeros_like(subdomain_out)
+
+        # Calculate the gradient for the x-direction
+        left_inner = subdomain_in[:, 0, self.x_idx - 1, self.y_idx, self.z_idx]
+        right_inner = subdomain_in[:, 0, self.x_idx + 1, self.y_idx, self.z_idx]
+        left_outer = subdomain_out[:, 0, self.x_idx - 1, self.y_idx, self.z_idx]
+        right_outer = subdomain_out[:, 0, self.x_idx + 1, self.y_idx, self.z_idx]
+
+        gradients_x_boundary_inner[:, 0, self.x_idx, self.y_idx] = torch.where(self.normal_x > 0, 
+            (subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx] - left_inner) / self.dx, 
+            (right_inner - subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx]) / self.dx)
+        
+        gradients_x_boundary_outer[:, 0, self.x_idx, self.y_idx] = torch.where(self.normal_x > 0, 
+            (-subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] + right_outer) / self.dx, 
+            (subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] - left_outer) / self.dx)
+
+        # Calculate the gradient for the y-direction
+        above_inner = subdomain_in[:, 0, self.x_idx, self.y_idx + 1, self.z_idx]
+        below_inner = subdomain_in[:, 0, self.x_idx, self.y_idx - 1, self.z_idx]
+        above_outer = subdomain_out[:, 0, self.x_idx, self.y_idx + 1, self.z_idx]
+        below_outer = subdomain_out[:, 0, self.x_idx, self.y_idx - 1, self.z_idx]
+
+        gradients_y_boundary_inner[:, 0, self.x_idx, self.y_idx] = torch.where(self.normal_y > 0, 
+            (subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx] - below_inner) / self.dy, 
+            (above_inner - subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx]) / self.dy)
+        
+        gradients_y_boundary_outer[:, 0, self.x_idx, self.y_idx] = torch.where(self.normal_y > 0, 
+            (-subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] + above_outer) / self.dy, 
+            (subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] - below_outer) / self.dy)
+        
+        # Calculate the gradient for the z-direction
+        front_inner = subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx + 1]
+        back_inner = subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx - 1]
+        front_outer = subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx + 1]
+        back_outer = subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx - 1]
+
+        gradients_z_boudnary_inner[:, 0, self.x_idx, self.y_idx, self.z_idx] = torch.where(self.normal_z > 0,
+            (-subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx] + front_inner) / self.dz,
+            (subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx] - back_inner) / self.dz)
+        
+        gradients_z_boudnary_outer[:, 0, self.x_idx, self.y_idx, self.z_idx] = torch.where(self.normal_z < 0,
+            (-subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] + front_outer) / self.dz,
+            (subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] - back_outer) / self.dz)
+
+        # Compute the normal derivatives
+        normal_derivate_inner = gradients_x_boundary_inner[:, 0, self.boundary] * self.normal_x + gradients_y_boundary_inner[:, 0, self.boundary] * self.normal_y + gradients_z_boudnary_inner * self.normal_z
+        normal_derivate_outer = gradients_x_boundary_outer[:, 0, self.boundary] * self.normal_x + gradients_y_boundary_outer[:, 0, self.boundary] * self.normal_y + gradients_z_boudnary_outer * self.normal_z
+
+        return normal_derivate_inner, normal_derivate_outer
 
 
-    def forward(self, subdomain1, subdomain2, constant_value = 1.0):
-        loss = F.mse_loss(subdomain1[:, 0, self.boundary], subdomain2[:, 0, self.boundary])
-        grad_x_sub1, grad_y_sub1, grad_z_sub1 = self.compute_gradients(subdomain1)
-        grad_x_sub2, grad_y_sub2, grad_z_sub2 = self.compute_gradients(subdomain2)
-        grad_x_sub1_interface, grad_y_sub1_interface, grad_z_sub1_interface = grad_x_sub1[:, self.boundary], grad_y_sub1[:, self.boundary], grad_z_sub1[:, self.boundary]
-        grad_x_sub2_interface, grad_y_sub2_interface, grad_z_sub2_interface = grad_x_sub2[:, self.boundary], grad_y_sub2[:, self.boundary], grad_z_sub2[:, self.boundary]
-        loss += torch.mean((self.e_in * grad_x_sub1_interface - constant_value) ** 2)
-        loss += torch.mean((self.e_in * grad_y_sub1_interface - constant_value) ** 2)
-        loss += torch.mean((self.e_in * grad_z_sub1_interface - constant_value) ** 2)
-        loss += torch.mean((self.e_in * grad_x_sub2_interface - constant_value) ** 2)
-        loss += torch.mean((self.e_in * grad_y_sub2_interface - constant_value) ** 2)
-        loss += torch.mean((self.e_in * grad_z_sub2_interface - constant_value) ** 2)
+    def forward(self, subdomain_in, subdomain_out):
+        loss = F.mse_loss(subdomain_in[:, 0, self.boundary], subdomain_out[:, 0, self.boundary])
+        normal_derivate_inner, normal_derivate_outer = self.compute_gradients(subdomain_in, subdomain_out)
+        loss += F.mse_loss((normal_derivate_inner), (normal_derivate_outer))
         return loss * self.weight
     
 
@@ -113,7 +175,7 @@ class InsideLoss(nn.Module):
         return F.mse_loss(output[:, 0, 1:-1, 1:-1, 1:-1], target[:, 0, 1:-1, 1:-1, 1:-1]) * self.weight
 
 
-def lapl(field, dx, dy, dz):
+def lapl(field, dx, dy, dz, interface, epsilon_in, epsilon_out):
 
     # Create laplacian tensor with shape (batch_size, 1, d, h, w)
     laplacian = torch.zeros_like(field).type(field.type())
@@ -127,85 +189,8 @@ def lapl(field, dx, dy, dz):
             (field[:, 0, 1:-1, 2:, 1:-1] + field[:, 0, 1:-1, :-2, 1:-1] - 2 * field[:, 0, 1:-1, 1:-1, 1:-1]) / dy**2 + \
             (field[:, 0, 1:-1, 1:-1, 2:] + field[:, 0, 1:-1, 1:-1, :-2] - 2 * field[:, 0, 1:-1, 1:-1, 1:-1]) / dx**2
     
-
-    # # Left
-    # laplacian[:, 0, 0, 1:-1, 1:-1] = \
-    #     (2 * field[:, 0, 0, 1:-1, 1:-1] - 5 * field[:, 0, 1, 1:-1, 1:-1] + 4 * field[:, 0, 2, 1:-1, 1:-1] - field[:, 0, 3, 1:-1, 1:-1]) / dx**2 + \
-    #     (field[:, 0, 0, 2:, 1:-1] - 2 * field[:, 0, 0, 1:-1, 1:-1] + field[:, 0, 0, :-2, 1:-1]) / dy**2 + \
-    #     (field[:, 0, 0, 1:-1, 2:] - 2 * field[:, 0, 0, 1:-1, 1:-1] + field[:, 0, 0, 1:-1, :-2]) / dz**2
-
-    # # Right
-    # laplacian[:, 0, -1, 1:-1, 1:-1] = \
-    #     (2 * field[:, 0, -1, 1:-1, 1:-1] - 5 * field[:, 0, -2, 1:-1, 1:-1] + 4 * field[:, 0, -3, 1:-1, 1:-1] - field[:, 0, -4, 1:-1, 1:-1]) / dx**2 + \
-    #     (field[:, 0, -1, 2:, 1:-1] - 2 * field[:, 0, -1, 1:-1, 1:-1] + field[:, 0, -1, :-2, 1:-1]) / dy**2 + \
-    #     (field[:, 0, -1, 1:-1, 2:] - 2 * field[:, 0, -1, 1:-1, 1:-1] + field[:, 0, -1, 1:-1, :-2]) / dz**2
-
-    # # Bottom  
-    # laplacian[:, 0, 1:-1, 0, 1:-1] = \
-    #     (field[:, 0, 2:, 0, 1:-1] - 2 * field[:, 0, 1:-1, 0, 1:-1] + field[:, 0, :-2, 0 , 1:-1]) / dx**2 + \
-    #     (2 * field[:, 0, 1:-1, 0, 1:-1] - 5 * field[:, 0, 1:-1, 1, 1:-1] + 4 * field[:, 0, 1:-1, 2, 1:-1] - field[:, 0, 1:-1, 3, 1:-1]) / dy**2 + \
-    #     (field[:, 0, 1:-1, 0, 2:] - 2 * field[:, 0, 1:-1, 0, 1:-1] + field[:, 0, 1:-1, 0, :-2]) / dx**2
-    
-    # # Top
-    # laplacian[:, 0, 1:-1, -1, 1:-1] = \
-    #     (field[:, 0, 2:, -1, 1:-1] - 2 * field[:, 0, 1:-1, -1, 1:-1] + field[:, 0, :-2, -1, 1:-1]) / dx**2 + \
-    #     (2 * field[:, 0, 1:-1, -1, 1:-1] - 5 * field[:, 0, 1:-1, -2, 1:-1] + 4 * field[:, 0, 1:-1, -3, 1:-1] - field[:, 0, 1:-1, -4, 1:-1]) / dy**2 + \
-    #     (field[:, 0, 1:-1, -1, 2:] - 2 * field[:, 0, 1:-1, -1, 1:-1] + field[:, 0, 1:-1, -1, :-2])
-    
-    # # Back
-    # laplacian[:, 0, 1:-1, 1:-1, 0] = \
-    #     (field[:, 0, 2:, 1:-1, 0] - 2 * field[:, 0, 1:-1, 1:-1, 0] + field[:, 0, :-2, 1:-1, 0]) / dx**2 + \
-    #     (field[:, 0, 1:-1, 2:, 0] - 2 * field[:, 0, 1:-1, 1:-1, 0] + field[:, 0, 1:-1, :-2, 0]) / dy**2 + \
-    #     (2 * field[:, 0, 1:-1, 1:-1, 0] - 5 * field[:, 0, 1:-1, 1:-1, 1] + 4 * field[:, 0, 1:-1, 1:-1, 2] - field[:, 0, 1:-1, 1:-1, 3]) / dz**2
-    
-    # # Front
-    # laplacian[:, 0, 1:-1, 1:-1, -1] = \
-    #     (field[:, 0, 2:, 1:-1, -1] - 2 * field[:, 0, 1:-1, 1:-1, -1] + field[:, 0, :-2, 1:-1, -1]) / dx**2 + \
-    #     (field[:, 0, 1:-1, 2:, -1] - 2 * field[:, 0, 1:-1, 1:-1, -1] + field[:, 0, 1:-1, :-2, -1]) / dy**2 + \
-    #     (2 * field[:, 0, 1:-1, 1:-1, -1] - 5 * field[:, 0, 1:-1, 1:-1, -2] - 4 * field[:, 0, 1:-1, 1:-1, -3] - field[:, 0, 1:-1, 1:-1, -4])
-    
-
-
-    # # Corners
-    # laplacian[:, 0, 0, 0, 0] = \
-    #     (2 * field[:, 0, 0, 0, 0] - 5 * field[:, 0, 1, 0, 0] + 4 * field[:, 0, 2, 0, 0] - field[:, 0, 3, 0, 0]) / dx**2 + \
-    #     (2 * field[:, 0, 0, 0, 0] - 5 * field[:, 0, 0, 1, 0] + 4 * field[:, 0, 0, 2, 0] - field[:, 0, 0, 3, 0]) / dy**2 + \
-    #     (2 * field[:, 0, 0, 0, 0] - 5 * field[:, 0, 0, 0, 1] + 4 * field[:, 0, 0, 0, 2] - field[:, 0, 0, 0, 3]) / dz**2
-    
-    # laplacian[:, 0, -1, 0, 0] = \
-    #     (2 * field[:, 0, -1, 0, 0] - 5 * field[:, 0, -2, 0, 0] + 4 * field[:, 0, -3, 0, 0] - field[:, 0, -4, 0, 0]) / dx**2 + \
-    #     (2 * field[:, 0, -1, 0, 0] - 5 * field[:, 0, -1, 1, 0] + 4 * field[:, 0, -1, 2, 0] - field[:, 0, -1, 3, 0]) / dy**2 + \
-    #     (2 * field[:, 0, -1, 0, 0] - 5 * field[:, 0, -1, 0, 1] + 4 * field[:, 0, -1, 0 ,2] - field[:, 0, -1, 0, 3]) / dz**2
-    
-    # laplacian[:, 0, 0, -1, 0] = \
-    #     (2 * field[:, 0, 0, -1, 0] - 5 * field[:, 0, 1, -1, 0] + 4 * field[:, 0, 2, -1, 0] - field[:, 0, 3, -1, 0]) / dx**2 + \
-    #     (2 * field[:, 0, 0, -1, 0] - 5 * field[:, 0, 0, -2, 0] + 4 * field[:, 0, 0, -3, 0] - field[:, 0, 0, -4, 0]) / dy**2 + \
-    #     (2 * field[:, 0, 0, -1, 0] - 5 * field[:, 0, 0, -1, 1] + 4 * field[:, 0, 0, -1, 2] - field[:, 0, 0, -1, 3]) / dz**2
-    
-    # laplacian[:, 0, 0, 0, -1] = \
-    #     (2 * field[:, 0, 0, 0, -1] - 5 * field[:, 0, 1, 0, -1] + 4 * field[:, 0, 2, 0, -1] - field[:, 0, 3, 0, -1]) / dx**2 + \
-    #     (2 * field[:, 0, 0, 0, -1] - 5 * field[:, 0, 0, 1, -1] + 4 * field[:, 0, 0, 2, -1] - field[:, 0, 0, 3, -1]) / dy**2 + \
-    #     (2 * field[:, 0, 0, 0, -1] - 5 * field[:, 0, 0, 0, -2] + 4 * field[:, 0, 0, 0, -3] - field[:, 0, 0, 0, -4]) / dz**2
-    
-    # laplacian[:, 0, -1, -1, 0] = \
-    #     (2 * field[:, 0, -1, -1, 0] - 5 * field[:, 0, -2, -1, 0] + 4 * field[:, 0, -3, -1, 0] - field[:, 0, -4, -1, 0]) / dx**2 + \
-    #     (2 * field[:, 0, -1, -1, 0] - 5 * field[:, 0, -1, -2, 0] + 4 * field[:, 0, -1, -3, 0] - field[:, 0, -1, -4, 0]) / dy**2 + \
-    #     (2 * field[:, 0, -1, -1, 0] - 5 * field[:, 0, -1, -1, 1] + 4 * field[:, 0, -1, -1, 2] - field[:, 0, -1, -1, 3]) / dz**2 
-
-    # laplacian[:, 0, -1, 0, -1] = \
-    #     (2 * field[:, 0, -1, 0, -1] - 5 * field[:, 0, -2, 0, -1] + 4 * field[:, 0, -3, 0, -1] - field[:, 0, -4, 0, -1]) / dx**2 + \
-    #     (2 * field[:, 0, -1, 0, -1] - 5 * field[:, 0, -1, 1, -1] + 4 * field[:, 0, -1, 2, -1] - field[:, 0, -1, 3, -1]) / dy**2 + \
-    #     (2 * field[:, 0, -1, 0, -1] - 5 * field[:, 0, -1, 0, -2] + 4 * field[:, 0, -1, 0, -3] - field[:, 0, -1, 0, -4]) / dz**2
-    
-    # laplacian[:, 0, 0, -1, -1] = \
-    #     (2 * field[:, 0, 0, -1, -1] - 5 * field[:, 0, 1, -1, -1] + 4 * field[:, 0, 2, -1, -1] - field[:, 0, 3, -1, -1]) / dx**2 + \
-    #     (2 * field[:, 0, 0, -1, -1] - 5 * field[:, 0, 0, -2, -1] + 4 * field[:, 0, 0, -3, -1] - field[:, 0, 0, -4, -1]) / dy**2 + \
-    #     (2 * field[:, 0, 0, -1, -1] - 5 * field[:, 0, 0, -1, -2] + 4 * field[:, 0, 0, -1, -3] - field[:, 0, 0, -1, -4]) / dz**2
-    
-    # laplacian[:, 0, -1, -1, -1] = \
-    #     (2 * field[:, 0, -1, -1, -1] - 5 * field[:, 0, -2, -1, -1] + 4 * field[:, 0, -3, -1, -1] - field[:, 0, -4, -1, -1]) / dx**2 + \
-    #     (2 * field[:, 0, -1, -1, -1] - 5 * field[:, 0, -1, -2, -1] + 4 * field[:, 0, -1, -3, -1] - field[:, 0, -1, -4, -1]) / dy**2 + \
-    #     (2 * field[:, 0, -1, -1, -1] - 5 * field[:, 0, -1, -1, -2] + 4 * field[:, 0, -1, -1, -3] - field[:, 0, -1, -1, -4]) / dz**2
+    laplacian[:, 0, interface] *= epsilon_in
+    laplacian[:, 0, ~interface] *= epsilon_out
 
     return laplacian
 

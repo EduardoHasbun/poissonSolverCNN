@@ -49,7 +49,6 @@ class ConvBlock(nn.Module):
         return self.encode(x)
 
 class UNet_Submodel(nn.Module):
-    # Este será un submodelo UNet para cada subdominio
     def __init__(self, scales, kernel_sizes, input_res, 
                     padding_mode='zeros', upsample_mode='nearest'):
         super(UNet_Submodel, self).__init__()

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 class LaplacianLoss(nn.Module):
-    def __init__(self, cfg, lapl_weight, e_in = 1, e_out = 1, interface = 1):
+    def __init__(self, cfg, lapl_weight, e_in = 1., e_out = 1.):
         super().__init__()
         self.weight = lapl_weight
         xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
@@ -17,9 +17,9 @@ class LaplacianLoss(nn.Module):
         self.dy = self.Ly/nny
         self.epsilon_inside = e_in
         self.epsilon_outside = e_out
-        self.interface = interface
-    def forward(self, output, data=None, data_norm=1.):
-        laplacian = lapl(output / data_norm, self.dx, self.dy, self.interface, self.epsilon_inside, self.epsilon_outside)
+
+    def forward(self, output, data=None, data_norm=1., mask = 1.0):
+        laplacian = lapl(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside)
         return self.Lx**2 * self.Ly**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
     
     
@@ -161,35 +161,6 @@ def lapl(field, dx, dy, interface, epsilon_in, epsilon_out, b=0):
         (field[:, 0, 2:, 1:-1] + field[:, 0, :-2, 1:-1] - 2 * field[:, 0, 1:-1, 1:-1]) / dy**2 + \
         (field[:, 0, 1:-1, 2:] + field[:, 0, 1:-1, :-2] - 2 * field[:, 0, 1:-1, 1:-1]) / dx**2 
 
-    
-    # laplacian[:, 0, 0, 1:-1] = \
-    #         (2 * field[:, 0, 0, 1:-1] - 5 * field[:, 0, 1, 1:-1] + 4 * field[:, 0, 2, 1:-1] - field[:, 0, 3, 1:-1]) / dy**2 + \
-    #         (field[:, 0, 0, 2:] + field[:, 0, 0, :-2] - 2 * field[:, 0, 0, 1:-1]) / dx**2
-        
-    # laplacian[:, 0, -1, 1:-1] = \
-    #     (2 * field[:, 0, -1, 1:-1] - 5 * field[:, 0, -2, 1:-1] + 4 * field[:, 0, -3, 1:-1] - field[:, 0, -4, 1:-1]) / dy**2 + \
-    #     (field[:, 0, -1, 2:] + field[:, 0, -1, :-2] - 2 * field[:, 0, -1, 1:-1]) / dx**2
-    # laplacian[:, 0, 1:-1, 0] = \
-    #     (field[:, 0, 2:, 0] + field[:, 0, :-2, 0] - 2 * field[:, 0, 1:-1, 0]) / dy**2 + \
-    #     (2 * field[:, 0, 1:-1, 0] - 5 * field[:, 0, 1:-1, 1] + 4 * field[:, 0, 1:-1, 2] - field[:, 0, 1:-1, 3]) / dx**2
-    # laplacian[:, 0, 1:-1, -1] = \
-    #     (field[:, 0, 2:, -1] + field[:, 0, :-2, -1] - 2 * field[:, 0, 1:-1, -1]) / dy**2 + \
-    #     (2 * field[:, 0, 1:-1, -1] - 5 * field[:, 0, 1:-1, -2] + 4 * field[:, 0, 1:-1, -3] - field[:, 0, 1:-1, -4]) / dx**2
-
-    
-    # laplacian[:, 0, 0, 0] = \
-    #         (2 * field[:, 0, 0, 0] - 5 * field[:, 0, 1, 0] + 4 * field[:, 0, 2, 0] - field[:, 0, 3, 0]) / dy**2 + \
-    #         (2 * field[:, 0, 0, 0] - 5 * field[:, 0, 0, 1] + 4 * field[:, 0, 0, 2] - field[:, 0, 0, 3]) / dx**2
-    # laplacian[:, 0, 0, -1] = \
-    #         (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 1, -1] + 4 * field[:, 0, 2, -1] - field[:, 0, 3, -1]) / dy**2 + \
-    #         (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
-
-    # laplacian[:, 0, -1, 0] = \
-    #     (2 * field[:, 0, -1, 0] - 5 * field[:, 0, -2, 0] + 4 * field[:, 0, -3, 0] - field[:, 0, -4, 0]) / dy**2 + \
-    #     (2 * field[:, 0, -1, 0] - 5 * field[:, 0, -1, 1] + 4 * field[:, 0, -1, 2] - field[:, 0, -1, 3]) / dx**2
-    # laplacian[:, 0, -1, -1] = \
-    #     (2 * field[:, 0, -1, -1] - 5 * field[:, 0, -2, -1] + 4 * field[:, 0, -3, -1] - field[:, 0, -4, -1]) / dy**2 + \
-    #     (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
 
     laplacian[:, 0, interface] *= epsilon_in
     laplacian[:, 0, ~interface] *= epsilon_out
@@ -202,21 +173,3 @@ def ratio_potrhs(alpha, Lx, Ly):
     return alpha / (np.pi**2 / 4)**2 / (1 / Lx**2 + 1 / Ly**2)
 
 
-
-
-# class InterfaceBoundaryLoss(nn.Module):
-#     def __init__(self, bound_weight, interface_mask, epsilon_1, epsilon_2, dx, dy, interface_center):
-#         super().__init__()
-#         self.weight = bound_weight
-#         self.interface_mask = interface_mask
-#         self.epsilon_1 = epsilon_1
-#         self.epsilon_2 = epsilon_2
-#         self.dx = dx
-#         self.dy = dy
-#         self.interface_center = interface_center
-
-#     def forward(self, output_in, output_out, data_norm):
-#         # Continuity of potential
-#         bnd_loss_potential = F.mse_loss(output_in[:, 0, self.interface_mask], output_out[:, 0, self.interface_mask])
-#         total_loss = self.weight * (bnd_loss_potential)
-#         return total_loss

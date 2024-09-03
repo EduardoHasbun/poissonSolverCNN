@@ -81,7 +81,6 @@ for epoch in range (num_epochs):
     for batch_idx, batch in enumerate(dataloader):
         data = batch[:, np.newaxis, :, :]
         optimizer.zero_grad()
-        insside = torch.DoubleTensor(data)
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
         
         # Getting Outputs

@@ -96,9 +96,5 @@ if __name__ == '__main__':
             plt.close()
 
     file_path_domain = os.path.join('generated', 'domain.npy')
-    file_path_inside = os.path.join('generated', 'inside.npy')
-    file_path_outside = os.path.join('generated', 'outside.npy')
     os.makedirs('generated', exist_ok=True)
     np.save(file_path_domain, data_array)
-    np.save(file_path_inside, inside_domain_array)
-    np.save(file_path_outside, outside_domain_array)
