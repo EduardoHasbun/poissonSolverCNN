@@ -41,12 +41,10 @@ class DirichletBoundaryLoss(nn.Module):
 
 
 class InterfaceBoundaryLoss(nn.Module):
-    def __init__(self, bound_weight, boundary, inner_mask, outer_mask, center, radius, e_in, e_out, dx, dy):
+    def __init__(self, bound_weight, boundary, center, radius, e_in, e_out, dx, dy):
         super().__init__()
         self.weight = bound_weight
         self.boundary = boundary
-        self.inner_mask = inner_mask
-        self.outer_mask = outer_mask
         self.e_in = e_in
         self.e_out = e_out
         self.dx = dx

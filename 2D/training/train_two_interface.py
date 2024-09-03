@@ -60,7 +60,7 @@ for i in range(1, interface_mask.shape[0] - 1):
                 interface_boundary[i, j] = True
 
 inner_mask = interface_mask
-outer_mask = interface_mask | interface_boundary
+outer_mask = ~interface_mask | interface_boundary
 
 # Load Data
 dataset = np.load(data_dir) / ratio_max
@@ -71,7 +71,7 @@ model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, inner_mask = inner
 model = model.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-interface_loss = InterfaceBoundaryLoss(interface_weight, interface_boundary, inner_mask, outer_mask, interface_center, interface_radius,\
+interface_loss = InterfaceBoundaryLoss(interface_weight, interface_boundary, interface_center, interface_radius,\
                                         epsilon_inside, epsilon_outside, dx, dy)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
