@@ -194,8 +194,8 @@ def lapl(field, dx, dy, interface, epsilon_in, epsilon_out, b=0):
     #     (2 * field[:, 0, -1, -1] - 5 * field[:, 0, -2, -1] + 4 * field[:, 0, -3, -1] - field[:, 0, -4, -1]) / dy**2 + \
     #     (2 * field[:, 0, 0, -1] - 5 * field[:, 0, 0, -2] + 4 * field[:, 0, 0, -3] - field[:, 0, 0, -4]) / dx**2
 
-    # laplacian[:, 0, interface] *= epsilon_in
-    # laplacian[:, 0, ~interface] *= epsilon_out
+    laplacian[:, 0, interface] *= epsilon_in
+    laplacian[:, 0, ~interface] *= epsilon_out
 
     return laplacian
 
