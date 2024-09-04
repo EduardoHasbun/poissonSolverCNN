@@ -51,7 +51,7 @@ loss:
     type: laplacian
     args:
         bound_weight: 5.0e+0
-        inside_weight: 5.0e+3               # Weighting of the loss on the boundaries (float)
+        interface_weight: 5.0e+3               # Weighting of the loss on the boundaries (float)
         lapl_weight: 2.0e+4                # Weighting of the loss on the Laplacian (float)
         optimizer_lr: 4.e-4 
         inside_weight: 1.0e+7
