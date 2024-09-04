@@ -86,11 +86,11 @@ class InterfaceBoundaryLoss(nn.Module):
         left_outer = subdomain_out[:, 0, self.x_idx - 1, self.y_idx, self.z_idx]
         right_outer = subdomain_out[:, 0, self.x_idx + 1, self.y_idx, self.z_idx]
 
-        gradients_x_boundary_inner[:, 0, self.x_idx, self.y_idx] = torch.where(self.normal_x > 0, 
+        gradients_x_boundary_inner[:, 0, self.x_idx, self.y_idx, self.z_idx] = torch.where(self.normal_x > 0, 
             (subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx] - left_inner) / self.dx, 
             (right_inner - subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx]) / self.dx)
         
-        gradients_x_boundary_outer[:, 0, self.x_idx, self.y_idx] = torch.where(self.normal_x > 0, 
+        gradients_x_boundary_outer[:, 0, self.x_idx, self.y_idx, self.z_idx] = torch.where(self.normal_x > 0, 
             (-subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] + right_outer) / self.dx, 
             (subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] - left_outer) / self.dx)
 
@@ -100,11 +100,11 @@ class InterfaceBoundaryLoss(nn.Module):
         above_outer = subdomain_out[:, 0, self.x_idx, self.y_idx + 1, self.z_idx]
         below_outer = subdomain_out[:, 0, self.x_idx, self.y_idx - 1, self.z_idx]
 
-        gradients_y_boundary_inner[:, 0, self.x_idx, self.y_idx] = torch.where(self.normal_y > 0, 
+        gradients_y_boundary_inner[:, 0, self.x_idx, self.y_idx, self.z_idx] = torch.where(self.normal_y > 0, 
             (subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx] - below_inner) / self.dy, 
             (above_inner - subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx]) / self.dy)
         
-        gradients_y_boundary_outer[:, 0, self.x_idx, self.y_idx] = torch.where(self.normal_y > 0, 
+        gradients_y_boundary_outer[:, 0, self.x_idx, self.y_idx, self.z_idx] = torch.where(self.normal_y > 0, 
             (-subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] + above_outer) / self.dy, 
             (subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] - below_outer) / self.dy)
         
