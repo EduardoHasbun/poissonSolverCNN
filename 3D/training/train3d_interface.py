@@ -47,7 +47,7 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 # Parameters for data 
 x, y, z= torch.linspace(xmin, xmax, nnx), torch.linspace(ymin, ymax, nny), torch.linspace(zmin, zmax, nnz)
-X, Y, Z = torch.meshgrid(x, y, z, indexing='ijk')
+X, Y, Z = torch.meshgrid(x, y, z)
 interface_mask = (X - interface_center[0])**2 + (Y - interface_center[1])**2 + (Z -  interface_center[0])**2<= interface_radius**2
 interface_boundary = torch.zeros_like(interface_mask, dtype=bool)
 for i in range(1, interface_mask.shape[0]):
