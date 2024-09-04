@@ -123,8 +123,8 @@ class InterfaceBoundaryLoss(nn.Module):
             (subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] - back_outer) / self.dz)
 
         # Compute the normal derivatives
-        normal_derivate_inner = gradients_x_boundary_inner[:, 0, self.boundary] * self.normal_x + gradients_y_boundary_inner[:, 0, self.boundary] * self.normal_y + gradients_z_boudnary_inner * self.normal_z
-        normal_derivate_outer = gradients_x_boundary_outer[:, 0, self.boundary] * self.normal_x + gradients_y_boundary_outer[:, 0, self.boundary] * self.normal_y + gradients_z_boudnary_outer * self.normal_z
+        normal_derivate_inner = gradients_x_boundary_inner[:, 0, self.boundary] * self.normal_x + gradients_y_boundary_inner[:, 0, self.boundary] * self.normal_y + gradients_z_boudnary_inner[:, 0, self.boundary] * self.normal_z
+        normal_derivate_outer = gradients_x_boundary_outer[:, 0, self.boundary] * self.normal_x + gradients_y_boundary_outer[:, 0, self.boundary] * self.normal_y + gradients_z_boudnary_outer[:, 0, self.boundary] * self.normal_z
 
         return normal_derivate_inner, normal_derivate_outer
 
