@@ -63,7 +63,7 @@ inner_mask = interface_mask
 outer_mask = ~interface_mask | interface_boundary
 
 # Load Data
-dataset = np.load(data_dir) * ratio_max
+dataset = np.load(data_dir) / ratio_max
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 # Create models and losses
@@ -81,6 +81,7 @@ for epoch in range (num_epochs):
     for batch_idx, batch in enumerate(dataloader):
         data = batch[:, np.newaxis, :, :]
         optimizer.zero_grad()
+        insside = torch.DoubleTensor(data)
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
         
         # Getting Outputs
