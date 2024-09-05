@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 class LaplacianLoss(nn.Module):
-    def __init__(self, cfg, lapl_weight, e_in = 1., e_out = 1.):
+    def __init__(self, cfg, lapl_weight, e_in = 1, e_out = 1, interface = 1):
         super().__init__()
         self.weight = lapl_weight
         xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
@@ -17,9 +17,9 @@ class LaplacianLoss(nn.Module):
         self.dy = self.Ly/nny
         self.epsilon_inside = e_in
         self.epsilon_outside = e_out
-
-    def forward(self, output, data=None, data_norm=1., mask = 1.0):
-        laplacian = lapl(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside)
+        self.interface = interface
+    def forward(self, output, data=None, data_norm=1.):
+        laplacian = lapl(output / data_norm, self.dx, self.dy, self.interface, self.epsilon_inside, self.epsilon_outside)
         return self.Lx**2 * self.Ly**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
     
     
@@ -111,9 +111,7 @@ class InterfaceBoundaryLoss(nn.Module):
 
 
 
-    def forward(self, subdomain_in, subdomain_out, data_norm = 1.0):
-        subdomain_in /= data_norm
-        subdomain_out /= data_norm
+    def forward(self, subdomain_in, subdomain_out):
         loss = F.mse_loss(subdomain_in[:, 0, self.boundary], subdomain_out[:, 0, self.boundary])
         normal_derivate_inner, normal_derivate_outer = self.compute_gradients(subdomain_in, subdomain_out)
         loss += F.mse_loss((normal_derivate_inner), (normal_derivate_outer))
@@ -162,10 +160,9 @@ def lapl(field, dx, dy, interface, epsilon_in, epsilon_out, b=0):
     laplacian[:, 0, 1:-1, 1:-1] = \
         (field[:, 0, 2:, 1:-1] + field[:, 0, :-2, 1:-1] - 2 * field[:, 0, 1:-1, 1:-1]) / dy**2 + \
         (field[:, 0, 1:-1, 2:] + field[:, 0, 1:-1, :-2] - 2 * field[:, 0, 1:-1, 1:-1]) / dx**2 
-
-
-    # laplacian[:, 0, interface] *= epsilon_in
-    # laplacian[:, 0, ~interface] *= epsilon_out
+    
+    laplacian[:, 0, interface] *= epsilon_in
+    laplacian[:, 0, ~interface] *= epsilon_out
 
     return laplacian
 
