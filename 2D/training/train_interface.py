@@ -46,7 +46,7 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 # Parameters for data
 x, y= torch.linspace(xmin, xmax, nnx), torch.linspace(ymin, ymax, nny)
-X, Y = torch.meshgrid(x, y, indexing="ij")
+X, Y = torch.meshgrid(x,y)
 interface_mask = (X - interface_center[0])**2 + (Y - interface_center[1])**2 <= interface_radius**2
 interface_boundary = torch.zeros_like(interface_mask, dtype=bool)
 for i in range(1, interface_mask.shape[0] - 1):
@@ -60,7 +60,7 @@ for i in range(1, interface_mask.shape[0] - 1):
                 interface_boundary[i, j] = True
 
 inner_mask = interface_mask
-outer_mask = ~interface_mask | interface_boundary
+outer_mask = interface_mask | interface_boundary
 
 # Load Data
 dataset = np.load(data_dir) / ratio_max
@@ -71,7 +71,7 @@ model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, inner_mask = inner
 model = model.double()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-interface_loss = InterfaceBoundaryLoss(interface_weight, interface_boundary, interface_center, interface_radius,\
+interface_loss = InterfaceBoundaryLoss(interface_weight, interface_boundary, inner_mask, outer_mask, interface_center, interface_radius,\
                                         epsilon_inside, epsilon_outside, dx, dy)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
@@ -83,6 +83,7 @@ for epoch in range (num_epochs):
         optimizer.zero_grad()
         insside = torch.DoubleTensor(data)
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
+
         
         # Getting Outputs
         subdomain_in, subdomain_out = model(data)
@@ -91,7 +92,7 @@ for epoch in range (num_epochs):
         loss = laplacian_loss(subdomain_in, data = data, data_norm = data_norm)
         loss += laplacian_loss(subdomain_out, data = data, data_norm = data_norm)
         loss += dirichlet_loss(subdomain_out)
-        loss += interface_loss(subdomain_in, subdomain_out, data_norm)
+        loss += interface_loss(subdomain_in, subdomain_out, data_norm = data_norm)
 
         # Backpropagation
         loss.backward()
@@ -100,4 +101,4 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_12.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_13.pth'))
