@@ -93,7 +93,7 @@ for epoch in range (num_epochs):
         loss = laplacian_loss(subdomain_in, data = data, data_norm = data_norm)
         loss += laplacian_loss(subdomain_out, data = data, data_norm = data_norm)
         loss += dirichlet_loss(subdomain_out)
-        loss += interface_loss(subdomain_in, subdomain_out, data_norm = data_norm)
+        loss += interface_loss(subdomain_in, subdomain_out)
 
         # Backpropagation
         loss.backward()
@@ -102,4 +102,4 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'interface_13.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, case_name, '.pth'))
