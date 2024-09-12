@@ -9,7 +9,7 @@ import os
 import argparse
 import matplotlib.pyplot as plt
 
-#Import external parameteres
+# Import external parameteres
 parser = argparse.ArgumentParser(description='Training')
 parser.add_argument('-c', '--cfg', type=str, default=None, help='Config filename')
 args = parser.parse_args()
@@ -34,6 +34,7 @@ interface_radius = cfg['globals']['interface_radius']
 epsilon_inside, epsilon_outside = cfg['globals']['epsilon_inside'], cfg['globals']['epsilon_outside']
 Lx, Ly = xmax-xmin, ymax-ymin
 dx, dy = Lx / nnx, Ly / nny
+case_name = cfg['general']['name_case']
 save_dir = os.getcwd()
 data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'domain.npy')
 save_dir = os.path.join(save_dir, 'models')
@@ -92,7 +93,7 @@ for epoch in range (num_epochs):
         loss = laplacian_loss(subdomain_in, data = data, data_norm = data_norm)
         loss += laplacian_loss(subdomain_out, data = data, data_norm = data_norm)
         loss += dirichlet_loss(subdomain_out)
-        loss += interface_loss(subdomain_in, subdomain_out, data_norm = data_norm)
+        loss += interface_loss(subdomain_in, subdomain_out)
 
         # Backpropagation
         loss.backward()
