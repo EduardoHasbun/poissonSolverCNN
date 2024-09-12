@@ -15,6 +15,7 @@ args = parser.parse_args()
 with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
 nits = cfg['n_it']
+name = cfg['name']
 ploting = False
 
 # Parameters for data generation
@@ -87,6 +88,6 @@ if __name__ == '__main__':
             plt.savefig(os.path.join(plots_dir, f'random_data_plot_{idx}.png'))
             plt.close()
 
-    file_path_domain = os.path.join('generated', 'domain.npy')
+    file_path_domain = os.path.join('generated', name, '.npy')
     os.makedirs('generated', exist_ok=True)
     np.save(file_path_domain, data_array)
