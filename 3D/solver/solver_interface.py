@@ -109,17 +109,21 @@ axs[0, 1].set_xlabel('X')
 axs[0, 1].set_ylabel('Y')
 cbar_output = plt.colorbar(img_output, ax=axs[0, 1], label='Magnitude')
 
-# Plot X line
-
 # Plot Y line
-line = output_array[0:nnx, nny//2, nnz//2]
+line2 = output_array[nnx//2, 0: nny, nnz//2]
+y_line = np.linspace(0, ymax, len(line2))
+axs[1, 0].plot(y_line, line2)
+axs[1, 0].set_title('Y Line')
+
+
+# Plot X line
+line = output_array[0: nnx, nny//2, nnz//2]
 x_line = np.linspace(0, xmax, len(line))
 axs[1, 1].plot(x_line, line)
-axs[1, 1].set_title('Line')
-axs[1, 1].set_xlabel('X')
-axs[1, 1].set_ylabel('Y')
+axs[1, 1].set_title('X Line')
+
 
 # Adjust layout
-plt.tight_layout(rect=[0, 0, 1, 0.96])  # Leave space for suptitle
+plt.tight_layout(rect=[0, 0, 1, 0.96])  
 os.makedirs(plots_dir, exist_ok=True)
 plt.savefig(os.path.join(plots_dir, 'Interface_3D 1.png'))
