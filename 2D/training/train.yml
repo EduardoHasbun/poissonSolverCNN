@@ -1,5 +1,5 @@
 general:
-    name_case: 'interface_16.pth'
+    name_case: 'interface_14.pth'
     data_dir: 'dataset/generated/domain.npy' 
 
 
@@ -15,7 +15,7 @@ globals:                                    # Domain sizes and others, used to c
         y: 2.5
     interface_radius: 1.5
     epsilon_inside: 1.0
-    epsilon_outside: 1.0
+    epsilon_outside: 80.0
 
 arch:
     scales:
