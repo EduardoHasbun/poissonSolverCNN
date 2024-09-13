@@ -64,7 +64,7 @@ inner_mask = interface_mask
 outer_mask = interface_mask | interface_boundary
 
 # Load Data
-dataset = np.load(data_dir) / ratio_max
+dataset = np.load(data_dir) / 0.2
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 # Create models and losses
@@ -85,7 +85,6 @@ for epoch in range (num_epochs):
         insside = torch.DoubleTensor(data)
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
 
-        
         # Getting Outputs
         subdomain_in, subdomain_out = model(data)
 

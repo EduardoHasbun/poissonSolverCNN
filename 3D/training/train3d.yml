@@ -51,10 +51,10 @@ loss:
     type: laplacian
     args:
         bound_weight: 5.0e+0
-        interface_weight: 5.0e+3               # Weighting of the loss on the boundaries (float)
+        interface_weight: 5.0e+5               # Weighting of the loss on the boundaries (float)
         lapl_weight: 2.0e+4                # Weighting of the loss on the Laplacian (float)
-        optimizer_lr: 4.e-4 
+        optimizer_lr: 2.e-3 
         inside_weight: 1.0e+7
 
 trainer:
-    epochs: 50                              # Number of epochs
+    epochs: 80                              # Number of epochs
