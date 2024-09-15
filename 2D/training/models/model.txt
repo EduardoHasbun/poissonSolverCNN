@@ -16,3 +16,4 @@ interface_3: Domain 5.0, radius 1.5, epsilon in 1.0, epsilon outside 80, normal 
 interface_4: Without epsilon in the laplacian but in the input data, also inputdata with ratio
 interface_14: Two models without datanorm in interface
 interface_15: Two models with datanorm in interface
+interface_16: Two models with same epsilon
