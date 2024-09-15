@@ -14,3 +14,4 @@ interface_1: Domain 5.0, radius 1.5, epsilon_inside 1.0, epsilon_outside 80, dat
 interface_2: Same as before, less optimizer and more weight in loss
 interface_3: Domain 5.0, radius 1.5, epsilon in 1.0, epsilon outside 80, normal data
 interface_4: Without epsilon in the laplacian but in the input data, also inputdata with ratio
+interface_14: Two models without datanorm in interface

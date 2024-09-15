@@ -64,7 +64,7 @@ inner_mask = interface_mask
 outer_mask = interface_mask | interface_boundary
 
 # Load Data
-dataset = np.load(data_dir) / 0.2
+dataset = np.load(data_dir) * ratio_max
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 # Create models and losses
@@ -92,7 +92,7 @@ for epoch in range (num_epochs):
         loss = laplacian_loss(subdomain_in, data = data, data_norm = data_norm)
         loss += laplacian_loss(subdomain_out, data = data, data_norm = data_norm)
         loss += dirichlet_loss(subdomain_out)
-        loss += interface_loss(subdomain_in, subdomain_out, data_norm = data_norm)
+        loss += interface_loss(subdomain_in, subdomain_out)
 
         # Backpropagation
         loss.backward()
