@@ -43,7 +43,6 @@ def generate_random(i):
 
     # Create a grid
     x, y, z = np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny), np.linspace(zmin, zmax, nnz)
-    X, Y, Z = np.meshgrid(x, y, z)
 
     # Factor to divide the grid by to generate the random grid
     nnx_lower = int(nnx / n_res_factor)

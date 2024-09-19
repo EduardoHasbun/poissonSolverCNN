@@ -73,7 +73,7 @@ if network_type == 'UNet':
     model = UNet(scales, kernel_sizes=kernel_size, input_res = nnx, inner_mask = inner_mask, outer_mask = outer_mask)
 elif network_type == 'MSNet':
     model = MSnet(scales=scales, kernel_sizes=kernel_size, input_res=nnx)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/3D/training/models/interface3d_1.pth'))
+model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/3D/training/models/interface3d_2.pth'))
 model = model.float()
 for param in model.parameters():
     param.data = param.data.float()
@@ -126,4 +126,4 @@ axs[1, 1].set_title('X Line')
 # Adjust layout
 plt.tight_layout(rect=[0, 0, 1, 0.96])  
 os.makedirs(plots_dir, exist_ok=True)
-plt.savefig(os.path.join(plots_dir, 'Interface_3D 1.png'))
+plt.savefig(os.path.join(plots_dir, 'Interface_3D 2.png'))
