@@ -154,39 +154,31 @@ def lapl(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
 
     # Get epsilon at grid points
     epsilon = get_epsilon_tensor(field.shape, interface_mask, epsilon_in, epsilon_out)
-
-    # Initialize epsilon at cell faces
-    epsilon_x_ip = torch.zeros((h, w-1), device=field.device)
-    epsilon_x_im = torch.zeros((h, w-1), device=field.device)
-    epsilon_y_ip = torch.zeros((h-1, w), device=field.device)
-    epsilon_y_im = torch.zeros((h-1, w), device=field.device)
+    epsilon = epsilon.unsqueeze(0)  # Shape: (1, h, w)
 
     # Compute epsilon at cell faces using harmonic mean
-    epsilon_x_ip = harmonic_mean(epsilon[:, :-1], epsilon[:, 1:])
-    epsilon_x_im = harmonic_mean(epsilon[:, 1:], epsilon[:, :-1])
-    epsilon_y_ip = harmonic_mean(epsilon[:-1, :], epsilon[1:, :])
-    epsilon_y_im = harmonic_mean(epsilon[1:, :], epsilon[:-1, :])
+    epsilon_x_ip = harmonic_mean(epsilon[:, :, :, :-1], epsilon[:, :, :, 1:])  # Shape: (1, h, w-1)
+    epsilon_y_ip = harmonic_mean(epsilon[:, :, :-1, :], epsilon[:, :, 1:, :])  # Shape: (1, h-1, w)
 
     # Compute flux differences in x-direction
-    flux_x_ip = epsilon_x_ip * (field[:, 0, :, 1:] - field[:, 0, :, :-1]) / dx
-    flux_x_im = epsilon_x_im * (field[:, 0, :, 1:] - field[:, 0, :, :-1]) / dx
+    flux_x_ip = epsilon_x_ip * (field[:, :, :, 1:] - field[:, :, :, :-1]) / dx  # Shape: (batch_size, 1, h, w-1)
 
     # Compute flux differences in y-direction
-    flux_y_ip = epsilon_y_ip * (field[:, 0, 1:, :] - field[:, 0, :-1, :]) / dy
-    flux_y_im = epsilon_y_im * (field[:, 0, 1:, :] - field[:, 0, :-1, :]) / dy
+    flux_y_ip = epsilon_y_ip * (field[:, :, 1:, :] - field[:, :, :-1, :]) / dy  # Shape: (batch_size, 1, h-1, w)
 
     # Initialize divergence
-    divergence = torch.zeros_like(field[:, 0, :, :])
+    divergence = torch.zeros_like(field[:, 0, :, :])  # Shape: (batch_size, h, w)
 
     # Compute divergence in x-direction
-    divergence[:, 1:-1, 1:-1] += (flux_x_ip[:, 1:-1, 1:-1] - flux_x_ip[:, 1:-1, :-2]) / dx
+    divergence[:, 1:-1, 1:-1] += (flux_x_ip[:, 0, 1:-1, 1:] - flux_x_ip[:, 0, 1:-1, :-1]) / dx
 
     # Compute divergence in y-direction
-    divergence[:, 1:-1, 1:-1] += (flux_y_ip[:, 1:-1, 1:-1] - flux_y_ip[:, :-2, 1:-1]) / dy
+    divergence[:, 1:-1, 1:-1] += (flux_y_ip[:, 0, 1:, 1:-1] - flux_y_ip[:, 0, :-1, 1:-1]) / dy
 
     laplacian[:, 0, :, :] = divergence
 
     return laplacian
+
 
 
 def ratio_potrhs(alpha, Lx, Ly):
