@@ -11,12 +11,11 @@ class LaplacianLoss(nn.Module):
         self.weight = lapl_weight
         self.dx = (cfg['globals']['xmax'] - cfg['globals']['xmin']) / cfg['globals']['nnx']
         self.dy = (cfg['globals']['ymax'] - cfg['globals']['ymin']) / cfg['globals']['nny']
-        self.interface_mask = cfg['interface_mask']
         self.epsilon_inside = cfg['globals']['epsilon_inside']
         self.epsilon_outside = cfg['globals']['epsilon_outside']
 
-    def forward(self, output, data=None, data_norm=1.):
-        laplacian = lapl(output / data_norm, self.dx, self.dy, self.interface_mask, self.epsilon_inside, self.epsilon_outside)
+    def forward(self, output, data=None, data_norm=1., mask = 1.):
+        laplacian = lapl(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside)
         loss = F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], -data[:, 0, 1:-1, 1:-1]) * self.weight
         return loss
 
