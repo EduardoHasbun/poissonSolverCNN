@@ -6,21 +6,20 @@ import matplotlib.pyplot as plt
 
 
 class LaplacianLoss(nn.Module):
-    def __init__(self, cfg, lapl_weight, e_in = 1, e_out = 1, interface = 1):
+    def __init__(self, cfg, lapl_weight):
         super().__init__()
         self.weight = lapl_weight
-        xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
-            cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['nnx'], cfg['globals']['nny']
-        self.Lx = xmax-xmin
-        self.Ly = ymax-ymin
-        self.dx = self.Lx/nnx
-        self.dy = self.Ly/nny
-        self.epsilon_inside = e_in
-        self.epsilon_outside = e_out
-        self.interface = interface
+        self.dx = (cfg['globals']['xmax'] - cfg['globals']['xmin']) / cfg['globals']['nnx']
+        self.dy = (cfg['globals']['ymax'] - cfg['globals']['ymin']) / cfg['globals']['nny']
+        self.interface_mask = cfg['interface_mask']
+        self.epsilon_inside = cfg['globals']['epsilon_inside']
+        self.epsilon_outside = cfg['globals']['epsilon_outside']
+
     def forward(self, output, data=None, data_norm=1.):
-        laplacian = lapl(output / data_norm, self.dx, self.dy, self.interface, self.epsilon_inside, self.epsilon_outside)
-        return self.Lx**2 * self.Ly**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
+        laplacian = lapl(output / data_norm, self.dx, self.dy, self.interface_mask, self.epsilon_inside, self.epsilon_outside)
+        loss = F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], -data[:, 0, 1:-1, 1:-1]) * self.weight
+        return loss
+
     
     
     
@@ -116,8 +115,9 @@ class InterfaceBoundaryLoss(nn.Module):
         subdomain_out_scaled = subdomain_out / data_norm
         loss = F.mse_loss(subdomain_in_scaled[:, 0, self.boundary], subdomain_out_scaled[:, 0, self.boundary])
         normal_derivate_inner, normal_derivate_outer = self.compute_gradients(subdomain_in_scaled, subdomain_out_scaled)
-        loss += F.mse_loss((normal_derivate_inner), (normal_derivate_outer))
+        loss += F.mse_loss((self.e_in * normal_derivate_inner), (self.e_out * normal_derivate_outer))
         return loss * self.weight
+
 
 
 
@@ -149,28 +149,60 @@ class DirichletBoundaryLossFunction(nn.Module):
 
         
 
-def lapl(field, dx, dy, interface, epsilon_in, epsilon_out, b=0):
-
-    # Create laplacian tensor with shape (batch_size, 1, h, w)
+def lapl(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
+    batch_size, _, h, w = field.shape
     laplacian = torch.zeros_like(field).type(field.type())
 
-    # Check sizes
-    assert field.dim() == 4 and laplacian.dim() == 4, 'Dimension mismatch'
+    # Get epsilon at grid points
+    epsilon = get_epsilon_tensor(field.shape, interface_mask, epsilon_in, epsilon_out)
 
-    assert field.is_contiguous() and laplacian.is_contiguous(), 'Input is not contiguous'
+    # Initialize epsilon at cell faces
+    epsilon_x_ip = torch.zeros((h, w-1), device=field.device)
+    epsilon_x_im = torch.zeros((h, w-1), device=field.device)
+    epsilon_y_ip = torch.zeros((h-1, w), device=field.device)
+    epsilon_y_im = torch.zeros((h-1, w), device=field.device)
 
-    laplacian[:, 0, 1:-1, 1:-1] = \
-        (field[:, 0, 2:, 1:-1] + field[:, 0, :-2, 1:-1] - 2 * field[:, 0, 1:-1, 1:-1]) / dy**2 + \
-        (field[:, 0, 1:-1, 2:] + field[:, 0, 1:-1, :-2] - 2 * field[:, 0, 1:-1, 1:-1]) / dx**2 
-    
-    laplacian[:, 0, interface] *= epsilon_in
-    laplacian[:, 0, ~interface] *= epsilon_out
+    # Compute epsilon at cell faces using harmonic mean
+    epsilon_x_ip = harmonic_mean(epsilon[:, :-1], epsilon[:, 1:])
+    epsilon_x_im = harmonic_mean(epsilon[:, 1:], epsilon[:, :-1])
+    epsilon_y_ip = harmonic_mean(epsilon[:-1, :], epsilon[1:, :])
+    epsilon_y_im = harmonic_mean(epsilon[1:, :], epsilon[:-1, :])
+
+    # Compute flux differences in x-direction
+    flux_x_ip = epsilon_x_ip * (field[:, 0, :, 1:] - field[:, 0, :, :-1]) / dx
+    flux_x_im = epsilon_x_im * (field[:, 0, :, 1:] - field[:, 0, :, :-1]) / dx
+
+    # Compute flux differences in y-direction
+    flux_y_ip = epsilon_y_ip * (field[:, 0, 1:, :] - field[:, 0, :-1, :]) / dy
+    flux_y_im = epsilon_y_im * (field[:, 0, 1:, :] - field[:, 0, :-1, :]) / dy
+
+    # Initialize divergence
+    divergence = torch.zeros_like(field[:, 0, :, :])
+
+    # Compute divergence in x-direction
+    divergence[:, 1:-1, 1:-1] += (flux_x_ip[:, 1:-1, 1:-1] - flux_x_ip[:, 1:-1, :-2]) / dx
+
+    # Compute divergence in y-direction
+    divergence[:, 1:-1, 1:-1] += (flux_y_ip[:, 1:-1, 1:-1] - flux_y_ip[:, :-2, 1:-1]) / dy
+
+    laplacian[:, 0, :, :] = divergence
 
     return laplacian
 
 
-
 def ratio_potrhs(alpha, Lx, Ly):
     return alpha / (np.pi**2 / 4)**2 / (1 / Lx**2 + 1 / Ly**2)
+
+
+def get_epsilon_tensor(field_shape, interface_mask, epsilon_in, epsilon_out):
+    epsilon = torch.zeros(field_shape[2:], device=interface_mask.device)
+    epsilon[interface_mask] = epsilon_in
+    epsilon[~interface_mask] = epsilon_out
+    return epsilon
+
+
+def harmonic_mean(a, b):
+    return 2 * a * b / (a + b)
+
 
 

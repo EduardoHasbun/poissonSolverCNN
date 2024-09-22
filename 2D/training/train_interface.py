@@ -7,7 +7,6 @@ from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, Interf
 import torch.optim as optim
 import os
 import argparse
-import matplotlib.pyplot as plt
 
 # Import external parameteres
 parser = argparse.ArgumentParser(description='Training')
@@ -61,7 +60,7 @@ for i in range(1, interface_mask.shape[0] - 1):
                 interface_boundary[i, j] = True
 
 inner_mask = interface_mask
-outer_mask = interface_mask | interface_boundary
+outer_mask = ~interface_mask | interface_boundary
 
 # Load Data
 dataset = np.load(data_dir) * ratio_max
@@ -80,9 +79,8 @@ optimizer = optim.Adam(model.parameters(), lr=lr)
 for epoch in range (num_epochs):
     total_loss = 0
     for batch_idx, batch in enumerate(dataloader):
-        data = batch[:, np.newaxis, :, :]
+        data = batch.unsqueeze(1)
         optimizer.zero_grad()
-        insside = torch.DoubleTensor(data)
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
 
         # Getting Outputs
