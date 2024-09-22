@@ -170,15 +170,16 @@ def lapl(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
     # Initialize divergence
     divergence = torch.zeros_like(field[:, 0, :, :])  # Shape: (batch_size, h, w)
 
-    # Compute divergence at interior points [1:-1, 1:-1]
+    # Corrected divergence calculation with proper indexing
     divergence[:, 1:-1, 1:-1] = (
-        (flux_x_ip[:, 1:-1, 1:] - flux_x_ip[:, 1:-1, :-1]) / dx +
-        (flux_y_ip[:, 1:, 1:-1] - flux_y_ip[:, :-1, 1:-1]) / dy
+        (flux_x_ip[:, 0, 1:-1, 1:] - flux_x_ip[:, 0, 1:-1, :-1]) / dx +
+        (flux_y_ip[:, 0, 1:, 1:-1] - flux_y_ip[:, 0, :-1, 1:-1]) / dy
     )
 
     laplacian[:, 0, :, :] = divergence
 
     return laplacian
+
 
 
 
