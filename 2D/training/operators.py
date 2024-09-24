@@ -16,7 +16,7 @@ class LaplacianLoss(nn.Module):
 
     def forward(self, output, data=None, data_norm=1., mask = 1.):
         laplacian = lapl(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside)
-        loss = F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], -data[:, 0, 1:-1, 1:-1] / data_norm) * self.weight
+        loss = F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], -data[:, 0, 1:-1, 1:-1]) * self.weight
         return loss
 
     
