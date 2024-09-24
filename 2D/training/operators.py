@@ -157,13 +157,9 @@ def lapl(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
     epsilon = epsilon.unsqueeze(0).unsqueeze(0)
     epsilon = epsilon.expand(batch_size, 1, h, w)
 
-    # Compute epsilon at cell faces using harmonic mean
-    epsilon_x_ip = harmonic_mean(epsilon[:, :, :, :-1], epsilon[:, :, :, 1:])
-    epsilon_y_ip = harmonic_mean(epsilon[:, :, :-1, :], epsilon[:, :, 1:, :])
-
     # Compute flux differences
-    flux_x_ip = epsilon_x_ip * (field[:, :, :, 1:] - field[:, :, :, :-1]) / dx
-    flux_y_ip = epsilon_y_ip * (field[:, :, 1:, :] - field[:, :, :-1, :]) / dy
+    flux_x_ip = epsilon * (field[:, :, :, 1:] - field[:, :, :, :-1]) / dx
+    flux_y_ip = epsilon * (field[:, :, 1:, :] - field[:, :, :-1, :]) / dy
 
     # Initialize divergence
     divergence = torch.zeros_like(field[:, 0, :, :])
@@ -180,8 +176,6 @@ def lapl(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
 
 
 
-
-
 def ratio_potrhs(alpha, Lx, Ly):
     return alpha / (np.pi**2 / 4)**2 / (1 / Lx**2 + 1 / Ly**2)
 
@@ -193,8 +187,6 @@ def get_epsilon_tensor(field_shape, interface_mask, epsilon_in, epsilon_out):
     return epsilon
 
 
-def harmonic_mean(a, b):
-    return 2 * a * b / (a + b)
 
 
 
