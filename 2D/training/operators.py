@@ -157,9 +157,13 @@ def lapl(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
     epsilon = epsilon.unsqueeze(0).unsqueeze(0)
     epsilon = epsilon.expand(batch_size, 1, h, w)
 
+    # Directly use epsilon at cell faces by multiplying adjacent values
+    epsilon_x_ip = epsilon[:, :, :, :-1] * epsilon[:, :, :, 1:]
+    epsilon_y_ip = epsilon[:, :, :-1, :] * epsilon[:, :, 1:, :]
+
     # Compute flux differences
-    flux_x_ip = epsilon * (field[:, :, :, 1:] - field[:, :, :, :-1]) / dx
-    flux_y_ip = epsilon * (field[:, :, 1:, :] - field[:, :, :-1, :]) / dy
+    flux_x_ip = epsilon_x_ip * (field[:, :, :, 1:] - field[:, :, :, :-1]) / dx
+    flux_y_ip = epsilon_y_ip * (field[:, :, 1:, :] - field[:, :, :-1, :]) / dy
 
     # Initialize divergence
     divergence = torch.zeros_like(field[:, 0, :, :])
@@ -175,17 +179,16 @@ def lapl(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
     return laplacian
 
 
-
-def ratio_potrhs(alpha, Lx, Ly):
-    return alpha / (np.pi**2 / 4)**2 / (1 / Lx**2 + 1 / Ly**2)
-
-
 def get_epsilon_tensor(field_shape, interface_mask, epsilon_in, epsilon_out):
     epsilon = torch.zeros(field_shape[2:], device=interface_mask.device)
     epsilon[interface_mask] = epsilon_in
     epsilon[~interface_mask] = epsilon_out
     return epsilon
 
+
+
+def ratio_potrhs(alpha, Lx, Ly):
+    return alpha / (np.pi**2 / 4)**2 / (1 / Lx**2 + 1 / Ly**2)
 
 
 
