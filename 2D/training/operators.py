@@ -16,7 +16,7 @@ class LaplacianLoss(nn.Module):
 
     def forward(self, output, data=None, data_norm=1., mask = 1.):
         laplacian = lapl(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside)
-        loss = F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], -data[:, 0, 1:-1, 1:-1]) * self.weight
+        loss = F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], -data[:, 0, 1:-1, 1:-1] / data_norm) * self.weight
         return loss
 
     
@@ -172,9 +172,8 @@ def lapl(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
 
     # Corrected divergence calculation with proper indexing
     divergence[:, 1:-1, 1:-1] = (
-        (flux_x_ip[:, 0, 1:-1, 1:] - flux_x_ip[:, 0, 1:-1, :-1]) / dx +
-        (flux_y_ip[:, 0, 1:, 1:-1] - flux_y_ip[:, 0, :-1, 1:-1]) / dy
-    )
+    (flux_x_ip[:, 0, 1:-1, 1:-1] - flux_x_ip[:, 0, 1:-1, 0:-2]) / dx +
+    (flux_y_ip[:, 0, 1:-1, 1:-1] - flux_y_ip[:, 0, 0:-2, 1:-1]) / dy)
 
     laplacian[:, 0, :, :] = divergence
 
