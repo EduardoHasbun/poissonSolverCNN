@@ -1,5 +1,5 @@
 general:
-    name_case: 'interface_23.pth'
+    name_case: 'interface_24.pth'
     data_dir: 'dataset/generated/domain.npy' 
 
 

@@ -16,7 +16,7 @@ with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
 nits = cfg['n_it']
 name = cfg['name']
-ploting = False
+ploting = True
 
 # Parameters for data generation
 xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
@@ -24,7 +24,7 @@ nny, ymin, ymax = cfg['domain']['nny'], cfg['domain']['ymin'], cfg['domain']['ym
 e_in, e_out = cfg['domain']['epsilon_in'], cfg['domain']['epsilon_out']
 interface_center = (cfg['domain']['interface_center']['x'], cfg['domain']['interface_center']['y'])
 interface_radius = cfg['domain']['interface_radius']
-n_res_factor = 20
+n_res_factor = 16
 # Create a grid
 
 x, y= np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
@@ -34,7 +34,7 @@ def generate_random(i):
     # Parameters for data generation
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
     nny, ymin, ymax = cfg['domain']['nny'], cfg['domain']['ymin'], cfg['domain']['ymax']
-    n_res_factor = 20
+    n_res_factor = 16
 
     # Create a grid
     x, y= np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
@@ -66,13 +66,15 @@ if __name__ == '__main__':
     for idx, data in log_progress(enumerate(pool.imap(generate_random, range(nits))), total=nits, desc="Processing"):
 
         data_array[idx] = data
-        if ploting and idx%100==0:
+        if ploting and idx%1==0:
             plt.figure(figsize=(8, 6))
-            plt.imshow(data_array[idx], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-            plt.colorbar(label='Random Data')
-            plt.title(f'Random Data Sample {idx}')
-            plt.xlabel('X')
-            plt.ylabel('Y') 
+            plt.imshow(data_array[idx], origin='lower', cmap='bwr')
+            plt.xticks([])
+            plt.yticks([])
+            # plt.colorbar(label='Random Data')
+            # plt.title(f'Random Data Sample {idx}')
+            # plt.xlabel('X')
+            # plt.ylabel('Y') 
             plt.savefig(os.path.join(plots_dir, f'random_data_plot_{idx}.png'))
             plt.close()
 
