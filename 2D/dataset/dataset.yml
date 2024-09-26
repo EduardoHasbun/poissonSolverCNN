@@ -1,6 +1,6 @@
-n_it: 5
+n_it: 10000
 output_dir: 'C:\Codigos\poissonSolverCNN\dataset\generated\'
-name: domain
+name: random.npy
 
 domain:
   geom: 'cartesian'

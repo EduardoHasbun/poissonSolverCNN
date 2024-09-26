@@ -1,6 +1,6 @@
 general:
-    name_case: 'interface_24.pth'
-    data_dir: 'dataset/generated/domain.npy' 
+    name_case: 'interface_25.pth'
+    data_dir: 'dataset/generated/random.npy' 
 
 
 globals:                                    # Domain sizes and others, used to compute global attributes
@@ -34,7 +34,7 @@ data_loader:
 loss:
     args:
         bound_weight: 8.0e+0                  # Weighting of the loss on the boundaries (float)
-        lapl_weight: 8.0e+5
+        lapl_weight: 9.0e+5
         interface_weight: 3.0e+3                # Weighting of the loss on the Laplacian (float)
         optimizer_lr: 3.e-4   
 

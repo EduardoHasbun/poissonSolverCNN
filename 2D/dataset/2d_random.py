@@ -16,7 +16,7 @@ with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
 nits = cfg['n_it']
 name = cfg['name']
-ploting = True
+ploting = False
 
 # Parameters for data generation
 xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
@@ -25,8 +25,9 @@ e_in, e_out = cfg['domain']['epsilon_in'], cfg['domain']['epsilon_out']
 interface_center = (cfg['domain']['interface_center']['x'], cfg['domain']['interface_center']['y'])
 interface_radius = cfg['domain']['interface_radius']
 n_res_factor = 16
-# Create a grid
 
+
+# Create a grid
 x, y= np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
 X, Y = np.meshgrid(x,y)
 
@@ -78,6 +79,6 @@ if __name__ == '__main__':
             plt.savefig(os.path.join(plots_dir, f'random_data_plot_{idx}.png'))
             plt.close()
 
-    file_path_domain = os.path.join('generated', name, '.npy')
+    file_path_domain = os.path.join('generated', name)
     os.makedirs('generated', exist_ok=True)
     np.save(file_path_domain, data_array)
