@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class LaplacianLoss(nn.Module):
+class LaplacianLossInterface(nn.Module):
     def __init__(self, cfg, lapl_weight):
         super().__init__()
         self.weight = lapl_weight
@@ -15,11 +15,28 @@ class LaplacianLoss(nn.Module):
         self.epsilon_outside = cfg['globals']['epsilon_outside']
 
     def forward(self, output, data=None, data_norm=1., mask = 1.):
-        laplacian = lapl(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside)
-        loss = F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], -data[:, 0, 1:-1, 1:-1]) * self.weight
+        laplacian = lapl_interface(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside)
+        loss = F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], data[:, 0, 1:-1, 1:-1]) * self.weight
         return loss
 
+class LaplacianLoss(nn.Module):
+    def __init__(self, cfg, lapl_weight, e_in = 1, e_out = 1, interface = 1):
+        super().__init__()
+        self.weight = lapl_weight
+        xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
+            cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['nnx'], cfg['globals']['nny']
+        self.Lx = xmax-xmin
+        self.Ly = ymax-ymin
+        self.dx = self.Lx/nnx
+        self.dy = self.Ly/nny
+        self.epsilon_inside = e_in
+        self.epsilon_outside = e_out
+        self.interface = interface
+    def forward(self, output, data=None, data_norm=1.):
+        laplacian = lapl(output / data_norm, self.dx, self.dy)
+        return self.Lx**2 * self.Ly**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
     
+
     
     
 class DirichletBoundaryLoss(nn.Module):
@@ -146,9 +163,24 @@ class DirichletBoundaryLossFunction(nn.Module):
         bnd_loss += F.mse_loss(output[:, 0, 0, :], domain[:, 0, 0, :])
         return (bnd_loss * self.weight)
 
-        
 
-def lapl(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
+def lapl(field, dx, dy):
+    # Create laplacian tensor with shape (batch_size, 1, h, w)
+    laplacian = torch.zeros_like(field).type(field.type())
+
+    # Check sizes
+    assert field.dim() == 4 and laplacian.dim() == 4, 'Dimension mismatch'
+
+    assert field.is_contiguous() and laplacian.is_contiguous(), 'Input is not contiguous'
+
+    laplacian[:, 0, 1:-1, 1:-1] = \
+        (field[:, 0, 2:, 1:-1] + field[:, 0, :-2, 1:-1] - 2 * field[:, 0, 1:-1, 1:-1]) / dy**2 + \
+        (field[:, 0, 1:-1, 2:] + field[:, 0, 1:-1, :-2] - 2 * field[:, 0, 1:-1, 1:-1]) / dx**2 
+
+    return laplacian
+
+
+def lapl_interface(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
     batch_size, _, h, w = field.shape
     laplacian = torch.zeros_like(field).type(field.type())
 

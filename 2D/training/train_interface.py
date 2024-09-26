@@ -3,7 +3,7 @@ from unet_interface import UNet
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
-from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, InterfaceBoundaryLoss
+from operators import ratio_potrhs, LaplacianLossInterface, DirichletBoundaryLoss, InterfaceBoundaryLoss
 import torch.optim as optim
 import os
 import argparse
