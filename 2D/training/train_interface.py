@@ -1,5 +1,5 @@
 import torch
-from unet_interface import UNet
+from model import UNetInterface
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
@@ -67,9 +67,9 @@ dataset = np.load(data_dir) * ratio_max
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 # Create models and losses
-model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, inner_mask = inner_mask, outer_mask = outer_mask)
+model = UNetInterface(scales, kernel_sizes=kernel_size, input_res=nnx, inner_mask = inner_mask, outer_mask = outer_mask)
 model = model.double()
-laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
+laplacian_loss = LaplacianLossInterface(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 interface_loss = InterfaceBoundaryLoss(interface_weight, interface_boundary, interface_center, interface_radius,\
                                         epsilon_inside, epsilon_outside, dx, dy)

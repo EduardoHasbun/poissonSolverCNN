@@ -1,5 +1,5 @@
 import torch
-from unet import UNet
+from model import UNet
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np

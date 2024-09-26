@@ -1,5 +1,5 @@
 general:
-    name_case: 'result_boundary_1.pth'
+    name_case: 'result_boundary_2.pth'
     data_dir: 'dataset/generated/random.npy' 
 
 
@@ -18,14 +18,14 @@ globals:                                    # Domain sizes and others, used to c
     epsilon_outside: 80.0
 
 arch:
+    Type: "UNet"
     scales:
-        scale_0: [[1, 30, 20], [40, 30, 1]]
-        scale_1: [[20, 20, 20], [40, 20, 20]]
-        scale_2: [[20, 16, 16, 20], [40, 16, 16, 20]]
-        scale_3: [[20, 20, 20], [40, 20, 20]]
-        scale_4: [[20, 60, 20]]
+        scale_0: [[1, 32], [64, 1]]
+        scale_1: [[32, 22, 32], [64, 22, 32]]
+        scale_2: [[32, 32], [64, 32]]
+        scale_3: [[32, 32], [74, 32]]
+        scale_4: [32, 42]
     kernel_sizes: 3
-        
 
 data_loader:
     batch_size: 64
