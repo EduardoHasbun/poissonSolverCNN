@@ -1,5 +1,5 @@
 general:
-    name_case: 'interface_25.pth'
+    name_case: 'result_boundary_1.pth'
     data_dir: 'dataset/generated/random.npy' 
 
 
@@ -33,8 +33,8 @@ data_loader:
 
 loss:
     args:
-        bound_weight: 8.0e+0                  # Weighting of the loss on the boundaries (float)
-        lapl_weight: 9.0e+5
+        bound_weight: 8.0e+4                  # Weighting of the loss on the boundaries (float)
+        lapl_weight: 8.0e+3
         interface_weight: 3.0e+3                # Weighting of the loss on the Laplacian (float)
         optimizer_lr: 3.e-4   
 
