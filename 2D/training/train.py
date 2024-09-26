@@ -30,7 +30,7 @@ xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'
 Lx = xmax-xmin
 Ly = ymax-ymin
 save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data.npy')
+data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random.npy')
 save_dir = os.path.join(save_dir, 'models')
 case_name = cfg['general']['name_case']
 
