@@ -163,31 +163,47 @@ class _ConvBlockMSNnet(nn.Module):
         return self.encode(x)
 
 
-class _ConvBlockMSNnet(nn.Module):
-    def __init__(self, fmaps, out_size, block_type, kernel_size, 
-                 padding_mode='zeros', upsample_mode='bilinear'):  # Cambia a 'bilinear' para 2D
-        super(_ConvBlockMSNnet, self).__init__()
-        layers = list()
-        # Añadir las capas especificadas
-        for i in range(len(fmaps) - 1):
-            # Usar Conv2d en lugar de Conv3d
-            layers.append(nn.Conv2d(fmaps[i], fmaps[i + 1], 
-                                    kernel_size=kernel_size, 
-                                    padding=int((kernel_size[0] - 1) / 2),  # Ajustar padding para 2D
-                                    padding_mode=padding_mode, stride=1))  
-            # No usar ReLU en la última capa
-            if i != len(fmaps) - 2 or block_type != 'out':
-                layers.append(nn.ReLU())
+class MSNet(nn.Module):
+    def __init__(self, scales, kernel_sizes, input_res, padding_mode='zeros',
+                 upsample_mode='bilinear'):  # 'bilinear' para 2D
+        super(MSNet, self).__init__()
+        # El input_res es ahora 2D
+        self.input_res = tuple([input_res, input_res])
+        self.list_res = [int(input_res / 2**i) for i in range(len(scales))]
 
-        # Aplicar Upsample o deconvolución
-        if block_type == 'middle':
-            layers.append(nn.Upsample(out_size, mode=upsample_mode))
+        if isinstance(kernel_sizes, int):
+            self.kernel_sizes = [(kernel_sizes, kernel_sizes)] * len(scales)  # Ajuste a 2D
+        elif isinstance(kernel_sizes, list):
+            if isinstance(kernel_sizes[0], list):
+                self.kernel_sizes = [tuple(ks) for ks in kernel_sizes]  
+            else:
+                self.kernel_sizes = [(ks, ks) for ks in kernel_sizes]  
 
-        # Crear la secuencia de capas
-        self.encode = nn.Sequential(*layers)
+        # Crear capas de convoluciones
+        self.ConvsUp = nn.ModuleList()
+        for imiddle, middle_fmaps in enumerate(scales):
+            self.ConvsUp.append(_ConvBlockMSNnet(middle_fmaps, 
+                                                 out_size=self.list_res[-1 - imiddle], 
+                                                 block_type='middle', kernel_size=self.kernel_sizes[-1 - imiddle],
+                                                 padding_mode=padding_mode, upsample_mode=upsample_mode))
+        
+        # Capa de salida
+        self.ConvsUp.append(_ConvBlockMSNnet(scales[0], 
+                                             out_size=self.list_res[0],
+                                             block_type='out', kernel_size=self.kernel_sizes[0], padding_mode=padding_mode))
 
     def forward(self, x):
-        return self.encode(x)
+        initial_map = x
+        # Aplicar el ciclo de convoluciones ascendentes
+        for iconv, ConvUp in enumerate(self.ConvsUp):
+            if iconv == 0:
+                x = ConvUp(x)
+            else:
+                tmp_map = F.interpolate(initial_map, x.shape[2:], mode='bilinear', align_corners=False)
+                x = ConvUp(torch.cat((x, tmp_map), dim=1))
+                
+        return x
+
 
 
 
