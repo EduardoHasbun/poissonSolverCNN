@@ -208,7 +208,7 @@ class MSNet(nn.Module):
             if iconv == 0:
                 x = ConvUp(x)
             else:
-                tmp_map = F.interpolate(initial_map, x[0, 0].shape, mode='trilinear', align_corners=False)
+                tmp_map = F.interpolate(initial_map, x[0, 0].shape, mode='bilinear', align_corners=False)
                 x = ConvUp(torch.cat((x, tmp_map), dim=1))
                 
         return x
