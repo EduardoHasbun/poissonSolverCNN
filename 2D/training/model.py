@@ -165,45 +165,53 @@ class _ConvBlockMSNnet(nn.Module):
 
 class MSNet(nn.Module):
     def __init__(self, scales, kernel_sizes, input_res, padding_mode='zeros',
-                 upsample_mode='bilinear'):  # 'bilinear' para 2D
+                 upsample_mode='trilinear'):
         super(MSNet, self).__init__()
-        # El input_res es ahora 2D
-        self.input_res = tuple([input_res, input_res])
-        self.list_res = [int(input_res / 2**i) for i in range(len(scales))]
-
+        self.scales = scales
+        self.n_scales = len(scales)
+        self.max_scale = self.n_scales - 1
+        self.input_res = tuple([input_res, input_res, input_res])
+        self.list_res = [int(input_res / 2**i) for i in range(self.n_scales)]
         if isinstance(kernel_sizes, int):
-            self.kernel_sizes = [(kernel_sizes, kernel_sizes)] * len(scales)  # Ajuste a 2D
+            self.kernel_sizes = [(kernel_sizes, kernel_sizes)] * len(scales) 
         elif isinstance(kernel_sizes, list):
             if isinstance(kernel_sizes[0], list):
                 self.kernel_sizes = [tuple(ks) for ks in kernel_sizes]  
             else:
-                self.kernel_sizes = [(ks, ks) for ks in kernel_sizes]  
+                # Convert the list of integers to a list of tuples
+                self.kernel_sizes = [(ks, ks, ks) for ks in kernel_sizes]  
 
-        # Crear capas de convoluciones
+        # create down_blocks, bottom_fmaps and up_blocks
+        middle_blocks = list()
+        for local_depth in range(self.n_scales):
+            middle_blocks.append(self.scales[self.max_scale - local_depth])
+        out_fmaps = self.scales[0]
+
+        # Intemediate layers up (UpSample/Deconv at the end)
         self.ConvsUp = nn.ModuleList()
-        for imiddle, middle_fmaps in enumerate(scales):
+        for imiddle, middle_fmaps in enumerate(middle_blocks):
             self.ConvsUp.append(_ConvBlockMSNnet(middle_fmaps, 
-                                                 out_size=self.list_res[-1 - imiddle], 
-                                                 block_type='middle', kernel_size=self.kernel_sizes[-1 - imiddle],
-                                                 padding_mode=padding_mode, upsample_mode=upsample_mode))
+                out_size=self.list_res[-1 - imiddle], 
+                block_type='middle', kernel_size=self.kernel_sizes[-1 - imiddle],
+                padding_mode=padding_mode, upsample_mode=upsample_mode))
         
-        # Capa de salida
-        self.ConvsUp.append(_ConvBlockMSNnet(scales[0], 
-                                             out_size=self.list_res[0],
-                                             block_type='out', kernel_size=self.kernel_sizes[0], padding_mode=padding_mode))
+        # Out layer
+        self.ConvsUp.append(_ConvBlockMSNnet(out_fmaps, 
+            out_size=self.list_res[0],
+            block_type='out', kernel_size=self.kernel_sizes[0], padding_mode=padding_mode))
 
     def forward(self, x):
         initial_map = x
-        # Aplicar el ciclo de convoluciones ascendentes
+        # Apply the up loop
         for iconv, ConvUp in enumerate(self.ConvsUp):
+            # First layer of convolution doesn't need concatenation
             if iconv == 0:
                 x = ConvUp(x)
             else:
-                tmp_map = F.interpolate(initial_map, x.shape[2:], mode='bilinear', align_corners=False)
+                tmp_map = F.interpolate(initial_map, x[0, 0].shape, mode='trilinear', align_corners=False)
                 x = ConvUp(torch.cat((x, tmp_map), dim=1))
                 
         return x
-
 
 
 
