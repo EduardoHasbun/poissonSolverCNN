@@ -1,5 +1,5 @@
 general:
-    name_case: 'Unet_ks3_rf400.pth'
+    name_case: 'MSNet_ks3_rf50.pth'
     data_dir: 'dataset/generated/random.npy' 
 
 
@@ -18,12 +18,12 @@ globals:                                    # Domain sizes and others, used to c
     epsilon_outside: 80.0
 
 arch:
-    model: "UNet"
+    model: "MSNet"
     scales:
-        scale_0: [[1, 20, 20, 20, 12], [24, 20, 20, 20, 1]]
-        scale_1: [[12, 12, 12, 12, 12, 12, 12, 12, 12], [24, 12, 12, 12, 12, 12, 12, 12, 12]]
-        scale_2: [[12, 12, 12, 12, 12, 12, 12, 12], [24, 12, 12, 12, 12, 12, 12, 12]]
-        scale_3: [12, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 12]
+        scale_0: [2, 824, 1]
+        scale_1: [2, 824, 1]
+        scale_2: [2, 824, 1]
+        scale_3: [1, 1424, 1]
     kernel_sizes: 3
 
 
@@ -232,7 +232,7 @@ trainer:
 
 
 
-#     Unet_ks3_rf400
+#Unet_ks3_rf400
 #     UNet3:
 #         type: 'UNet'
 #         args:
@@ -292,12 +292,12 @@ trainer:
 #     MSNet4:
 #         type: 'MSNet'
 #         args:
-#             scales:
-#                 scale_0: [2, 824, 1]
-#                 scale_1: [2, 824, 1]
-#                 scale_2: [2, 824, 1]
-#                 scale_3: [1, 1424, 1]
-#             kernel_sizes: 3
+            # scales:
+            #     scale_0: [2, 824, 1]
+            #     scale_1: [2, 824, 1]
+            #     scale_2: [2, 824, 1]
+            #     scale_3: [1, 1424, 1]
+            # kernel_sizes: 3
 
 
 
