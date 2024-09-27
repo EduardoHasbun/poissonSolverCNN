@@ -138,14 +138,15 @@ class UNet(nn.Module):
 
 class _ConvBlockMSNnet(nn.Module):
     def __init__(self, fmaps, out_size, block_type, kernel_size, 
-            padding_mode='zeros', upsample_mode='trilinear'):
+            padding_mode='zeros', upsample_mode='bilinear'):
         super(_ConvBlockMSNnet, self).__init__()
         layers = list()
         # Append all the specified layers
         for i in range(len(fmaps) - 1):
             layers.append(nn.Conv2d(fmaps[i], fmaps[i + 1], 
-                kernel_size=kernel_size, padding=int((kernel_size[0] - 1) / 2),
-                padding_mode=padding_mode, stride=1))  
+                                    kernel_size=kernel_size, 
+                                    padding=int((kernel_size[0] - 1) / 2),  # Ajustar padding para 2D
+                                    padding_mode=padding_mode, stride=1))
             # No ReLu at the very last layer
             if i != len(fmaps) - 2 or block_type != 'out':
                 layers.append(nn.ReLU())
