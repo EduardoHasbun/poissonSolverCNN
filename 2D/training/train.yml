@@ -1,5 +1,5 @@
 general:
-    name_case: 'Unet_ks3_rf50.pth'
+    name_case: 'Unet_ks3_rf100.pth'
     data_dir: 'dataset/generated/random.npy' 
 
 
@@ -20,10 +20,10 @@ globals:                                    # Domain sizes and others, used to c
 arch:
     model: "UNet"
     scales:
-        scale_0: [[1, 30, 35], [65, 22, 1]]
-        scale_1: [[35, 40], [70, 30]]
-        scale_2: [[40, 40], [80, 30]]
-        scale_3: [40, 40]
+        scale_0: [[1, 22, 22, 22], [44, 22, 22, 1]]
+        scale_1: [[22, 22, 22, 22], [44, 22, 22, 22]]
+        scale_2: [[22, 36, 22], [44, 36, 22]]
+        scale_3: [22, 40, 22]
     kernel_sizes: 3
 
 data_loader:
@@ -85,12 +85,12 @@ trainer:
 #     UNet4:
 #         type: 'UNet'
 #         args:
-#             scales:
-#                 scale_0: [[1, 22, 22, 22], [44, 22, 22, 1]]
-#                 scale_1: [[22, 22, 22, 22], [44, 22, 22, 22]]
-#                 scale_2: [[22, 36, 22], [44, 36, 22]]
-#                 scale_3: [22, 40, 22]
-#             kernel_sizes: 3
+            # scales:
+            #     scale_0: [[1, 22, 22, 22], [44, 22, 22, 1]]
+            #     scale_1: [[22, 22, 22, 22], [44, 22, 22, 22]]
+            #     scale_2: [[22, 36, 22], [44, 36, 22]]
+            #     scale_3: [22, 40, 22]
+            # kernel_sizes: 3
 
 #     UNet5:
 #         type: 'UNet'
