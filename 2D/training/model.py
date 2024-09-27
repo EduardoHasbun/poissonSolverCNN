@@ -165,7 +165,7 @@ class _ConvBlockMSNnet(nn.Module):
 
 class MSNet(nn.Module):
     def __init__(self, scales, kernel_sizes, input_res, padding_mode='zeros',
-                 upsample_mode='trilinear'):
+                 upsample_mode='bilinear'):
         super(MSNet, self).__init__()
         self.scales = scales
         self.n_scales = len(scales)
