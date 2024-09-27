@@ -1,5 +1,5 @@
 import torch
-from model import UNet
+from model import UNet, MSNet
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
@@ -22,6 +22,7 @@ num_epochs = cfg['trainer']['epochs']
 lapl_weight = cfg['loss']['args']['lapl_weight']
 bound_weight = cfg['loss']['args']['bound_weight']
 lr = cfg['loss']['args']['optimizer_lr']
+arch_type = cfg['arch']['model']
 scales_data = cfg.get('arch', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
 kernel_sizes = cfg['arch']['kernel_sizes']
@@ -46,7 +47,10 @@ dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
 # Create model and losses
-model = UNet(scales, kernel_sizes=kernel_size, input_res = nnx)
+if arch_type == 'UNet':
+    model = UNet(scales, kernel_sizes = kernel_size, input_res = nnx)
+elif arch_type == 'MSNet':
+    model = MSNet(scales, kernel_size, input_res = nnx)
 model = model.float()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 # Dirichlet_loss = DirichletBoundaryLoss(bound_weight)
