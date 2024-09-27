@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class LaplacianLossInterface(nn.Module):
@@ -145,7 +144,7 @@ class DirichletBoundaryLossFunction(nn.Module):
         self.xmin, self.xmax, self.ymin, self.ymax = xmin, xmax, ymin, ymax
         x = torch.linspace(self.xmin, self.xmax, nnx)
         y = torch.linspace(self.ymin, self.ymax, nny)
-        X, Y = torch.meshgrid(x, y)
+        X, Y = torch.meshgrid(x, y, indexing='ij')
         
         def function2solve(x, y):
             return torch.pow(x,3) + torch.pow(y,3)

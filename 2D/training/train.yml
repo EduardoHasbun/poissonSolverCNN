@@ -1,5 +1,5 @@
 general:
-    name_case: 'MSNet_ks3_rf50.pth'
+    name_case: 'MSNet_ks3_rf100.pth'
     data_dir: 'dataset/generated/random.npy' 
 
 
@@ -20,10 +20,10 @@ globals:                                    # Domain sizes and others, used to c
 arch:
     model: "MSNet"
     scales:
-        scale_0: [2, 824, 1]
-        scale_1: [2, 824, 1]
-        scale_2: [2, 824, 1]
-        scale_3: [1, 1424, 1]
+        scale_0: [2, 50, 50, 1]
+        scale_1: [2, 34, 34, 34, 1]
+        scale_2: [2, 34, 34, 34, 1]
+        scale_3: [1, 50, 50, 1]
     kernel_sizes: 3
 
 
@@ -315,12 +315,12 @@ trainer:
 #     MSNet4:
 #         type: 'MSNet'
 #         args:
-#             scales:
-#                 scale_0: [2, 50, 50, 1]
-#                 scale_1: [2, 34, 34, 34, 1]
-#                 scale_2: [2, 34, 34, 34, 1]
-#                 scale_3: [1, 50, 50, 1]
-#             kernel_sizes: 3
+            # scales:
+            #     scale_0: [2, 50, 50, 1]
+            #     scale_1: [2, 34, 34, 34, 1]
+            #     scale_2: [2, 34, 34, 34, 1]
+            #     scale_3: [1, 50, 50, 1]
+            # kernel_sizes: 3
 
 #     MSNet5:
 #         type: 'MSNet'
