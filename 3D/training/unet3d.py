@@ -56,7 +56,6 @@ class UNet3D(nn.Module):
         super(UNet3D, self).__init__()
         self.scales = scales
         self.max_scale = len(scales) - 1
-        self.mask = mask
         if isinstance(kernel_sizes, int):   
             self.kernel_sizes = [kernel_sizes] * len(scales)
         else:   
