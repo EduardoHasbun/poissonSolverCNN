@@ -99,7 +99,7 @@ for epoch in range (num_epochs):
         elif loss_type == 'inside':
             loss = inside_loss(output, target)
 
-        loss += dirichlet_loss(output, data_norm)
+        loss += dirichlet_loss(output)
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
