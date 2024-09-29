@@ -40,7 +40,7 @@ save_dir = os.getcwd()
 data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'data.npy')
 save_dir = os.path.join(save_dir, 'models')
 if loss_type == 'inside':
-    target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.npy')
+    target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'data.npy')
 
 # Parameters to Nomalize
 alpha = 0.1
@@ -76,8 +76,8 @@ if loss_type == 'laplacian':
 elif loss_type == 'inside':
     inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
     print('Using Inside Loss \n')
-# dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-dirichlet_loss = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz)
+dirichlet_loss = DirichletBoundaryLoss(bound_weight)
+# dirichlet_loss = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
 # Train loop
@@ -106,4 +106,4 @@ for epoch in range (num_epochs):
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, 'test3d_2.pth'))
+    torch.save(model.state_dict(), os.path.join(save_dir, 'result3d_charge.pth'))

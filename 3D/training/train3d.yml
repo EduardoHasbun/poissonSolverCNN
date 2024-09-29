@@ -57,4 +57,4 @@ loss:
         inside_weight: 1.0e+7
 
 trainer:
-    epochs: 80                              # Number of epochs
+    epochs: 50                              # Number of epochs
