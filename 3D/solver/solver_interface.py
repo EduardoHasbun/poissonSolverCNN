@@ -20,6 +20,7 @@ plots_dir = os.path.join('results')
 if not os.path.exists(plots_dir):
     os.makedirs(plots_dir)
 
+
 xmin, xmax, nnx = cfg['mesh']['xmin'], cfg['mesh']['xmax'], cfg['mesh']['nnx']
 ymin, ymax, nny = cfg['mesh']['ymin'], cfg['mesh']['ymax'], cfg['mesh']['nny']
 zmin, zmax, nnz = cfg['mesh']['zmin'], cfg['mesh']['zmax'], cfg['mesh']['nnz']
@@ -60,6 +61,8 @@ def gaussians(x, y, z, params):
     for index in range(ngauss):
         profile += gaussian(x, y, z, *params[index, :])
     return profile
+
+import numpy as np
 
 
 # input_data = gaussians(X, Y, cfg['init']['args']).astype(np.float32)
