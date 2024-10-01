@@ -27,7 +27,7 @@ z_1d = np.linspace(zmin, zmax, nnz)
 X, Y, Z = np.meshgrid(x_1d, y_1d, z_1d)
 
 
-ratio = 0.05
+ratio = 0.022
 
 #Define Gaussians's Functions
 def gaussian(x, y, z, amplitude, x0, y0, z0, sigma_x, sigma_y, sigma_z):
