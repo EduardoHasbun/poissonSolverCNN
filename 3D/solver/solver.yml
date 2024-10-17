@@ -5,7 +5,7 @@ params:
 init:
   # args : [1.0e+1, 5.0e-3, 2.5e-3, 5.0e-3, 1.0e-3, 1.0e-3, 1.0e-3,   #2 charges along y axis
   #         1.0e+1, 2.50e-3, 4.5e-3, 5.0e-3, 1.0e-3, 1.0e-3, 1.0e-3]
-  args : [1.8e+1, 2.5, 2.5, 2.5, 0.02, 0.02, 0.02] #charge in the middle
+  args : [1.8e+1, 2.5, 2.5, 2.5, 0.01, 0.01, 0.01] #charge in the middle
   # args : [1.0e+1, 1.0e-3, 1.0e-3, 5.0e-3, 1.0e-3, 1.0e-3, 1.0e-3] #one charge moved
 
 mesh:

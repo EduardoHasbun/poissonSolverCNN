@@ -71,9 +71,9 @@ output_array = output.detach().numpy()[0, 0, :, :, :]
 input_plot = input_data.detach().numpy()[0, 0, :, :, :]
 input_slice = input_array[:,:,nnz//2]
 ouptut_slice = output_array[:,:,nnz//2]
-relative_error_inner = np.abs(output_array - analitical_solution) / np.max(analitical_solution)
+relative_error_inner = np.abs(output_array - analitical_solution) / np.max(analitical_solution) * 100
 fig, axs = plt.subplots(1, 3, figsize=(10, 5)) 
-fig.suptitle('Power 3', fontsize=16) 
+fig.suptitle('3D', fontsize=16) 
 
 # Output
 img_output = axs[0].imshow(ouptut_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
@@ -91,10 +91,11 @@ plt.colorbar(img_resolution, ax=axs[1], label='Magnitude')
 
 # Relative Error
 img_error = axs[2].imshow(relative_error_inner[:,:,nnz//2], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+print(f'Error Maximo: {np.max(relative_error_inner)}, Error Promedio: {np.average(relative_error_inner)}')
 axs[2].set_title('Relative Error')
 axs[2].set_xlabel('X')
 axs[2].set_ylabel('Y')
-cbar_output = plt.colorbar(img_error, ax=axs[2], label='Magnitude')
+cbar_output = plt.colorbar(img_error, ax=axs[2], label='Error %')
 plt.tight_layout()
 os.makedirs('results', exist_ok=True)
 plt.savefig(os.path.join(plots_dir, f'Test_3D 2.png'))

@@ -27,7 +27,7 @@ z_1d = np.linspace(zmin, zmax, nnz)
 X, Y, Z = np.meshgrid(x_1d, y_1d, z_1d)
 
 
-ratio = 0.022
+ratio = 0.021
 
 #Define Gaussians's Functions
 def gaussian(x, y, z, amplitude, x0, y0, z0, sigma_x, sigma_y, sigma_z):
@@ -98,21 +98,21 @@ solution_slide = solution[:, :, nnz//2]
 
 # 2D plots
 fig, axs = plt.subplots(2, 2, figsize=(12, 10))
-fig.suptitle('Interface model 1', fontsize=16)
+fig.suptitle('Carga Puntual 3D', fontsize=16)
 
 # Plot Input
 img_input = axs[0, 0].imshow(output_array_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[0, 0].set_title('Ouptut')
 axs[0, 0].set_xlabel('X')
 axs[0, 0].set_ylabel('Y')
-cbar_input = plt.colorbar(img_input, ax=axs[0, 0], label='Magnitude')
+cbar_input = plt.colorbar(img_input, ax=axs[0, 0])
 
 # Plot Output
 img_output = axs[0, 1].imshow(solution_slide, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[0, 1].set_title('Analitical Solution')
 axs[0, 1].set_xlabel('X')
 axs[0, 1].set_ylabel('Y')
-cbar_output = plt.colorbar(img_output, ax=axs[0, 1], label='Magnitude')
+cbar_output = plt.colorbar(img_output, ax=axs[0, 1])
 
 # Plot Y line
 line2 = output_array[nnx//2, 0: nny, nnz//2]
@@ -123,6 +123,7 @@ axs[1, 0].set_title('Y Line')
 
 # Plot Relative Error
 relative_error = np.abs(output_array - solution) / np.max(solution) * 100
+print(f'Error Maximo: {np.max(relative_error)}, Error Promedio: {np.average(relative_error)}')
 relative_error[nnx//2, nny//2, nnz//2] = 1
 img_output = axs[1, 1].imshow(relative_error[:, :, nnz//2], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[1, 1].set_title('Realtive Error')

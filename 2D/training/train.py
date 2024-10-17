@@ -16,16 +16,19 @@ with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
 scales_data = cfg.get('arch', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
-kernel_size = cfg['arch']['kernel_sizes']
 batch_size = cfg['data_loader']['batch_size']
 num_epochs = cfg['trainer']['epochs']
 lapl_weight = cfg['loss']['args']['lapl_weight']
 bound_weight = cfg['loss']['args']['bound_weight']
 lr = cfg['loss']['args']['optimizer_lr']
-arch_type = cfg['arch']['model']
-scales_data = cfg.get('arch', {}).get('scales', {})
+arch_model = cfg['arch']['model']
+arch_type = cfg['arch']['type']
+arch_dir = os.path.join('../../', cfg['arch']['arch_dir'])
+with open(arch_dir) as yaml_stream1:
+    arch = yaml.safe_load(yaml_stream1)
+scales_data = arch.get(arch_type, {}).get('args', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
-kernel_sizes = cfg['arch']['kernel_sizes']
+kernel_size = arch[arch_type]['args']['kernel_sizes']
 xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
             cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['nnx'], cfg['globals']['nny']
 Lx = xmax-xmin
@@ -47,9 +50,9 @@ dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
 # Create model and losses
-if arch_type == 'UNet':
+if arch_model == 'UNet':
     model = UNet(scales, kernel_sizes = kernel_size, input_res = nnx)
-elif arch_type == 'MSNet':
+elif arch_model == 'MSNet':
     model = MSNet(scales, kernel_size, input_res = nnx)
 model = model.float()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)

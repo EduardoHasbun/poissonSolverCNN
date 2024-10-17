@@ -1,3 +1,10 @@
+general:
+  case_name: Unet_ks3_rf300
+  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/models/Unet_ks3_rf300.pth'
+
+arch:
+    arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf300.yml'
+    type: 'UNet4'
 
 init:
   func: 'gaussians'
@@ -19,18 +26,5 @@ mesh:
     y: 2.5
   interface_radius: 1.5
   
-  arch:
-    db_file: 'unets_ks3_rf200.yml'
-    args:
-        input_res: 101
 
 
-
-arch:
-    scales:
-        scale_0: [[1, 30, 20], [40, 30, 1]]
-        scale_1: [[20, 20, 20], [40, 20, 20]]
-        scale_2: [[20, 16, 16, 20], [40, 16, 16, 20]]
-        scale_3: [[20, 20, 20], [40, 20, 20]]
-        scale_4: [[20, 60, 20]]
-    kernel_sizes: 3
