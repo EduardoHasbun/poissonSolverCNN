@@ -14,9 +14,6 @@ parser.add_argument('-c', '--cfg', type=str, default=None, help='Config filename
 args = parser.parse_args()
 with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
-scales_data = cfg.get('arch', {}).get('scales', {})
-scales = [value for key, value in sorted(scales_data.items())]
-kernel_size = cfg['arch']['kernel_sizes']
 batch_size = cfg['data_loader']['batch_size']
 num_epochs = cfg['trainer']['epochs']
 lapl_weight = cfg['loss']['args']['lapl_weight']
