@@ -27,9 +27,14 @@ inside_weight = cfg['loss']['args']['inside_weight']
 bound_weight = cfg['loss']['args']['bound_weight']
 loss_type = cfg['loss']['type']
 lr = cfg['loss']['args']['optimizer_lr']
-scales_data = cfg.get('arch', {}).get('scales', {})
+arch_model = cfg['arch']['model']
+arch_type = cfg['arch']['type']
+arch_dir = os.path.join('../../', cfg['arch']['arch_dir'])
+with open(arch_dir) as yaml_stream1:
+    arch = yaml.safe_load(yaml_stream1)
+scales_data = arch.get(arch_type, {}).get('args', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
-kernel_sizes = cfg['arch']['kernel_sizes']
+kernel_size = arch[arch_type]['args']['kernel_sizes']
 xmin, xmax, ymin, ymax, zmax, zmin, nnx, nny, nnz = cfg['globals']['xmin'], cfg['globals']['xmax'],\
             cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['zmin'], cfg['globals']['zmax'],\
             cfg['globals']['nnx'], cfg['globals']['nny'], cfg['globals']['nnz']         
@@ -37,8 +42,9 @@ Lx = xmax-xmin
 Ly = ymax-ymin
 Lz = zmax-zmin
 save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'data.npy')
+data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random.npy')
 save_dir = os.path.join(save_dir, 'models')
+case_name = cfg['general']['name_case']
 if loss_type == 'inside':
     target_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'data.npy')
 

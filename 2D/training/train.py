@@ -1,5 +1,5 @@
 import torch
-from model import UNet, MSNet
+from models import UNet, MSNet
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
@@ -35,7 +35,7 @@ Lx = xmax-xmin
 Ly = ymax-ymin
 save_dir = os.getcwd()
 data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random.npy')
-save_dir = os.path.join(save_dir, 'models')
+save_dir = os.path.join(save_dir, 'trained_models')
 case_name = cfg['general']['name_case']
 
 

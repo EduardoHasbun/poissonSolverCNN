@@ -1,12 +1,12 @@
 general:
-    name_case: 'Unet3_ks3_rf50.pth'
+    name_case: 'Unet4_ks3_rf50.pth'
     data_dir: 'dataset/generated/random.npy' 
 
 
 arch:
     model: "UNet"
     arch_dir: 'Archs/Unet_ks3_rf50.yml'
-    type: 'UNet3'
+    type: 'UNet4'
 
 
 globals:                                    # Domain sizes and others, used to compute global attributes
@@ -16,6 +16,12 @@ globals:                                    # Domain sizes and others, used to c
     ymin: 0.0
     xmax: 5.0
     ymax: 5.0
+    interface_center:
+        x: 2.5
+        y: 2.5
+    interface_radius: 1.5
+    epsilon_inside: 1.0
+    epsilon_outside: 80.0
 
 
 
@@ -27,10 +33,11 @@ loss:
     args:
         bound_weight: 8.0e+5                  # Weighting of the loss on the boundaries (float)
         lapl_weight: 8.0e+3
+        interface_weight: 3.0e+3                # Weighting of the loss on the Laplacian (float)
         optimizer_lr: 3.e-4   
 
 trainer:
-    epochs: 250                            # Number of epochs
+    epochs: 100                            # Number of epochs
 
 
 

@@ -1,9 +1,9 @@
 general:
-  case_name: Unet_ks3_rf300
-  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/models/Unet_ks3_rf300.pth'
+  case_name: Interface_21
+  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/models/interface_21.pth'
 
 arch:
-    arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf300.yml'
+    arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf200.yml'
     type: 'UNet4'
 
 init:
@@ -21,7 +21,12 @@ mesh:
   ymax: 5
   nnx: 101
   nny: 101
-
+  interface_center:
+    x: 2.5
+    y: 2.5
+  interface_radius: 1.5
+  epsilon_in: 1
+  epsilon_out: 80
   
 
 

@@ -1,5 +1,5 @@
 import torch
-from model import UNetInterface
+from models import UNetInterface
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
@@ -23,9 +23,14 @@ lapl_weight = cfg['loss']['args']['lapl_weight']
 bound_weight = cfg['loss']['args']['bound_weight']
 interface_weight = cfg['loss']['args']['interface_weight']
 lr = cfg['loss']['args']['optimizer_lr']
-scales_data = cfg.get('arch', {}).get('scales', {})
+arch_model = cfg['arch']['model']
+arch_type = cfg['arch']['type']
+arch_dir = os.path.join('../../', cfg['arch']['arch_dir'])
+with open(arch_dir) as yaml_stream1:
+    arch = yaml.safe_load(yaml_stream1)
+scales_data = arch.get(arch_type, {}).get('args', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
-kernel_sizes = cfg['arch']['kernel_sizes']
+kernel_size = arch[arch_type]['args']['kernel_sizes']
 xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
             cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['nnx'], cfg['globals']['nny']
 interface_center = (cfg['globals']['interface_center']['x'], cfg['globals']['interface_center']['y'])
@@ -33,10 +38,10 @@ interface_radius = cfg['globals']['interface_radius']
 epsilon_inside, epsilon_outside = cfg['globals']['epsilon_inside'], cfg['globals']['epsilon_outside']
 Lx, Ly = xmax-xmin, ymax-ymin
 dx, dy = Lx / nnx, Ly / nny
-case_name = cfg['general']['name_case']
 save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'domain.npy')
-save_dir = os.path.join(save_dir, 'models')
+data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random.npy')
+save_dir = os.path.join(save_dir, 'trained_models')
+case_name = cfg['general']['name_case']
 
 
 # Parameters to Nomalize

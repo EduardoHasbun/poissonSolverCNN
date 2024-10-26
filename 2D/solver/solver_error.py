@@ -1,11 +1,13 @@
 import os
+import sys
 import torch
 import torch.nn as nn
 import numpy as np
 import yaml
 import matplotlib.pyplot as plt
+sys.path.append('C:/Codigos/poissonSolverCNN/2D/training')
 from model import UNet, MSNet
-from ..training.operators import DirichletBoundaryLossFunction
+import operators as op
 
 
 # Load YAML config
@@ -60,12 +62,10 @@ def function2solve(x, y):
 def resolution(x, y):
     return x**3 + y**3 
 
-def ratio_potrhs(alpha, Lx, Ly):
-    return alpha / (np.pi**2 / 4)**2 / (1 / Lx**2 + 1 / Ly**2)
 
 # Set parameters
 alpha = 0.04
-ratio_max = ratio_potrhs(alpha, Lx, Ly)
+ratio_max = op.ratio_potrhs(alpha, Lx, Ly)
 
 # Create input data and resolution data
 input_data = function2solve(X, Y) * ratio_max

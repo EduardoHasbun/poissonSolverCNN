@@ -3,18 +3,35 @@ import torch.nn as nn
 import numpy as np
 import yaml
 import matplotlib.pyplot as plt
-from unet_interface import UNet
 import os
+import sys
+sys.path.append('C:/Codigos/poissonSolverCNN/2D/training')
+import operators as op
+from unet_interface import UNet
 
 
-with open('C:\Codigos/poissonSolverCNN/2D/solver/solver.yml', 'r') as file:
+
+
+with open('C:\Codigos/poissonSolverCNN/2D/solver/solver_interface.yml', 'r') as file:
     cfg = yaml.load(file, Loader=yaml.FullLoader)
-scales_data = cfg.get('arch', {}).get('scales', {})
-scales = [value for key, value in sorted(scales_data.items())]
-kernel_size = cfg['arch']['kernel_sizes']
 plots_dir = os.path.join('results')
 if not os.path.exists(plots_dir):
     os.makedirs(plots_dir)
+
+# Get paths and configurations from YAML
+case_name = cfg['general']['case_name']
+model_dir = cfg['general']['model_dir']
+arch_type = cfg['arch']['type']
+arch_dir = os.path.join('..', '..', cfg['arch']['arch_dir'])
+
+# Load architecture config
+with open(arch_dir) as yaml_stream1:
+    arch = yaml.safe_load(yaml_stream1)
+arch_model = arch[arch_type]['type']
+# Get scales and kernel sizes
+scales_data = arch.get(arch_type, {}).get('args', {}).get('scales', {})
+scales = [value for key, value in sorted(scales_data.items())]
+kernel_size = arch[arch_type]['args']['kernel_sizes']
 
 xmin, xmax, nnx = cfg['mesh']['xmin'], cfg['mesh']['xmax'], cfg['mesh']['nnx']
 ymin, ymax, nny  = cfg['mesh']['ymin'], cfg['mesh']['ymax'], cfg['mesh']['nny']
@@ -53,14 +70,27 @@ def gaussians(x, y, params):
         profile += gaussian(x, y, *params[index, :])
     return profile
 
+def analytical_solution(x, y, x0, y0, e_in, e_out, R, q):
+    r = np.sqrt((x - x0)**2 + (y - y0)**2)
+    
+    # Use np.where to apply conditions element-wise for the entire grid
+    solution = np.where(r <= R, 
+                        (q / (2 * np.pi * e_in)) * np.log(R / r) - (q / (2 * np.pi * e_out)) * np.log(R), 
+                        (q / (2 * np.pi * e_out)) * np.log(r))
+    return solution
+
 
 input_data = gaussians(X_np, Y_np, cfg['init']['args'])
 input_data = input_data[np.newaxis, np.newaxis, :, :]
 input_data = torch.from_numpy(input_data).float()
 
+
+solution = analytical_solution(X, Y, interface_center[0], interface_center[1], cfg['mesh']['epsilon_in'], \
+                    cfg['mesh']['epsilon_out'], interface_radius, cfg['init']['args'][0])
+
 # Create Model
 model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, inner_mask = inner_mask, outer_mask = outer_mask)
-model.load_state_dict(torch.load('C:/Codigos/poissonSolverCNN/2D/training/models/interface_25.pth'))
+model.load_state_dict(torch.load(model_dir))
 model = model.float()
 model.eval() 
 
@@ -76,9 +106,9 @@ output_array = output.detach().numpy()[0, 0, :, :]
 fig, axs = plt.subplots(2, 2, figsize=(12, 10))
 fig.suptitle('Interface model 1', fontsize=16)
 
-# Plot Input
-img_input = axs[0, 0].imshow(input_data[0, 0, :, :], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-axs[0, 0].set_title('Input')
+# Plot solution
+img_input = axs[0, 0].imshow(solution, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+axs[0, 0].set_title('Analitical Solution')
 axs[0, 0].set_xlabel('X')
 axs[0, 0].set_ylabel('Y')
 cbar_input = plt.colorbar(img_input, ax=axs[0, 0], label='Magnitude')
@@ -109,4 +139,4 @@ axs[1, 1].set_ylabel('Y')
 # Adjust layout
 plt.tight_layout(rect=[0, 0, 1, 0.96])  
 os.makedirs(plots_dir, exist_ok=True)
-plt.savefig(os.path.join(plots_dir, 'Interface 25.png'))
+plt.savefig(os.path.join(plots_dir, f'{case_name}.png'))
