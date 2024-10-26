@@ -296,7 +296,7 @@ class UNet_Submodel(nn.Module):
 class UNetInterface(nn.Module):
     def __init__(self, scales, kernel_sizes, input_res, inner_mask, outer_mask,
                     padding_mode='zeros', upsample_mode='nearest'):
-        super(UNet, self).__init__()
+        super(UNetInterface, self).__init__()
         self.inner_mask = inner_mask
         self.outer_mask = outer_mask
 
