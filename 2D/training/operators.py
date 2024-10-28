@@ -144,7 +144,7 @@ class DirichletBoundaryLossFunction(nn.Module):
         self.xmin, self.xmax, self.ymin, self.ymax = xmin, xmax, ymin, ymax
         x = torch.linspace(self.xmin, self.xmax, nnx)
         y = torch.linspace(self.ymin, self.ymax, nny)
-        X, Y = torch.meshgrid(x, y, indexing='ij')
+        X, Y = torch.meshgrid(x, y)
         
         def function2solve(x, y):
             return torch.pow(x,3) + torch.pow(y,3)
