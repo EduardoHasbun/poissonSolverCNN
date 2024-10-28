@@ -1,7 +1,0 @@
-
-test3d_1 = Domain 5.0, 35 nodes, bound_weight: 5.0e+3, lapl_weight: 2.0e+1 , optimizer_lr: 4.e-4, alpha = 0.1
-test3d_2 = Domain 5.0, 35 nodes, bound_weight: 5.0e+3, lapl_weight: 2.0e+1 , optimizer_lr: 4.e-4, ratio = 0.20531964  THIS CONFIGURATION WORKS!!!!
-
-
-
-interface3d_1 = Domain 5.0, 35 nodes, 
