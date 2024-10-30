@@ -32,8 +32,7 @@ kernel_size = arch[arch_type]['args']['kernel_sizes']
 # Set mesh
 xmin, xmax, nnx = cfg['mesh']['xmin'], cfg['mesh']['xmax'], cfg['mesh']['nnx']
 ymin, ymax, nny = cfg['mesh']['ymin'], cfg['mesh']['ymax'], cfg['mesh']['nny']
-Lx = xmax - xmin
-Ly = ymax - ymin
+Lx, Ly = xmax - xmin, ymax - ymin
 x_1d = np.linspace(xmin, xmax, nnx)
 y_1d = np.linspace(ymin, ymax, nny)
 X, Y = np.meshgrid(x_1d, y_1d)

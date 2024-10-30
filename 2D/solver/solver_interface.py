@@ -7,7 +7,7 @@ import os
 import sys
 sys.path.append('C:/Codigos/poissonSolverCNN/2D/training')
 import operators as op
-from unet_interface import UNet
+from models import UNetInterface
 
 
 
@@ -35,6 +35,7 @@ kernel_size = arch[arch_type]['args']['kernel_sizes']
 
 xmin, xmax, nnx = cfg['mesh']['xmin'], cfg['mesh']['xmax'], cfg['mesh']['nnx']
 ymin, ymax, nny  = cfg['mesh']['ymin'], cfg['mesh']['ymax'], cfg['mesh']['nny']
+Lx, Ly = xmax - xmin, ymax - ymin
 interface_center, interface_radius = (cfg['mesh']['interface_center']['x'], cfg['mesh']['interface_center']['y']), cfg['mesh']['interface_radius']
 
 # Parameters for data
@@ -74,10 +75,18 @@ def analytical_solution(x, y, x0, y0, e_in, e_out, R, q):
     r = np.sqrt((x - x0)**2 + (y - y0)**2)
     
     # Use np.where to apply conditions element-wise for the entire grid
+    r_masked = np.where(r == 0, 1e-10, r)
     solution = np.where(r <= R, 
-                        (q / (2 * np.pi * e_in)) * np.log(R / r) - (q / (2 * np.pi * e_out)) * np.log(R), 
-                        (q / (2 * np.pi * e_out)) * np.log(r))
+                    (q / (2 * np.pi * e_in)) * np.log(R / r_masked) - (q / (2 * np.pi * e_out)) * np.log(R), 
+                    (q / (2 * np.pi * e_out)) * np.log(r_masked))
+    
+    solution[r == 0] = q / (2 * np.pi * e_in)
+
     return solution
+
+# Set parameters
+alpha = 0.1
+ratio_max = op.ratio_potrhs(alpha, Lx, Ly)
 
 
 input_data = gaussians(X_np, Y_np, cfg['init']['args'])
@@ -89,7 +98,7 @@ solution = analytical_solution(X, Y, interface_center[0], interface_center[1], c
                     cfg['mesh']['epsilon_out'], interface_radius, cfg['init']['args'][0])
 
 # Create Model
-model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx, inner_mask = inner_mask, outer_mask = outer_mask)
+model = UNetInterface(scales, kernel_sizes=kernel_size, input_res=nnx, inner_mask = inner_mask, outer_mask = outer_mask)
 model.load_state_dict(torch.load(model_dir))
 model = model.float()
 model.eval() 
@@ -104,7 +113,7 @@ output_array = output.detach().numpy()[0, 0, :, :]
 
 # Plots
 fig, axs = plt.subplots(2, 2, figsize=(12, 10))
-fig.suptitle('Interface model 1', fontsize=16)
+fig.suptitle('Interface Unet4 rf300', fontsize=16)
 
 # Plot solution
 img_input = axs[0, 0].imshow(solution, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
@@ -120,13 +129,13 @@ axs[0, 1].set_xlabel('X')
 axs[0, 1].set_ylabel('Y')
 cbar_output = plt.colorbar(img_output, ax=axs[0, 1], label='Magnitude')
 
-# Plot Reference of the Domain
-line = output_array[nnx//2, 0 : nny]
-y_line = np.linspace(0, ymax, len(line))
-axs[1, 0].plot(y_line, line)
-axs[1, 0].set_title('Line in Y')
+# Plot Relative Error
+relative_error = abs(output_array - solution) / np.max(solution) * 100
+img_error = axs[1, 0].imshow(relative_error, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+axs[1, 0].set_title('Relatie Error')
 axs[1, 0].set_xlabel('X')
 axs[1, 0].set_ylabel('Y')
+cbar_error = plt.colorbar(img_error, ax=axs[1,0], label='Error')
 
 # Plot One line
 line_2 = output_array[0 : nnx, nny//2]

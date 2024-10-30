@@ -1,11 +1,11 @@
 general:
-    name_case: 'Unet4_ks3_rf300_i.pth'
+    name_case: 'Unet4_ks3_rf100_i.pth'
     data_dir: 'dataset/generated/random.npy' 
 
 
 arch:
     model: "UNet"
-    arch_dir: 'Archs/Unet_ks3_rf300.yml'
+    arch_dir: 'Archs/Unet_ks3_rf100.yml'
     type: 'UNet4'
 
 
@@ -31,10 +31,10 @@ data_loader:
 
 loss:
     args:
-        bound_weight: 2.0e+1                  # Weighting of the loss on the boundaries (float)
-        lapl_weight: 8.0e+4
+        bound_weight: 8.0e+0                  # Weighting of the loss on the boundaries (float)
+        lapl_weight: 9.0e+5
         interface_weight: 3.0e+4                # Weighting of the loss on the Laplacian (float)
-        optimizer_lr: 3.e-4   
+        optimizer_lr: 4.e-4   
 
 trainer:
     epochs: 250                            # Number of epochs
