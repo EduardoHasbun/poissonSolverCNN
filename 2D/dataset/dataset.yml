@@ -1,4 +1,4 @@
-n_it: 300
+n_it: 30
 output_dir: 'C:\Codigos\poissonSolverCNN\dataset\generated\'
 name: random_2.npy
 
