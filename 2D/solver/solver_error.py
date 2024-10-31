@@ -6,7 +6,7 @@ import numpy as np
 import yaml
 import matplotlib.pyplot as plt
 sys.path.append('C:/Codigos/poissonSolverCNN/2D/training')
-from model import UNet, MSNet
+from models import UNet, MSNet
 import operators as op
 
 
@@ -63,7 +63,7 @@ def resolution(x, y):
 
 
 # Set parameters
-alpha = 0.04
+alpha = 0.03
 ratio_max = op.ratio_potrhs(alpha, Lx, Ly)
 
 # Create input data and resolution data
