@@ -88,7 +88,6 @@ for epoch in range (num_epochs):
 
         # Getting Outputs
         subdomain_in, subdomain_out = model(data)
-        subdomain_in_plot = subdomain_in.detach().numpy()
 
         # Loss
         loss = laplacian_loss(subdomain_in, data = data, data_norm = data_norm, mask = inner_mask)
