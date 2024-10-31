@@ -7,6 +7,7 @@ from operators import ratio_potrhs, LaplacianLossInterface, DirichletBoundaryLos
 import torch.optim as optim
 import os
 import argparse
+import matplotlib.pyplot as plt
 
 # Import external parameteres
 parser = argparse.ArgumentParser(description='Training')
@@ -87,12 +88,16 @@ for epoch in range (num_epochs):
 
         # Getting Outputs
         subdomain_in, subdomain_out = model(data)
+        subdomain_in_plot = subdomain_in.detach().numpy()
+        if epoch == 95:
+            plt.imshow(subdomain_in_plot[0,0,:])
+            plt.show() 
 
         # Loss
         loss = laplacian_loss(subdomain_in, data = data, data_norm = data_norm, mask = inner_mask)
         loss += laplacian_loss(subdomain_out, data = data, data_norm = data_norm, mask = outer_mask)
         loss += dirichlet_loss(subdomain_out)
-        loss += interface_loss(subdomain_in, subdomain_out)
+        loss += interface_loss(subdomain_in, subdomain_out, data_norm = data_norm)
 
         # Backpropagation
         loss.backward()

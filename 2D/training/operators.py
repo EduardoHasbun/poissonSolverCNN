@@ -13,9 +13,9 @@ class LaplacianLossInterface(nn.Module):
         self.epsilon_inside = cfg['globals']['epsilon_inside']
         self.epsilon_outside = cfg['globals']['epsilon_outside']
 
-    def forward(self, output, data=None, data_norm=1., mask = 1.):
+    def forward(self, output, data = None, data_norm = 1., mask = 1.):
         laplacian = lapl_interface(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside)
-        loss = F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], data[:, 0, 1:-1, 1:-1]) * self.weight
+        loss = F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], -data[:, 0, 1:-1, 1:-1]) * self.weight
         return loss
 
 class LaplacianLoss(nn.Module):
@@ -83,7 +83,9 @@ class InterfaceBoundaryLoss(nn.Module):
         self.normal_x, self.normal_y = normal_x, normal_y
 
 
-    def compute_gradients(self, subdomain_in, subdomain_out):
+    def compute_gradients(self, subdomain_in_o, subdomain_out_o, data_norm = 1.):
+        subdomain_in = subdomain_in_o / data_norm
+        subdomain_out = subdomain_out_o / data_norm
         gradients_x_boundary_inner = torch.zeros_like(subdomain_in)
         gradients_x_boundary_outer = torch.zeros_like(subdomain_out)
         gradients_y_boundary_inner = torch.zeros_like(subdomain_in)

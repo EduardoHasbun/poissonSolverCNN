@@ -91,7 +91,7 @@ ratio_max = op.ratio_potrhs(alpha, Lx, Ly)
 
 input_data = gaussians(X_np, Y_np, cfg['init']['args'])
 input_data = input_data[np.newaxis, np.newaxis, :, :]
-input_data = torch.from_numpy(input_data).float()
+input_data = torch.from_numpy(input_data).float() 
 
 
 solution = analytical_solution(X, Y, interface_center[0], interface_center[1], cfg['mesh']['epsilon_in'], \
@@ -108,7 +108,7 @@ out_in, out_out = model(input_data)
 output = torch.zeros_like(out_in)
 output[0, 0, interface_mask] = out_in[0, 0, interface_mask]
 output[0, 0, ~interface_mask] = out_out[0, 0, ~interface_mask]
-output_array = output.detach().numpy()[0, 0, :, :] 
+output_array = output.detach().numpy()[0, 0, :, :] * ratio_max
 
 
 # Plots
