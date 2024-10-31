@@ -3,3 +3,4 @@ env/
 3D/dataset/generated/
 2D/training/trained_models
 3D/training/trained_models
+results/
