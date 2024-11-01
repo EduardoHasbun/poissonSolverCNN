@@ -80,12 +80,12 @@ def analytical_solution(x, y, x0, y0, e_in, e_out, R, q):
                     (q / (2 * np.pi * e_in)) * np.log(R / r_masked) - (q / (2 * np.pi * e_out)) * np.log(R), 
                     (q / (2 * np.pi * e_out)) * np.log(r_masked))
     
-    solution[r == 0] = q / (2 * np.pi * e_in)
+    solution[r == 0] = q / (2 * np.pi * e_in / 2.5) 
 
     return solution
 
 # Set parameters
-alpha = 0.1
+alpha = 0.55
 ratio_max = op.ratio_potrhs(alpha, Lx, Ly)
 
 
