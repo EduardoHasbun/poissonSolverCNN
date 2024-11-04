@@ -4,23 +4,33 @@ import torch.nn.functional as F
 import numpy as np
 
 
-class LaplacianLoss(nn.Module):
+class LaplacianLossInterface(nn.Module):
     def __init__(self, cfg, lapl_weight):
         super().__init__()
         self.weight = lapl_weight
-        xmin, xmax, ymin, ymax, zmax, zmin, nnx, nny, nnz = cfg['globals']['xmin'], cfg['globals']['xmax'],\
-            cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['zmin'], cfg['globals']['zmax'],\
-            cfg['globals']['nnx'], cfg['globals']['nny'], cfg['globals']['nnz'] 
-        self.Lx = xmax-xmin
-        self.Ly = ymax-ymin
-        self.Lz = zmax-zmin
-        self.dx = self.Lx/nnx
-        self.dy = self.Ly/nny
-        self.dz = self.Lz/nnz
+        self.dx = (cfg['globals']['xmax'] - cfg['globals']['xmin']) / cfg['globals']['nnx']
+        self.dy = (cfg['globals']['ymax'] - cfg['globals']['ymin']) / cfg['globals']['nny']
+        self.dz = (cfg['globals']['zmax'] - cfg['globals']['zmin']) / cfg['globals']['nnz'] 
+        self.epsilon_inside = cfg['globals']['epsilon_inside']
+        self.epsilon_outside = cfg['globals']['epsilon_outside']
+        
 
+    def forward(self, output, data = None, data_norm = 1., mask = 1.):
+        laplacian = lapl_interface(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside)
+        loss = F.mse_loss(laplacian[:, 0, mask], data[:, 0, mask]) * self.weight
+        return loss
+    
+
+class LaplacianLoss(nn.Module):
+    def __init__(self, cfg, lapl_weight, e_in = 1, e_out = 1, interface = 1):
+        super().__init__()
+        self.weight = lapl_weight
+        self.dx = (cfg['globals']['xmax'] - cfg['globals']['xmin']) / cfg['globals']['nnx']
+        self.dy = (cfg['globals']['ymax'] - cfg['globals']['ymin']) / cfg['globals']['nny']
+        self.dz = (cfg['globals']['zmax'] - cfg['globals']['zmin']) / cfg['globals']['nnz']
     def forward(self, output, data=None, data_norm=1.):
-        laplacian = lapl(output / data_norm, self.dx, self.dy, self.dz)
-        return self.Lx**2 * self.Ly**2 * self.Lz**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1, 1:-1]) * self.weight
+        laplacian = lapl(output / data_norm, self.dx, self.dy)
+        return self.Lx**2 * self.Ly**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
     
 
     

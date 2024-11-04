@@ -15,22 +15,15 @@ class LaplacianLossInterface(nn.Module):
 
     def forward(self, output, data = None, data_norm = 1., mask = 1.):
         laplacian = lapl_interface(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside)
-        loss = F.mse_loss(laplacian[:, 0, mask], data[:, 0, mask]) * self.weight
+        loss = F.mse_loss(laplacian[:, 0, mask], -data[:, 0, mask]) * self.weight
         return loss
 
 class LaplacianLoss(nn.Module):
-    def __init__(self, cfg, lapl_weight, e_in = 1, e_out = 1, interface = 1):
+    def __init__(self, cfg, lapl_weight):
         super().__init__()
         self.weight = lapl_weight
-        xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
-            cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['nnx'], cfg['globals']['nny']
-        self.Lx = xmax-xmin
-        self.Ly = ymax-ymin
-        self.dx = self.Lx/nnx
-        self.dy = self.Ly/nny
-        self.epsilon_inside = e_in
-        self.epsilon_outside = e_out
-        self.interface = interface
+        self.dx = (cfg['globals']['xmax'] - cfg['globals']['xmin']) / cfg['globals']['nnx']
+        self.dy = (cfg['globals']['ymax'] - cfg['globals']['ymin']) / cfg['globals']['nny']
     def forward(self, output, data=None, data_norm=1.):
         laplacian = lapl(output / data_norm, self.dx, self.dy)
         return self.Lx**2 * self.Ly**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
