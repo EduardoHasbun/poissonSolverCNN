@@ -1,6 +1,6 @@
 general:
     name_case: 'test.pth'
-    data_dir: 'dataset/generated/random.npy' 
+    data_dir: 'dataset/generated/random_data.npy' 
 
 
 arch:
