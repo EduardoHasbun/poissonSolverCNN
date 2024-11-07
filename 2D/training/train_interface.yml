@@ -34,7 +34,7 @@ loss:
         bound_weight: 5.0e+0                  # Weighting of the loss on the boundaries (float)
         lapl_weight: 9.0e+5
         interface_weight: 3.0e+4                # Weighting of the loss on the Laplacian (float)
-        optimizer_lr: 4.e-2   
+        optimizer_lr: 4.e-4   
 
 trainer:
     epochs: 30                            # Number of epochs
