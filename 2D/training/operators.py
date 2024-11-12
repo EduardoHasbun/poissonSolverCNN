@@ -187,8 +187,8 @@ def lapl_interface(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
     epsilon_y_ip = 2 / (1/epsilon[:, :, :-1, :] + 1/epsilon[:, :, 1:, :])
 
     # Compute flux differences in x and y directions
-    flux_x_ip = epsilon_x_ip * (field[:, :, :, 2:] - field[:, :, :, :-2]) / (2 * dx)
-    flux_y_ip = epsilon_y_ip * (field[:, :, 2:, :] - field[:, :, :-2, :]) / (2 * dy)
+    flux_x_ip = epsilon_x_ip[:, :, :, 1:-1] * (field[:, :, :, 2:] - field[:, :, :, :-2]) / (2 * dx)
+    flux_y_ip = epsilon_y_ip[:, :, 1:-1, :] * (field[:, :, 2:, :] - field[:, :, :-2, :]) / (2 * dy)
 
     # Divergence calculation with symmetric flux differences
     divergence = torch.zeros_like(field[:, 0, :, :])
