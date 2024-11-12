@@ -182,34 +182,30 @@ def lapl_interface(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
     epsilon = get_epsilon_tensor(field.shape, interface_mask, epsilon_in, epsilon_out)
     epsilon = epsilon.unsqueeze(0).unsqueeze(0).expand(batch_size, 1, h, w)
 
-    # Compute epsilon at cell faces with both side contributions
-    epsilon_x_ip = 2 / (1/epsilon[:, :, :, :-1] + 1/epsilon[:, :, :, 1:])
-    epsilon_y_ip = 2 / (1/epsilon[:, :, :-1, :] + 1/epsilon[:, :, 1:, :])
+    # Compute epsilon at cell faces with harmonic mean (centered)
+    epsilon_x_ip = 2 / (1/epsilon[:, :, :, 1:-1] + 1/epsilon[:, :, :, 2:])
+    epsilon_y_ip = 2 / (1/epsilon[:, :, 1:-1, :] + 1/epsilon[:, :, 2:, :])
 
-    # Compute flux differences in x and y directions
-    flux_x_ip = epsilon_x_ip[:, :, :, 2:-2] * (field[:, :, :, 2:] - field[:, :, :, :-2]) / (2 * dx)
-    flux_y_ip = epsilon_y_ip[:, :, 2:-2, :] * (field[:, :, 2:, :] - field[:, :, :-2, :]) / (2 * dy)
+    # Compute flux differences in x and y directions (centered)
+    flux_x_ip = epsilon_x_ip * (field[:, :, :, 2:] - field[:, :, :, :-2]) / (2 * dx)
+    flux_y_ip = epsilon_y_ip * (field[:, :, 2:, :] - field[:, :, :-2, :]) / (2 * dy)
 
-    # Divergence calculation with symmetric flux differences
+    # Divergence calculation with centered flux differences
     divergence = torch.zeros_like(field[:, 0, :, :])
     divergence[:, 1:-1, 1:-1] = (
-    (flux_x_ip[:, 0, 1:-1, 2:] - flux_x_ip[:, 0, 1:-1, :-2]) / (2 * dx) +
-    (flux_y_ip[:, 0, 2:, 1:-1] - flux_y_ip[:, 0, :-2, 1:-1]) / (2 * dy)
+        (flux_x_ip[:, 0, 1:-1, 1:] - flux_x_ip[:, 0, 1:-1, :-1]) / dx +
+        (flux_y_ip[:, 0, 1:, 1:-1] - flux_y_ip[:, 0, :-1, 1:-1]) / dy
     )
 
     laplacian[:, 0, :, :] = divergence
 
     return laplacian
 
-
-
-
 def get_epsilon_tensor(field_shape, interface_mask, epsilon_in, epsilon_out):
     epsilon = torch.zeros(field_shape[2:], device=interface_mask.device)
     epsilon[interface_mask] = epsilon_in
     epsilon[~interface_mask] = epsilon_out
     return epsilon
-
 
 def harmonic_mean(a, b):
     return 2 * a * b / (a + b)
