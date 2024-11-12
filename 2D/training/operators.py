@@ -188,10 +188,9 @@ def lapl_interface(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
     epsilon_y_ip = harmonic_mean(epsilon[:, :, :-1, :], epsilon[:, :, 1:, :])  # Shape: (batch_size, 1, h-1, w)
 
     # Compute flux differences in x-direction
-    flux_x_ip = epsilon_x_ip * (field[:, :, :, 1:] - field[:, :, :, :-1]) / dx  # Shape: (batch_size, 1, h, w-1)
+    flux_x_ip = epsilon_x_ip * (field[:, :, :, 2:] - field[:, :, :, :-2]) / (2 * dx)
+    flux_y_ip = epsilon_y_ip * (field[:, :, 2:, :] - field[:, :, :-2, :]) / (2 * dy)
 
-    # Compute flux differences in y-direction
-    flux_y_ip = epsilon_y_ip * (field[:, :, 1:, :] - field[:, :, :-1, :]) / dy  # Shape: (batch_size, 1, h-1, w)
 
     # Initialize divergence
     divergence = torch.zeros_like(field[:, 0, :, :])  # Shape: (batch_size, h, w)
