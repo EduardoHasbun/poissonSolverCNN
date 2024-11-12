@@ -179,19 +179,24 @@ def lapl_interface(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
     laplacian = torch.zeros_like(field).type(field.type())
 
     # Get epsilon at grid points
-    epsilon = get_epsilon_tensor(field.shape, interface_mask, epsilon_in, epsilon_out)
-    epsilon = epsilon.unsqueeze(0).unsqueeze(0).expand(batch_size, 1, h, w)
+    epsilon = get_epsilon_tensor(field.shape, interface_mask, epsilon_in, epsilon_out)  # Shape: (h, w)
+    epsilon = epsilon.unsqueeze(0).unsqueeze(0)  # Shape: (1, 1, h, w)
+    epsilon = epsilon.expand(batch_size, 1, h, w)  # Shape: (batch_size, 1, h, w)
 
-    # Compute epsilon at cell faces with harmonic mean (centered)
-    epsilon_x_ip = 2 / (1/epsilon[:, :, :, 1:-1] + 1/epsilon[:, :, :, 2:])
-    epsilon_y_ip = 2 / (1/epsilon[:, :, 1:-1, :] + 1/epsilon[:, :, 2:, :])
+    # Compute epsilon at cell faces using harmonic mean
+    epsilon_x_ip = harmonic_mean(epsilon[:, :, :, :-1], epsilon[:, :, :, 1:])  # Shape: (batch_size, 1, h, w-1)
+    epsilon_y_ip = harmonic_mean(epsilon[:, :, :-1, :], epsilon[:, :, 1:, :])  # Shape: (batch_size, 1, h-1, w)
 
-    # Compute flux differences in x and y directions (centered)
-    flux_x_ip = epsilon_x_ip * (field[:, :, :, 2:] - field[:, :, :, :-2]) / (2 * dx)
-    flux_y_ip = epsilon_y_ip * (field[:, :, 2:, :] - field[:, :, :-2, :]) / (2 * dy)
+    # Compute flux differences in x-direction
+    flux_x_ip = epsilon_x_ip * (field[:, :, :, 1:] - field[:, :, :, :-1]) / dx  # Shape: (batch_size, 1, h, w-1)
 
-    # Divergence calculation with centered flux differences
-    divergence = torch.zeros_like(field[:, 0, :, :])
+    # Compute flux differences in y-direction
+    flux_y_ip = epsilon_y_ip * (field[:, :, 1:, :] - field[:, :, :-1, :]) / dy  # Shape: (batch_size, 1, h-1, w)
+
+    # Initialize divergence
+    divergence = torch.zeros_like(field[:, 0, :, :])  # Shape: (batch_size, h, w)
+
+    # Divergence calculation 
     divergence[:, 1:-1, 1:-1] = (
         (flux_x_ip[:, 0, 1:-1, 1:] - flux_x_ip[:, 0, 1:-1, :-1]) / dx +
         (flux_y_ip[:, 0, 1:, 1:-1] - flux_y_ip[:, 0, :-1, 1:-1]) / dy
@@ -201,15 +206,17 @@ def lapl_interface(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
 
     return laplacian
 
+
+
 def get_epsilon_tensor(field_shape, interface_mask, epsilon_in, epsilon_out):
     epsilon = torch.zeros(field_shape[2:], device=interface_mask.device)
     epsilon[interface_mask] = epsilon_in
     epsilon[~interface_mask] = epsilon_out
     return epsilon
 
+
 def harmonic_mean(a, b):
     return 2 * a * b / (a + b)
-
 
 def ratio_potrhs(alpha, Lx, Ly):
     return alpha / (np.pi**2 / 4)**2 / (1 / Lx**2 + 1 / Ly**2)
