@@ -183,28 +183,27 @@ def lapl_interface(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
     epsilon = epsilon.unsqueeze(0).unsqueeze(0)  # Shape: (1, 1, h, w)
     epsilon = epsilon.expand(batch_size, 1, h, w)  # Shape: (batch_size, 1, h, w)
 
-    # Compute epsilon at cell faces using harmonic mean
-    epsilon_x_ip = harmonic_mean(epsilon[:, :, :, :-1], epsilon[:, :, :, 1:])  # Shape: (batch_size, 1, h, w-1)
-    epsilon_y_ip = harmonic_mean(epsilon[:, :, :-1, :], epsilon[:, :, 1:, :])  # Shape: (batch_size, 1, h-1, w)
+    # Compute epsilon at cell faces using harmonic mean in both directions
+    epsilon_x_ip = harmonic_mean(epsilon[:, :, :, :-1], epsilon[:, :, :, 1:])  # epsilon_x on the right
+    epsilon_x_im = harmonic_mean(epsilon[:, :, :, 1:], epsilon[:, :, :, :-1])  # epsilon_x on the left
+    epsilon_y_ip = harmonic_mean(epsilon[:, :, :-1, :], epsilon[:, :, 1:, :])  # epsilon_y above
+    epsilon_y_im = harmonic_mean(epsilon[:, :, 1:, :], epsilon[:, :, :-1, :])  # epsilon_y below
 
-    # Compute flux differences in x-direction
-    flux_x_ip = epsilon_x_ip * (field[:, :, :, 2:] - field[:, :, :, :-2]) / (2 * dx)
-    flux_y_ip = epsilon_y_ip * (field[:, :, 2:, :] - field[:, :, :-2, :]) / (2 * dy)
+    # Compute flux differences symmetrically
+    flux_x_ip = epsilon_x_ip * (field[:, :, :, 1:] - field[:, :, :, :-1]) / dx  # flux to the right
+    flux_x_im = epsilon_x_im * (field[:, :, :, :-1] - field[:, :, :, 1:]) / dx  # flux to the left
+    flux_y_ip = epsilon_y_ip * (field[:, :, 1:, :] - field[:, :, :-1, :]) / dy  # flux above
+    flux_y_im = epsilon_y_im * (field[:, :, :-1, :] - field[:, :, 1:, :]) / dy  # flux below
 
-
-    # Initialize divergence
+    # Initialize divergence with symmetric flux differences
     divergence = torch.zeros_like(field[:, 0, :, :])  # Shape: (batch_size, h, w)
-
-    # Divergence calculation 
     divergence[:, 1:-1, 1:-1] = (
-        (flux_x_ip[:, 0, 1:-1, 1:] - flux_x_ip[:, 0, 1:-1, :-1]) / dx +
-        (flux_y_ip[:, 0, 1:, 1:-1] - flux_y_ip[:, 0, :-1, 1:-1]) / dy
+        (flux_x_ip[:, 0, 1:-1, 1:] - flux_x_im[:, 0, 1:-1, :-1]) / dx +
+        (flux_y_ip[:, 0, 1:, 1:-1] - flux_y_im[:, 0, :-1, 1:-1]) / dy
     )
 
     laplacian[:, 0, :, :] = divergence
-
     return laplacian
-
 
 
 def get_epsilon_tensor(field_shape, interface_mask, epsilon_in, epsilon_out):
