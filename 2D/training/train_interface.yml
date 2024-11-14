@@ -1,12 +1,12 @@
 general:
-    name_case: 'test_1.pth'
+    name_case: 'test.pth'
     data_dir: 'dataset/generated/random_data.npy' 
 
 
 arch:
     model: "UNet"
     arch_dir: 'Archs/Unet_ks3_rf100.yml'
-    type: 'UNet3'
+    type: 'UNet5'
 
 
 globals:                                    # Domain sizes and others, used to compute global attributes
