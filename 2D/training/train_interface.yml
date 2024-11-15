@@ -1,11 +1,11 @@
 general:
-    name_case: 'interface_1.pth'
+    name_case: 'interface_2.pth'
     data_dir: 'dataset/generated/random_data.npy' 
 
 
 arch:
     model: "UNet"
-    arch_dir: 'Unet_ks3_rf300.yml'
+    arch_dir: 'Unet_ks3_rf100.yml'
     type: 'UNet4'
 
 
@@ -34,7 +34,7 @@ loss:
         bound_weight: 5.0e+0                  # Weighting of the loss on the boundaries (float)
         lapl_weight: 1.0e+6
         interface_weight: 3.0e+4                # Weighting of the loss on the Laplacian (float)
-        optimizer_lr: 4.e-4   
+        optimizer_lr: 2.e-3   
 
 trainer:
     epochs: 30                            # Number of epochs
