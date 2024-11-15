@@ -113,7 +113,7 @@ output_array = output.detach().numpy()[0, 0, :, :] * ratio_max
 
 # Plots
 fig, axs = plt.subplots(2, 2, figsize=(12, 10))
-fig.suptitle('Interface Unet4 rf300', fontsize=16)
+fig.suptitle('Results', fontsize=16)
 
 # Plot solution
 img_input = axs[0, 0].imshow(solution, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')

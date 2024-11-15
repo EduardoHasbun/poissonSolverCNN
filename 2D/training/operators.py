@@ -27,9 +27,7 @@ class LaplacianLoss(nn.Module):
     def forward(self, output, data=None, data_norm=1.):
         laplacian = lapl(output / data_norm, self.dx, self.dy)
         return self.Lx**2 * self.Ly**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
-    
-
-    
+        
     
 class DirichletBoundaryLoss(nn.Module):
     def __init__(self, bound_weight):
@@ -127,7 +125,6 @@ class InterfaceBoundaryLoss(nn.Module):
         normal_derivate_inner, normal_derivate_outer = self.compute_gradients(subdomain_in_scaled, subdomain_out_scaled)
         loss += F.mse_loss((self.e_in * normal_derivate_inner), (self.e_out * normal_derivate_outer))
         return loss * self.weight
-
 
 
 

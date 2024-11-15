@@ -2,7 +2,6 @@ test2d_1 = Working model with domain 5.0, bound_weight: 5.0e+8, lapl_weight: 2.0
 test2d_2 = Working model with domain 0.1, bound_weight: 5.0e+8, lapl_weight: 2.0e+6, optimizer_lr: 5.e-3
 test2d_3 = Working model with domain 0.1, bound_weight: 5.0e+8, lapl_weight: 2.0e+6, optimizer_lr: 5.e-3, ratio = 0.2
 test2d_4 = Working model with domain 0.1, bound_weight: 5.0e+6, lapl_weight: 2.0e+2, optimizer_lr: 4.e-4
-test2d_5 = Configuration that works with gpu
 
 
 
@@ -10,10 +9,4 @@ test2d_5 = Configuration that works with gpu
 
 
 
-interface_1: Domain 5.0, radius 1.5, epsilon_inside 1.0, epsilon_outside 80, data / ratio, without interface_loss
-interface_2: Same as before, less optimizer and more weight in loss
-interface_3: Domain 5.0, radius 1.5, epsilon in 1.0, epsilon outside 80, normal data
-interface_4: Without epsilon in the laplacian but in the input data, also inputdata with ratio
-interface_14: Two models without datanorm in interface
-interface_15: Two models with datanorm in interface
-interface_16: Two models with same epsilon
+interface_1 = bound_weight: 5.0e+0, lapl_weight: 1.0e+6, optimizer_lr: 4.e-4, interface normalized, UNet4 rf300, -data in laplacian
