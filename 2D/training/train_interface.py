@@ -79,7 +79,7 @@ interface_loss = InterfaceBoundaryLoss(interface_weight, interface_boundary, int
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
 
-print(f"Model used: {arch_type}, {arch_model}")
+print(f"Model used: {cfg['arch']['arch_dir']}, {arch_type}")
 # Train loop
 for epoch in range (num_epochs):
     total_loss = 0
