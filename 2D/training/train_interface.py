@@ -23,7 +23,7 @@ interface_weight = cfg['loss']['args']['interface_weight']
 lr = cfg['loss']['args']['optimizer_lr']
 arch_model = cfg['arch']['model']
 arch_type = cfg['arch']['type']
-arch_dir = os.path.join('../../', cfg['arch']['arch_dir'])
+arch_dir = os.path.join('../../Archs/', cfg['arch']['arch_dir'])
 with open(arch_dir) as yaml_stream1:
     arch = yaml.safe_load(yaml_stream1)
 scales_data = arch.get(arch_type, {}).get('args', {}).get('scales', {})
@@ -78,6 +78,8 @@ interface_loss = InterfaceBoundaryLoss(interface_weight, interface_boundary, int
                                         epsilon_inside, epsilon_outside, dx, dy)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
+
+print(f"Model used: {arch_type}, {arch_model}")
 # Train loop
 for epoch in range (num_epochs):
     total_loss = 0
