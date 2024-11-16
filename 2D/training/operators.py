@@ -13,21 +13,30 @@ class LaplacianLossInterface(nn.Module):
         self.epsilon_inside = cfg['globals']['epsilon_inside']
         self.epsilon_outside = cfg['globals']['epsilon_outside']
 
-    def forward(self, output, data = None, data_norm = 1., mask = 1.):
+    def forward(self, output, data=None, data_norm=1., mask = 1.):
         laplacian = lapl_interface(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside)
-        loss = F.mse_loss(laplacian[:, 0, mask], -data[:, 0, mask]) * self.weight
+        loss = F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], data[:, 0, 1:-1, 1:-1]) * self.weight
         return loss
 
 class LaplacianLoss(nn.Module):
-    def __init__(self, cfg, lapl_weight):
+    def __init__(self, cfg, lapl_weight, e_in = 1, e_out = 1, interface = 1):
         super().__init__()
         self.weight = lapl_weight
-        self.dx = (cfg['globals']['xmax'] - cfg['globals']['xmin']) / cfg['globals']['nnx']
-        self.dy = (cfg['globals']['ymax'] - cfg['globals']['ymin']) / cfg['globals']['nny']
+        xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
+            cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['nnx'], cfg['globals']['nny']
+        self.Lx = xmax-xmin
+        self.Ly = ymax-ymin
+        self.dx = self.Lx/nnx
+        self.dy = self.Ly/nny
+        self.epsilon_inside = e_in
+        self.epsilon_outside = e_out
+        self.interface = interface
     def forward(self, output, data=None, data_norm=1.):
         laplacian = lapl(output / data_norm, self.dx, self.dy)
         return self.Lx**2 * self.Ly**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
-        
+    
+
+    
     
 class DirichletBoundaryLoss(nn.Module):
     def __init__(self, bound_weight):
@@ -74,9 +83,7 @@ class InterfaceBoundaryLoss(nn.Module):
         self.normal_x, self.normal_y = normal_x, normal_y
 
 
-    def compute_gradients(self, subdomain_in_o, subdomain_out_o, data_norm = 1.):
-        subdomain_in = subdomain_in_o / data_norm
-        subdomain_out = subdomain_out_o / data_norm
+    def compute_gradients(self, subdomain_in, subdomain_out):
         gradients_x_boundary_inner = torch.zeros_like(subdomain_in)
         gradients_x_boundary_outer = torch.zeros_like(subdomain_out)
         gradients_y_boundary_inner = torch.zeros_like(subdomain_in)
@@ -125,7 +132,6 @@ class InterfaceBoundaryLoss(nn.Module):
         normal_derivate_inner, normal_derivate_outer = self.compute_gradients(subdomain_in_scaled, subdomain_out_scaled)
         loss += F.mse_loss((self.e_in * normal_derivate_inner), (self.e_out * normal_derivate_outer))
         return loss * self.weight
-
 
 
 
@@ -204,7 +210,6 @@ def lapl_interface(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
     return laplacian
 
 
-
 def get_epsilon_tensor(field_shape, interface_mask, epsilon_in, epsilon_out):
     epsilon = torch.zeros(field_shape[2:], device=interface_mask.device)
     epsilon[interface_mask] = epsilon_in
@@ -214,6 +219,8 @@ def get_epsilon_tensor(field_shape, interface_mask, epsilon_in, epsilon_out):
 
 def harmonic_mean(a, b):
     return 2 * a * b / (a + b)
+
+
 
 def ratio_potrhs(alpha, Lx, Ly):
     return alpha / (np.pi**2 / 4)**2 / (1 / Lx**2 + 1 / Ly**2)
