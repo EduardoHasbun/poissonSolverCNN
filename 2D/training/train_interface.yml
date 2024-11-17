@@ -1,5 +1,5 @@
 general:
-    name_case: 'interface_5.pth'
+    name_case: 'interface_6.pth'
     data_dir: 'dataset/generated/random_data.npy' 
 
 
@@ -38,7 +38,6 @@ loss:
 
 trainer:
     epochs: 30                            # Number of epochs
-
 
 
 
