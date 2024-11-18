@@ -1,6 +1,6 @@
 general:
-  case_name: test
-  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/trained_models/test.pth'
+  case_name: interface_10
+  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/trained_models/interface_10.pth'
 
 arch:
     arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf100.yml'
