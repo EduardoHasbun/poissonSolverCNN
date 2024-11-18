@@ -10,3 +10,4 @@ test2d_4 = Working model with domain 0.1, bound_weight: 5.0e+6, lapl_weight: 2.0
 
 
 interface_1 = bound_weight: 5.0e+0, lapl_weight: 1.0e+6, optimizer_lr: 4.e-4, interface normalized, UNet4 rf300, -data in laplacian
+interface_2 = bound_weight: 5.0e+0, lapl_weight: 1.0e+6, optimizer_lr: 2.e-3, interface normalized, UNet4 rf100, -data in laplacian

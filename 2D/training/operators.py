@@ -4,6 +4,12 @@ import torch.nn.functional as F
 import numpy as np
 
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import numpy as np
+
+
 class LaplacianLossInterface(nn.Module):
     def __init__(self, cfg, lapl_weight):
         super().__init__()
@@ -15,7 +21,7 @@ class LaplacianLossInterface(nn.Module):
 
     def forward(self, output, data = None, data_norm = 1., mask = 1.):
         laplacian = lapl_interface(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside)
-        loss = F.mse_loss(laplacian[:, 0, mask], -data[:, 0, mask]) * self.weight
+        loss = F.mse_loss(laplacian[:, 0, mask], data[:, 0, mask]) * self.weight
         return loss
 
 class LaplacianLoss(nn.Module):
@@ -180,27 +186,29 @@ def lapl_interface(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
     epsilon = epsilon.unsqueeze(0).unsqueeze(0)  # Shape: (1, 1, h, w)
     epsilon = epsilon.expand(batch_size, 1, h, w)  # Shape: (batch_size, 1, h, w)
 
-    # Compute epsilon at cell faces using harmonic mean in both directions
-    epsilon_x_ip = harmonic_mean(epsilon[:, :, :, :-1], epsilon[:, :, :, 1:])  # epsilon_x on the right
-    epsilon_x_im = harmonic_mean(epsilon[:, :, :, 1:], epsilon[:, :, :, :-1])  # epsilon_x on the left
-    epsilon_y_ip = harmonic_mean(epsilon[:, :, :-1, :], epsilon[:, :, 1:, :])  # epsilon_y above
-    epsilon_y_im = harmonic_mean(epsilon[:, :, 1:, :], epsilon[:, :, :-1, :])  # epsilon_y below
+    # Compute epsilon at cell faces using harmonic mean
+    epsilon_x_ip = harmonic_mean(epsilon[:, :, :, :-1], epsilon[:, :, :, 1:])  # Shape: (batch_size, 1, h, w-1)
+    epsilon_y_ip = harmonic_mean(epsilon[:, :, :-1, :], epsilon[:, :, 1:, :])  # Shape: (batch_size, 1, h-1, w)
 
-    # Compute flux differences symmetrically
-    flux_x_ip = epsilon_x_ip * (field[:, :, :, 1:] - field[:, :, :, :-1]) / dx  # flux to the right
-    flux_x_im = epsilon_x_im * (field[:, :, :, :-1] - field[:, :, :, 1:]) / dx  # flux to the left
-    flux_y_ip = epsilon_y_ip * (field[:, :, 1:, :] - field[:, :, :-1, :]) / dy  # flux above
-    flux_y_im = epsilon_y_im * (field[:, :, :-1, :] - field[:, :, 1:, :]) / dy  # flux below
+    # Compute flux differences in x-direction
+    flux_x_ip = epsilon_x_ip * (field[:, :, :, 1:] - field[:, :, :, :-1]) / dx  # Shape: (batch_size, 1, h, w-1)
 
-    # Initialize divergence with symmetric flux differences
+    # Compute flux differences in y-direction
+    flux_y_ip = epsilon_y_ip * (field[:, :, 1:, :] - field[:, :, :-1, :]) / dy  # Shape: (batch_size, 1, h-1, w)
+
+    # Initialize divergence
     divergence = torch.zeros_like(field[:, 0, :, :])  # Shape: (batch_size, h, w)
+
+    # Divergence calculation 
     divergence[:, 1:-1, 1:-1] = (
-        (flux_x_ip[:, 0, 1:-1, 1:] - flux_x_im[:, 0, 1:-1, :-1]) / dx +
-        (flux_y_ip[:, 0, 1:, 1:-1] - flux_y_im[:, 0, :-1, 1:-1]) / dy
+        (flux_x_ip[:, 0, 1:-1, 1:] - flux_x_ip[:, 0, 1:-1, :-1]) / dx +
+        (flux_y_ip[:, 0, 1:, 1:-1] - flux_y_ip[:, 0, :-1, 1:-1]) / dy
     )
 
     laplacian[:, 0, :, :] = divergence
+
     return laplacian
+
 
 
 def get_epsilon_tensor(field_shape, interface_mask, epsilon_in, epsilon_out):
