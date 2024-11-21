@@ -350,7 +350,7 @@ class UNet3D_Submodel(nn.Module):
                 
         return x
 
-class UNet3D(nn.Module):
+class UNetInterface(nn.Module):
     def __init__(self, scales, kernel_sizes, input_res, inner_mask, outer_mask,
                     padding_mode='zeros', upsample_mode='nearest'):
         super(UNet3D, self).__init__()

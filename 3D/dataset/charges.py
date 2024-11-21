@@ -18,7 +18,7 @@ n_fields = cfg['n_it']
 nits = cfg['n_it']
 min_charges_per_field = cfg.get('min_charges_per_field', 1)
 max_charges_per_field = cfg.get('max_charges_per_field', 3)
-plotting = True
+plotting = False
 
 if __name__ == '__main__':
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
