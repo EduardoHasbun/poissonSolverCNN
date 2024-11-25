@@ -16,7 +16,7 @@ class LaplacianLossInterface(nn.Module):
         
 
     def forward(self, output, data = None, data_norm = 1., mask = 1.):
-        laplacian = lapl_interface(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside)
+        laplacian = lapl_interface(output / data_norm, self.dx, self.dy, self.dz, mask, self.epsilon_inside, self.epsilon_outside)
         loss = F.mse_loss(laplacian[:, 0, mask], data[:, 0, mask]) * self.weight
         return loss
     
@@ -81,12 +81,22 @@ class DirichletBoundaryLossFunction(nn.Module):
 
 class InsideLoss(nn.Module):
     def __init__(self, cfg, inside_weight):
-        super(InsideLoss, self).__init__()  # Call the parent class constructor
+        super(InsideLoss, self).__init__()  
         self.nnx, self.nny, self.nnz = cfg['globals']['nnx'], cfg['globals']['nny'], cfg['globals']['nnz']
         self.weight = inside_weight
 
     def forward(self, output, target):
         return F.mse_loss(output[:, 0, 1:-1, 1:-1, 1:-1], target[:, 0, 1:-1, 1:-1, 1:-1]) * self.weight
+
+
+class InsideLossInterface(nn.Module):
+    def __init__(self, cfg, inside_weight):
+        super(InsideLossInterface, self).__init__()  
+        self.nnx, self.nny, self.nnz = cfg['globals']['nnx'], cfg['globals']['nny'], cfg['globals']['nnz']
+        self.weight = inside_weight
+
+    def forward(self, output, target, mask):
+        return F.mse_loss(output[:, 0, mask], target[:, 0, mask]) * self.weight
 
 
 class InterfaceBoundaryLoss(nn.Module):
@@ -142,7 +152,7 @@ class InterfaceBoundaryLoss(nn.Module):
             (subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx] - left_inner) / self.dx, 
             (right_inner - subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx]) / self.dx)
         
-        gradients_x_boundary_outer[:, 0, self.x_idx, self.y_idx] = torch.where(self.normal_x > 0, 
+        gradients_x_boundary_outer[:, 0, self.x_idx, self.y_idx, self.z_idx] = torch.where(self.normal_x > 0, 
             (-subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] + right_outer) / self.dx, 
             (subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] - left_outer) / self.dx)
 

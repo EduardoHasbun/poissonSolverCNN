@@ -16,7 +16,7 @@ with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
 
 nits = cfg['n_it']
-plotting = True  # Enable plotting
+plotting = True # Enable plotting
 
 # Analytical solution for spherical potentials
 def an_spherical(q, xq, E_1, E_2, E_0, R, N):

@@ -135,9 +135,6 @@ class UNet3D(nn.Module):
 
 
 #############################    MSNET   ########################################
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
 
 class _ConvBlock3D(nn.Module):
@@ -224,68 +221,19 @@ class MSNet3D(nn.Module):
 
 #############################    UNET INTERFACE   ########################################
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
-class CustomPadLayer3D(nn.Module):
-    def __init__(self, kernel_size):
-        super(CustomPadLayer3D, self).__init__()
-        self.padx = int((kernel_size - 1) / 2)
-        self.pady = int((kernel_size - 1) / 2)
-        self.padz = int((kernel_size - 1) / 2)
-
-    def forward(self, x):
-        x = F.pad(x, (self.padx, self.padx, self.pady, self.pady, self.padz, self.padz), "constant", 0)
-        return x
-
-class ConvBlock3D(nn.Module):
-    def __init__(self, fmaps, block_type, kernel_size, padding_mode='zeros', upsample_mode='nearest', out_size=None):
-        super(ConvBlock3D, self).__init__()
-        layers = list()
-
-        # Apply pooling on down and bottom blocks
-        if block_type == 'down' or block_type == 'bottom':
-            layers.append(nn.MaxPool3d(2))
-
-        # Append all the specified layers
-        for i in range(len(fmaps) - 1):
-            if padding_mode == 'custom':
-                layers.append(CustomPadLayer3D(kernel_size))
-                layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
-                    kernel_size=kernel_size, padding=0, 
-                    padding_mode='zeros'))
-            else:
-                layers.append(nn.Conv3d(fmaps[i], fmaps[i + 1], 
-                    kernel_size=kernel_size, 
-                    padding=(int((kernel_size - 1) / 2), int((kernel_size - 1) / 2), int((kernel_size - 1) / 2)), 
-                    padding_mode=padding_mode))
-            # No ReLu at the very last layer
-            if i != len(fmaps) - 2 or block_type != 'out':
-                layers.append(nn.ReLU())
-
-        # Apply either Upsample or deconvolution
-        if block_type == 'up' or block_type == 'bottom':
-            layers.append(nn.Upsample(out_size, mode=upsample_mode))
-
-        # Build the sequence of layers
-        self.encode = nn.Sequential(*layers)
-
-    def forward(self, x):
-        return self.encode(x)
-
-class UNet3D_Submodel(nn.Module):
+class UNet_Submodel3D(nn.Module):
     def __init__(self, scales, kernel_sizes, input_res, 
                     padding_mode='zeros', upsample_mode='nearest'):
-        super(UNet3D_Submodel, self).__init__()
+        super(UNet_Submodel3D, self).__init__()
         self.scales = scales
         self.max_scale = len(scales) - 1
         if isinstance(kernel_sizes, int):   
             self.kernel_sizes = [kernel_sizes] * len(scales)
         else:   
             self.kernel_sizes = kernel_sizes
-
-        # create down_blocks, bottom_fmaps and up_blocks
+        
+        # Create down_blocks, bottom_fmaps, and up_blocks
         in_fmaps = self.scales[0][0]
 
         down_blocks = list()
@@ -299,14 +247,14 @@ class UNet3D_Submodel(nn.Module):
             up_blocks.append(self.scales[local_depth][1])
         
         out_fmaps = self.scales[0][1]
-
-        # For upsample the list of resolution is needed when 
+        
+        # For upsample, the list of resolution is needed when 
         # the number of points is not a power of 2
         if isinstance(input_res, list):
             self.input_res = tuple(input_res)
-            list_res = [(int(input_res[0] / 2**i), int(input_res[1] / 2**i)) for i in range(self.max_scale)]
+            list_res = [(int(input_res[0] / 2**i), int(input_res[1] / 2**i), int(input_res[2] / 2**i)) for i in range(self.max_scale)]
         else:
-            self.input_res = tuple([input_res, input_res])
+            self.input_res = tuple([input_res, input_res, input_res])
             list_res = [int(input_res / 2**i) for i in range(self.max_scale)]
 
         # Entry layer
@@ -322,17 +270,18 @@ class UNet3D_Submodel(nn.Module):
         self.ConvBottom = ConvBlock3D(bottom_fmaps, 'bottom', self.kernel_sizes[-1],
                 padding_mode=padding_mode, upsample_mode=upsample_mode, out_size=list_res.pop())
 
-        # Intemediate layers up (UpSample/Deconv at the end)
+        # Intermediate layers up (UpSample/Deconv at the end)
         self.ConvsUp = nn.ModuleList()
         for iup, up_fmaps in enumerate(up_blocks):
             self.ConvsUp.append(ConvBlock3D(up_fmaps, 'up', self.kernel_sizes[-2 - iup], 
                 padding_mode=padding_mode, upsample_mode=upsample_mode, out_size=list_res.pop()))
-
+        
         # Out layer
         self.ConvsUp.append(ConvBlock3D(out_fmaps, 'out', self.kernel_sizes[0],
                 padding_mode=padding_mode))
 
     def forward(self, x):
+        # List of the temporary x that are used for linking with the up branch
         inputs_down = list()
 
         # Apply the down loop
@@ -353,18 +302,18 @@ class UNet3D_Submodel(nn.Module):
 class UNetInterface(nn.Module):
     def __init__(self, scales, kernel_sizes, input_res, inner_mask, outer_mask,
                     padding_mode='zeros', upsample_mode='nearest'):
-        super(UNet3D, self).__init__()
+        super(UNetInterface, self).__init__()
         self.inner_mask = inner_mask
         self.outer_mask = outer_mask
 
-        # Crear dos submodelos para cada subdominio
-        self.submodel1 = UNet3D_Submodel(scales, kernel_sizes, input_res, 
+        # Create the 2 submodels for each subdomain
+        self.submodel1 = UNet_Submodel3D(scales, kernel_sizes, input_res, 
                                          padding_mode, upsample_mode)
-        self.submodel2 = UNet3D_Submodel(scales, kernel_sizes, input_res, 
+        self.submodel2 = UNet_Submodel3D(scales, kernel_sizes, input_res, 
                                          padding_mode, upsample_mode)
 
     def forward(self, x):
-        x1, x2 = x * self.inner_mask, x * (self.outer_mask) 
+        x1, x2 = x * self.inner_mask, x * (self.outer_mask) # Divide the domain into 2 parts
 
         out1 = self.submodel1(x1)
         out2 = self.submodel2(x2)
