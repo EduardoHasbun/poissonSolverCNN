@@ -1,32 +1,19 @@
-n_it: 4000
-n_charges: 1
-output_dir: 'C:\Codigos\poissonSolverCNN\3D\dataset\generated\'
-
+n_iterations: 5000
+plotting: False
+output_dir: "generated"
 domain:
-      geom: 'cartesian'
-      mat: 'cart_dirichlet'
-      bcs: 'dirichlet'
-      xmin: 0.0
-      xmax: 5.0
-      nnx: 51
-      nny: 51
-      nnz: 51
-      ymin: 0.0
-      ymax: 5.0
-      zmin: 0.0
-      zmax: 5.0
-      interface_center:
-            x: 2.5
-            y: 2.5
-            z: 2.5
-      interface_radius: 1.5
-
-sphere:
-      radius: 1.5
-      epsilon_inside: 1.0
-      epsilon_outside: 80.0
-      epsilon_0: 1.0
-      harmonics: 15
-
-charges: 
-      n_charges: 1
+  xmin: -2.5
+  xmax: 2.5
+  nnx: 50
+  ymin: -2.5
+  ymax: 2.5
+  nny: 50
+  zmin: -2.5
+  zmax: 2.5
+  nnz: 50
+solver:
+  epsilon_1: 80
+  epsilon_2: 1
+  kappa: 0.1
+  charges: [1.0]
+  R_mol: 1.0
