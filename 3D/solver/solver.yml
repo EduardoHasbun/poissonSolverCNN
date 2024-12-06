@@ -1,39 +1,27 @@
+general:
+  case_name: interface_12
+  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/trained_models/interface_12.pth'
 
-params:
-  geom: 'xy'
+arch:
+    arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf100.yml'
+    type: 'UNet4'
 
 init:
-  # args : [1.0e+1, 5.0e-3, 2.5e-3, 5.0e-3, 1.0e-3, 1.0e-3, 1.0e-3,   #2 charges along y axis
-  #         1.0e+1, 2.50e-3, 4.5e-3, 5.0e-3, 1.0e-3, 1.0e-3, 1.0e-3]
-  args : [1.8e+1, 2.5, 2.5, 2.5, 0.01, 0.01, 0.01] #charge in the middle
-  # args : [1.0e+1, 1.0e-3, 1.0e-3, 5.0e-3, 1.0e-3, 1.0e-3, 1.0e-3] #one charge moved
+  func: 'gaussians'
+  # args : [1.0e+2, 2.3, 2.3, 1.0, 1.0,
+  #              1.0e+2, 2.6,  2.6, 1.0, 1.0,
+  #              1.0e+11, 2.0, 2.4, 1.0, 1.0]
+  args : [1.8e+2, 2.5, 2.5, 0.75, 0.75]   
+
 
 mesh:
   xmin: 0
   ymin: 0
-  zmin: 0
   xmax: 5
   ymax: 5
-  zmax: 5
-  nnx: 35
-  nny: 35
-  nnz: 35
-  interface_center:
-        x: 2.5
-        y: 2.5
-        z: 2.5
-  interface_radius: 1.5
-  epsilon_inside: 1.0
-  epsilon_outside: 80.0
-    
+  nnx: 101
+  nny: 101
+
+  
 
 
-arch: 
-    type: UNet
-    scales:
-        scale_0: [[1, 30, 20], [40, 30, 1]]
-        scale_1: [[20, 20, 20], [40, 20, 20]]
-        scale_2: [[20, 16, 16, 20], [40, 16, 16, 20]]
-        scale_3: [[20, 20, 20], [40, 20, 20]]
-        scale_4: [20, 60, 20]
-    kernel_sizes: 3
