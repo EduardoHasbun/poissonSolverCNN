@@ -1,4 +1,4 @@
-n_iterations: 1
+n_iterations: 5000
 plotting: True
 output_dir: "generated"
 domain:
