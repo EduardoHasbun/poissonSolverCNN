@@ -1,5 +1,5 @@
-n_iterations: 5000
-plotting: False
+n_iterations: 1
+plotting: True
 output_dir: "generated"
 domain:
   xmin: -2.5
@@ -12,8 +12,8 @@ domain:
   zmax: 2.5
   nnz: 50
 solver:
-  epsilon_1: 80
-  epsilon_2: 1
-  kappa: 0.1
+  epsilon_1: 1
+  epsilon_2: 80
+  kappa: 0
   charges: [1.0]
   R_mol: 1.0
