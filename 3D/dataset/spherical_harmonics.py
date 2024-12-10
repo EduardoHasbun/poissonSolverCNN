@@ -108,4 +108,5 @@ if __name__ == '__main__':
         plt.xlabel('X-axis')
         plt.ylabel('Y-axis')
         plt.title('Central Slice of the Potential Field')
-        plt.show()
+        plt.savefig(os.path.join(output_dir, 'plot.png'))
+

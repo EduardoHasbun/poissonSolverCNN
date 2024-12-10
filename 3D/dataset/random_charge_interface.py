@@ -1,8 +1,11 @@
 import numpy as np
+from numpy import pi
 from scipy import special as sp
 import matplotlib.pyplot as plt
 
-def Spherical_Harmonics(x, q, xq, E_1, E_2, kappa, R, flag = 'molecule', N=5):
+
+
+def Spherical_Harmonics(x, q, xq, E_1, E_2, kappa, flag, R=None, N=20):
     PHI = np.zeros(len(x))
 
     for K in range(len(x)):
@@ -37,8 +40,9 @@ def Spherical_Harmonics(x, q, xq, E_1, E_2, kappa, R, flag = 'molecule', N=5):
                     phi += Anm * rho**(-n-1)* np.exp(-kappa*rho) * get_K(kappa*rho,n) * sp.sph_harm(m, n, azim, zenit)
 
         PHI[K] = np.real(phi)
-        
-    return PHI
+    
+    return PHI 
+
 
 def get_K(x, n):
     K = 0.0
@@ -54,67 +58,24 @@ def get_K(x, n):
         )
     return K
 
-# -------------------------------
-# Example usage: Single point charge at the origin in 3D
-if __name__ == "__main__":
-    # Define a single point charge at the origin
-    q = np.array([1.0])    # single positive charge
-    xq = np.array([[0.0, 0.0, 0.0]])  # at origin
-
-    # Dielectric parameters and other constants
-    E_1 = 1.0  # Permittivity inside (e.g. water)
-    E_2 = 80.0   # Permittivity outside
-    kappa = 0.0 # No screening
-    R = 1.0     # Some radius parameter for boundary conditions
-    flag = 'molecule' # Evaluate as if inside the molecule region
-
-    # Create a 3D grid: We'll take a cube from -1 to 1 in x, y, z
-    Nx = 50
-    Ny = 50
-    Nz = 50
-    x_vals = np.linspace(-3.0, 3.0, Nx)
-    y_vals = np.linspace(-3.0, 3.0, Ny)
-    z_vals = np.linspace(-3.0, 3.0, Nz)
-
-    # Create all 3D points
-    X, Y, Z = np.meshgrid(x_vals, y_vals, z_vals, indexing='ij')  # shape: (Nx, Ny, Nz)
-    points = np.column_stack([X.ravel(), Y.ravel(), Z.ravel()])
-
-    # Compute the potential in 3D
-    PHI = Spherical_Harmonics(points, q, xq, E_1, E_2, kappa, R, flag = flag)
-    PHI_3D = PHI.reshape((Nx, Ny, Nz))
 
 
-    # Find index closest to zero
-    ix0 = Nx//2
-    iy0 = Ny//2
-    iz0 = Nz//2
+q = np.array([1.0]) 
+xq = np.array([[0.0, 0.0, 0.0]])  
+E_1, E_2, E_0 = 1.0, 80.0, 1.0  
+R = 1.0  
+N = 10  
+kappa = 0.1
+flag = 'molecule'
 
-    fig, axes = plt.subplots(1, 3, figsize=(15,5))
+x = np.linspace(-2.5, 2.5, 50)
+y = np.linspace(-2.5, 2.5, 50)
+z = np.linspace(-2.5, 2.5, 50)
+X, Y, Z = np.meshgrid(x, y, z)
 
-    # Slice in xy-plane at z=0
-    c_xy = axes[0].contourf(x_vals, y_vals, PHI_3D[:,:,iz0].T, 50, cmap='RdBu_r')
-    axes[0].set_title('z=0 plane')
-    axes[0].set_xlabel('x')
-    axes[0].set_ylabel('y')
-    axes[0].set_aspect('equal')
-    plt.colorbar(c_xy, ax=axes[0])
+points = np.stack([X.ravel(), Y.ravel(), Z.ravel()], axis=1)
 
-    # Slice in xz-plane at y=0
-    c_xz = axes[1].contourf(x_vals, z_vals, PHI_3D[:,iy0,:].T, 50, cmap='RdBu_r')
-    axes[1].set_title('y=0 plane')
-    axes[1].set_xlabel('x')
-    axes[1].set_ylabel('z')
-    axes[1].set_aspect('equal')
-    plt.colorbar(c_xz, ax=axes[1])
+potentials = Spherical_Harmonics(points, q, xq, E_1, E_2, kappa, flag, R, N)
 
-    # Slice in yz-plane at x=0
-    c_yz = axes[2].contourf(y_vals, z_vals, PHI_3D[ix0,:,:].T, 50, cmap='RdBu_r')
-    axes[2].set_title('x=0 plane')
-    axes[2].set_xlabel('y')
-    axes[2].set_ylabel('z')
-    axes[2].set_aspect('equal')
-    plt.colorbar(c_yz, ax=axes[2])
-
-    plt.tight_layout()
-    plt.show()
+plt.imshow(potentials[:, :, 25])
+plt.savefig('pl.npg')
