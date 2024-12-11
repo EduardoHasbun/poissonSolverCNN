@@ -2,14 +2,14 @@ n_it: 5000
 plotting: True
 output_dir: "./generated"
 domain:
-  xmin: 0.0
-  xmax: 5.0
+  xmin: -2.5
+  xmax: 2.5
   nnx: 51
-  ymin: 0.0
-  ymax: 5.0
+  ymin: -2.5
+  ymax: 2.5
   nny: 51
-  zmin: 0.0
-  zmax: 5.0
+  zmin: -2.5
+  zmax: 2.5
   nnz: 51
 solver:
   epsilon_1: 1.0
