@@ -109,7 +109,7 @@ class BornIonSolver:
         return y
 
 # Set parameters
-alpha = 0.38
+alpha = 0.15
 ratio_max = op.ratio_potrhs(alpha, Lx, Ly, Lz)
 epsilon_in = cfg['mesh']['epsilon_in']
 epsilon_out = cfg['mesh']['epsilon_out']
@@ -118,7 +118,7 @@ qs = [cfg['init']['args'][0]]  # Assuming init args has the charge value
 R_mol = interface_radius
 
 # Create BornIonSolver instance
-born_solver = BornIonSolver(epsilon_1=epsilon_in, epsilon_2=epsilon_out, kappa=kappa, qs=qs, R_mol=R_mol) 
+born_solver = BornIonSolver(epsilon_1=epsilon_in, epsilon_2=epsilon_out, kappa=kappa, qs=qs, R_mol=R_mol)
 
 # Compute radial distances
 r = np.sqrt((X_np - interface_center[0])**2 + (Y_np - interface_center[1])**2 + (Z_np - interface_center[2])**2)
@@ -129,7 +129,7 @@ solution = born_solver.analytic_Born_Ion(r)
 # Prepare input data
 input_data = charges(X_np, Y_np, Z_np, cfg['init']['args'])
 input_data = input_data[np.newaxis, np.newaxis, :, :]
-input_data = torch.from_numpy(input_data).float() * ratio_max
+input_data = torch.from_numpy(input_data).float()
 
 # Create Model
 model = UNetInterface(scales, kernel_sizes=kernel_size, input_res=nnx, inner_mask=inner_mask, outer_mask=outer_mask)
@@ -142,7 +142,7 @@ out_in, out_out = model(input_data)
 output = torch.zeros_like(out_in)
 output[0, 0, interface_mask] = out_in[0, 0, interface_mask]
 output[0, 0, ~interface_mask] = out_out[0, 0, ~interface_mask]
-output_array = output.detach().numpy()[0, 0, :, :] * -ratio_max
+output_array = output.detach().numpy()[0, 0, :, :] * ratio_max
 
 # Plots
 fig, axs = plt.subplots(2, 2, figsize=(12, 10))
@@ -151,14 +151,14 @@ fig.suptitle('Results', fontsize=16)
 # Plot analytical solution
 vmin = np.min(solution)
 vmax = np.max(solution)
-img_input = axs[0, 0].imshow(solution[:, :, nnz // 2], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)
+img_input = axs[0, 0].imshow(solution[:, :, nnz // 2], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[0, 0].set_title('Analytical Solution')
 axs[0, 0].set_xlabel('X')
 axs[0, 0].set_ylabel('Y')
 cbar_input = plt.colorbar(img_input, ax=axs[0, 0], label='Magnitude')
 
 # Plot Output
-img_output = axs[0, 1].imshow(output_array[:, :, nnz // 2], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)
+img_output = axs[0, 1].imshow(output_array[:, :, nnz // 2], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin = vmin, vmax = vmax)
 axs[0, 1].set_title('Output')
 axs[0, 1].set_xlabel('X')
 axs[0, 1].set_ylabel('Y')

@@ -1,5 +1,5 @@
 general:
-    name_case: 'interface3d_3'
+    name_case: 'interface3d_1'
     data_dir: 'dataset/generated/random.npy' 
 
 
@@ -36,11 +36,11 @@ data_loader:
 loss:
     type: laplacian
     args:
-        bound_weight: 1.0e+0
+        bound_weight: 1.0e-2
         interface_weight: 5.0e+1               # Weighting of the loss on the boundaries (float)
         lapl_weight: 2.0e+4                # Weighting of the loss on the Laplacian (float)
         optimizer_lr: 4.e-4 
-        inside_weight: 1.0e+9
+        inside_weight: 9.0e+9
 
 trainer:
-    epochs: 50                              # Number of epochs
+    epochs: 100                              # Number of epochs

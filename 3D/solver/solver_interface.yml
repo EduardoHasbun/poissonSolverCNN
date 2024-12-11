@@ -1,6 +1,6 @@
 general:
-  case_name: interface3d_2
-  model_dir: 'C:\Codigos\poissonSolverCNN\3D\training\trained_models\interface3d_2'
+  case_name: interface3d_1
+  model_dir: 'C:\Codigos\poissonSolverCNN\3D\training\trained_models\interface3d_1'
 
 arch:
     arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf200.yml'
@@ -15,20 +15,20 @@ init:
 
 
 mesh:
-  xmin: -2.5
-  ymin: -2.5
-  zmin: -2.5
-  xmax: 2.5
-  ymax: 2.5
-  zmax: 2.5
+  xmin: 0.0
+  ymin: 0.0
+  zmin: 0.0
+  xmax: 5.0
+  ymax: 5.0
+  zmax: 5.0
   nnx: 51
   nny: 51
   nnz: 51
   interface_center:
-    x: 0
-    y: 0
-    z: 0
-  interface_radius: 1
+    x: 2.5
+    y: 2.5
+    z: 2.5
+  interface_radius: 1.5
   epsilon_in: 1
   epsilon_out: 80
   
