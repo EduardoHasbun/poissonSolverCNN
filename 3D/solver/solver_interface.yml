@@ -21,9 +21,9 @@ mesh:
   xmax: 2.5
   ymax: 2.5
   zmax: 2.5
-  nnx: 50
-  nny: 50
-  nnz: 50
+  nnx: 51
+  nny: 51
+  nnz: 51
   interface_center:
     x: 0
     y: 0

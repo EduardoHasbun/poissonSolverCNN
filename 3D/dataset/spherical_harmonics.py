@@ -16,7 +16,7 @@ with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
 
 # Parameters
-nits = cfg['n_iterations']
+nits = cfg['n_it']
 plotting = cfg['plotting']
 output_dir = cfg['output_dir']
 os.makedirs(output_dir, exist_ok=True)

@@ -44,9 +44,6 @@ data_dir= os.path.join(save_dir, '..', 'dataset', 'generated', 'rhs.npy')
 data_dir_potentials = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.npy')
 save_dir = os.path.join(save_dir, 'trained_models')
 case_name = cfg['general']['name_case']
-plots_dir = os.path.join('generated', 'plots')
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
 
 
 # Parameters to Nomalize
