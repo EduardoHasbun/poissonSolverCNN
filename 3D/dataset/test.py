@@ -3,9 +3,8 @@ from scipy import special as sp
 import matplotlib.pyplot as plt
 
 
+def Spherical_Harmonics(x, y, z, points, q, xq, E_1, E_2, kappa, R, labels, N = 20):
 
-def Spherical_Harmonics(x, y, z, q, xq, E_1, E_2, kappa, R, labels, points, N=20):
-    
     PHI = np.zeros(len(points))
 
     for K in range(len(points)):
@@ -13,7 +12,7 @@ def Spherical_Harmonics(x, y, z, q, xq, E_1, E_2, kappa, R, labels, points, N=20
         ix = int((px - x[0]) / (x[1] - x[0]))  # Convert x to grid index
         iy = int((py - y[0]) / (y[1] - y[0]))  # Convert y to grid index
         iz = int((pz - z[0]) / (z[1] - z[0]))  # Convert z to grid index
-        rho = np.sqrt(np.sum(points[K, :] ** 2))
+        rho = np.sqrt(np.sum(points[K,:] ** 2))
         zenit = np.arccos(points[K, 2] / rho)
         azim = np.arctan2(points[K, 1], points[K, 0])
 
@@ -24,37 +23,27 @@ def Spherical_Harmonics(x, y, z, q, xq, E_1, E_2, kappa, R, labels, points, N=20
 
                 Enm = 0.0
                 for k in range(len(q)):
-                    rho_k = np.sqrt(np.sum(xq[k, :] ** 2))
+                    rho_k = np.sqrt(np.sum(xq[k,:] ** 2))
                     zenit_k = np.arccos(xq[k, 2] / rho_k)
                     azim_k = np.arctan2(xq[k, 1], xq[k, 0])
 
                     Enm += (
                         q[k]
                         * rho_k**n
-                        * 4 * np.pi / (2 * n + 1)
+                        *4*np.pi/(2*n+1)
                         * sp.sph_harm(m, n, -azim_k, zenit_k)
                     )
 
-                Anm = Enm * (1 / (4 * np.pi)) * ((2 * n + 1)) / (
-                    np.exp(-kappa * R) * ((E_1 - E_2) * n * get_K(kappa * R, n) + E_2 * (2 * n + 1) * get_K(kappa * R, n + 1))
-                )
-                Bnm = 1 / (R ** (2 * n + 1)) * (
-                    np.exp(-kappa * R) * get_K(kappa * R, n) * Anm - 1 / (4 * np.pi * E_1) * Enm
-                )
-
-                if labels[ix, iy, iz] == "molecule":
+                Anm = Enm * (1/(4*np.pi)) * ((2*n+1)) / (np.exp(-kappa*R)* ((E_1-E_2)*n*get_K(kappa*R,n)+E_2*(2*n+1)*get_K(kappa*R,n+1)))
+                Bnm = 1/(R**(2*n+1))*(np.exp(-kappa*R)*get_K(kappa*R,n)*Anm - 1/(4*np.pi*E_1)*Enm)
+                
+                if labels[ix, iy, iz]=='molecule':
                     phi += Bnm * rho**n * sp.sph_harm(m, n, azim, zenit)
-                if labels[ix, iy, iz] == "solvent":
-                    phi += (
-                        Anm
-                        * rho ** (-n - 1)
-                        * np.exp(-kappa * rho)
-                        * get_K(kappa * rho, n)
-                        * sp.sph_harm(m, n, azim, zenit)
-                    )
+                if labels[ix, iy, iz]=='solvent':
+                    phi += Anm * rho**(-n-1)* np.exp(-kappa*rho) * get_K(kappa*rho,n) * sp.sph_harm(m, n, azim, zenit)
 
         PHI[K] = np.real(phi)
-
+    
     return PHI
 
 
@@ -72,9 +61,10 @@ def get_K(x, n):
         )
     return K
 
+
 # General Parameters
-q = np.array([1.0, -1.0])
-xq = np.array([[0.45, 0.0e+00, 0.0e+00], [-0.45, 0.0e+00, 0.0e+00]])
+q = np.array([[1.0]])
+xq = np.array([[0.45, 0.0e+00, 0.0e+00]])
 E_1 = 1
 E_2 = 80
 kappa = 0.125
@@ -91,19 +81,16 @@ points = np.column_stack((X.ravel(), Y.ravel(), Z.ravel()))
 interface_center = [0, 0, 0]
 interface_mask = (X - interface_center[0]) ** 2 + (Y - interface_center[1]) ** 2 + (Z - interface_center[2]) ** 2 <= R ** 2
 labels = np.where(interface_mask, "molecule", "solvent")
-print(labels[0,0,0])
 
-# Call the function with x, y, z as arguments
-field = Spherical_Harmonics(x, y, z, q, xq, E_1, E_2, kappa, R, labels, points, N)
+# Call the function
+field = Spherical_Harmonics(x, y, z, points, q, xq, E_1, E_2, kappa, R, labels, N)
 
 # Plot the results
 plt.imshow(field.reshape((grid_size, grid_size, grid_size))[:, :, grid_size // 2], extent=(-1, 1, -1, 1))
-plt.show()
+plt.savefig('imshow.png')
 
 plt.plot(field.reshape((grid_size, grid_size, grid_size))[:, grid_size // 2, grid_size // 2])
-plt.show()
-
-
+plt.savefig('line.png')
 
 
 

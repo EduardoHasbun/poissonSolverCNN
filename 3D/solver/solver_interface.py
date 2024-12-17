@@ -109,7 +109,7 @@ class BornIonSolver:
         return y
 
 # Set parameters
-alpha = 0.15
+alpha = 0.1
 ratio_max = op.ratio_potrhs(alpha, Lx, Ly, Lz)
 epsilon_in = cfg['mesh']['epsilon_in']
 epsilon_out = cfg['mesh']['epsilon_out']
@@ -129,7 +129,7 @@ solution = born_solver.analytic_Born_Ion(r)
 # Prepare input data
 input_data = charges(X_np, Y_np, Z_np, cfg['init']['args'])
 input_data = input_data[np.newaxis, np.newaxis, :, :]
-input_data = torch.from_numpy(input_data).float()
+input_data = torch.from_numpy(input_data).float() * ratio_max
 
 # Create Model
 model = UNetInterface(scales, kernel_sizes=kernel_size, input_res=nnx, inner_mask=inner_mask, outer_mask=outer_mask)
