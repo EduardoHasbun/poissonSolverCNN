@@ -1,51 +1,59 @@
 import numpy as np
+import os
+import yaml
 from scipy import special as sp
+import argparse
+from tqdm import tqdm as log_progress
 import matplotlib.pyplot as plt
+import time
 
+def G(X, q, xq, epsilon):
+    r_vec_expanded = np.expand_dims(X, axis=1)
+    x_qs_expanded = np.expand_dims(xq, axis=0)
+    r_diff = r_vec_expanded - x_qs_expanded
+    r = np.sqrt(np.sum(np.square(r_diff), axis=2))
+    q_over_r = q / r
+    total_sum = np.sum(q_over_r, axis=1)
+    result = (1 / (epsilon * 4 * np.pi)) * total_sum
+    result = np.expand_dims(result, axis=1)
+    return result
 
-def Spherical_Harmonics(x, y, z, points, q, xq, E_1, E_2, kappa, R, labels, N = 20):
-
+def Spherical_Harmonics(x, y, z, q, xq, E_1, E_2, kappa, R, labels, points, N):
     PHI = np.zeros(len(points))
-
     for K in range(len(points)):
         px, py, pz = points[K]
-        ix = int((px - x[0]) / (x[1] - x[0]))  # Convert x to grid index
-        iy = int((py - y[0]) / (y[1] - y[0]))  # Convert y to grid index
-        iz = int((pz - z[0]) / (z[1] - z[0]))  # Convert z to grid index
+        ix = int((px - x[0]) / (x[1] - x[0]))
+        iy = int((py - y[0]) / (y[1] - y[0]))
+        iz = int((pz - z[0]) / (z[1] - z[0]))
         rho = np.sqrt(np.sum(points[K,:] ** 2))
         zenit = np.arccos(points[K, 2] / rho)
         azim = np.arctan2(points[K, 1], points[K, 0])
-
         phi = 0.0 + 0.0 * 1j
-
         for n in range(N):
             for m in range(-n, n + 1):
-
                 Enm = 0.0
                 for k in range(len(q)):
                     rho_k = np.sqrt(np.sum(xq[k,:] ** 2))
                     zenit_k = np.arccos(xq[k, 2] / rho_k)
                     azim_k = np.arctan2(xq[k, 1], xq[k, 0])
-
                     Enm += (
                         q[k]
                         * rho_k**n
                         *4*np.pi/(2*n+1)
                         * sp.sph_harm(m, n, -azim_k, zenit_k)
                     )
-
                 Anm = Enm * (1/(4*np.pi)) * ((2*n+1)) / (np.exp(-kappa*R)* ((E_1-E_2)*n*get_K(kappa*R,n)+E_2*(2*n+1)*get_K(kappa*R,n+1)))
                 Bnm = 1/(R**(2*n+1))*(np.exp(-kappa*R)*get_K(kappa*R,n)*Anm - 1/(4*np.pi*E_1)*Enm)
-                
                 if labels[ix, iy, iz]=='molecule':
                     phi += Bnm * rho**n * sp.sph_harm(m, n, azim, zenit)
+                    print(f'Molecule: K={K}, phi={phi}')
                 if labels[ix, iy, iz]=='solvent':
                     phi += Anm * rho**(-n-1)* np.exp(-kappa*rho) * get_K(kappa*rho,n) * sp.sph_harm(m, n, azim, zenit)
-
+                    print(f'Solvent: K={K}, phi={phi}')
+        if labels[ix, iy, iz] == "solvent":
+            phi -= G(np.array([points[K]]), q, xq, E_1)
         PHI[K] = np.real(phi)
-    
     return PHI
-
 
 def get_K(x, n):
     K = 0.0
@@ -61,36 +69,86 @@ def get_K(x, n):
         )
     return K
 
+def generate_random(i):
+    print(f'Worker {i} started with config: {cfg}')
+    # Parameters for data generation
+    xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
+    ymin, ymax, nny = cfg['domain']['ymin'], cfg['domain']['ymax'], cfg['domain']['nny']
+    zmin, zmax, nnz = cfg['domain']['zmin'], cfg['domain']['zmax'], cfg['domain']['nnz']
+    R = cfg['spherical_harmonics']['R']
 
-# General Parameters
-q = np.array([[1.0]])
-xq = np.array([[0.45, 0.0e+00, 0.0e+00]])
-E_1 = 1
-E_2 = 80
-kappa = 0.125
-R = 0.5
-N = 5
+    # Create the grid
+    x, y, z = np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny), np.linspace(zmin, zmax, nnz)
+    X, Y, Z = np.meshgrid(x, y, z, indexing="ij")
+    points = np.column_stack((X.ravel(), Y.ravel(), Z.ravel()))
+    interface_center = [0, 0, 0]
+    interface_mask = (X - interface_center[0]) ** 2 + (Y - interface_center[1]) ** 2 + (Z - interface_center[2]) ** 2 <= R ** 2
+    labels = np.where(interface_mask, "molecule", "solvent")
 
-# Define the grid size, mesh and labels
-grid_size = 50
-x = np.linspace(-1, 1, grid_size)
-y = np.linspace(-1, 1, grid_size)
-z = np.linspace(-1, 1, grid_size)
-X, Y, Z = np.meshgrid(x, y, z, indexing="ij")
-points = np.column_stack((X.ravel(), Y.ravel(), Z.ravel()))
-interface_center = [0, 0, 0]
-interface_mask = (X - interface_center[0]) ** 2 + (Y - interface_center[1]) ** 2 + (Z - interface_center[2]) ** 2 <= R ** 2
-labels = np.where(interface_mask, "molecule", "solvent")
+    # Generate random charges and locations
+    q = np.array([1.0])
+    xq = np.array([[0.4, 0.0, 0.0]])
 
-# Call the function
-field = Spherical_Harmonics(x, y, z, points, q, xq, E_1, E_2, kappa, R, labels, N)
+    # Parameters for Spherical Harmonics
+    E_1 = cfg['spherical_harmonics']['E_1']
+    E_2 = cfg['spherical_harmonics']['E_2']
+    kappa = cfg['spherical_harmonics']['kappa']
+    N = cfg['spherical_harmonics']['N']
 
-# Plot the results
-plt.imshow(field.reshape((grid_size, grid_size, grid_size))[:, :, grid_size // 2], extent=(-1, 1, -1, 1))
-plt.savefig('imshow.png')
+    # Calculate the spherical harmonics field
+    field = Spherical_Harmonics(x, y, z, q, xq, E_1, E_2, kappa, R, labels, points, N)
+    
+    # RHS for punctual charges
+    rhs = G(points, q, xq, E_1).reshape((nnx, nny, nnz))
+    
+    return rhs, field.reshape((nnx, nny, nnz))
 
-plt.plot(field.reshape((grid_size, grid_size, grid_size))[:, grid_size // 2, grid_size // 2])
-plt.savefig('line.png')
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Generate dataset for spherical harmonics')
+    parser.add_argument('-c', '--cfg', type=str, default=None, help='Config filename')
+    args = parser.parse_args()
+    with open(args.cfg, 'r') as yaml_stream:
+        cfg = yaml.safe_load(yaml_stream)
+    nits = cfg['n_it']
+    plotting = cfg['plotting']
 
+    start_time = time.time()
 
+    plots_dir = os.path.join('generated', 'plots')
+    if not os.path.exists(plots_dir):
+        os.makedirs(plots_dir)
 
+    print('nnx: ', cfg['domain']['nnx'], 'nny: ', cfg['domain']['nny'], "nnz: ", cfg['domain']['nnz'])
+
+    # Generate random data samples
+    rhs_data_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny'], cfg['domain']['nnz']))
+    potentials_data_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny'], cfg['domain']['nnz']))
+    
+    for i in range(nits):
+        rhs_data, potentials_data = generate_random(cfg, i)
+        rhs_data_array[i] = rhs_data
+        potentials_data_array[i] = potentials_data
+
+    rhs_file_path = os.path.join('generated', 'rhs_data.npy')
+    potentials_file_path = os.path.join('generated', 'potentials_data.npy')
+
+    os.makedirs('generated', exist_ok=True)
+    np.save(rhs_file_path, rhs_data_array)
+    np.save(potentials_file_path, potentials_data_array)
+
+    if plotting:
+        for i in range(nits):
+            fig, ax = plt.subplots(1, 3, figsize=(15, 5))  # Changed to 1 row, 3 columns
+            ax[0].imshow(rhs_data_array[i, :, :, 0])
+            ax[0].set_title('RHS')
+            ax[1].imshow(potentials_data_array[i, :, :, 0])
+            ax[1].set_title('Potentials')
+            ax[2].plot(potentials_data_array[i, :, 0, 0], label='Potentials x-line')  # Plotting x line for Potentials
+            ax[2].set_title('X Line')
+            ax[2].legend()
+            plt.savefig(os.path.join(plots_dir, f'plot_{i}.png'))
+            plt.close()
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Time taken to compute the script: {elapsed_time:.2f} seconds")
