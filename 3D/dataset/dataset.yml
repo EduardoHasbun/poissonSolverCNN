@@ -17,4 +17,4 @@ domain:
   nnz: 51
 n_iterations: 1
 plotting: True
-output_dir: ./output
+output_dir: ./generated
