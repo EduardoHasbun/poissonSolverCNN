@@ -1,6 +1,7 @@
 general:
-    name_case: 'interface3d_2'
-    data_dir: 'dataset/generated/random.npy' 
+    name_case: 'interface3d_1'
+    data_dir: 'dataset/generated/rhs_data.npy' 
+    target_dir: 'dataset/generated/potentials_data.npy'
 
 
 arch:
@@ -13,17 +14,17 @@ globals:                                    # Domain sizes and others, used to c
     nnx: 51                                # Number of points in x direction
     nny: 51                                # Number of points in y direction
     nnz: 51
-    xmin: 0.0
-    xmax: 5.0
-    ymin: 0.0
-    ymax: 5.0
-    zmin: 0.0
-    zmax: 5.0
+    xmin: -2.5
+    xmax: 2.5
+    ymin: -2.5
+    ymax: 2.5
+    zmin: -2.5
+    zmax: 2.5
     interface_center:
-        x: 2.5
-        y: 2.5
-        z: 2.5
-    interface_radius: 1.
+        x: 0.0
+        y: 0.0
+        z: 0.0
+    interface_radius: 1.0
     epsilon_inside: 1.0
     epsilon_outside: 80.0
     
@@ -39,8 +40,8 @@ loss:
         bound_weight: 1.0e-3
         interface_weight: 5.0e+1               # Weighting of the loss on the boundaries (float)
         lapl_weight: 2.0e+4                # Weighting of the loss on the Laplacian (float)
+        inside_weight: 5.0e+9
         optimizer_lr: 4.e-4 
-        inside_weight: 5.0e+10
 
 trainer:
-    epochs: 50                              # Number of epochs
+    epochs: 100                              # Number of epochs

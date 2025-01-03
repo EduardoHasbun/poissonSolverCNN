@@ -95,8 +95,9 @@ class InsideLossInterface(nn.Module):
         self.nnx, self.nny, self.nnz = cfg['globals']['nnx'], cfg['globals']['nny'], cfg['globals']['nnz']
         self.weight = inside_weight
 
-    def forward(self, output, target, mask):
-        return F.mse_loss(output[:, 0, mask], target[:, 0, mask]) * self.weight
+    def forward(self, output, target, mask, data_norm = 1.):
+        outptut_scaled = output / data_norm
+        return F.mse_loss(outptut_scaled[:, 0, mask], target[:, 0, mask]) * self.weight
 
 
 class InterfaceBoundaryLoss(nn.Module):

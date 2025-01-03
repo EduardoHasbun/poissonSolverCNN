@@ -40,9 +40,13 @@ epsilon_inside, epsilon_outside = cfg['globals']['epsilon_inside'], cfg['globals
 Lx, Ly, Lz = xmax-xmin, ymax-ymin, zmax - zmin
 dx, dy, dz = Lx / nnx, Ly / nny, Lz / nnz
 save_dir = os.getcwd()
-data_dir= os.path.join(save_dir, '..', 'dataset', 'generated', 'rhs.npy')
-data_dir_potentials = os.path.join(save_dir, '..', 'dataset', 'generated', 'potentials.npy')
+data_dir_cfg = cfg['general']['data_dir']
+target_dir_cfg = cfg['general']['target_dir']
+data_dir= os.path.join(save_dir, '..', data_dir_cfg)
+target_dir = os.path.join(save_dir, '..', target_dir_cfg)
 save_dir = os.path.join(save_dir, 'trained_models')
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
 case_name = cfg['general']['name_case']
 
 
@@ -75,7 +79,7 @@ outer_mask = ~interface_mask | interface_boundary
 
 # Load Data
 data = np.load(data_dir) 
-target = np.load(data_dir_potentials) 
+target = np.load(target_dir) 
 dataset_tensor = torch.tensor(data, dtype=torch.float)  
 target_tensor = torch.tensor(target, dtype=torch.float)
 dataset = TensorDataset(dataset_tensor, target_tensor)
@@ -94,6 +98,7 @@ optimizer = optim.Adam(model.parameters(), lr=lr)
 
 
 print(f"Model used: {cfg['arch']['arch_dir']}, {arch_type}")
+
 # Train loop
 for epoch in range (num_epochs):
     total_loss = 0
@@ -121,3 +126,5 @@ for epoch in range (num_epochs):
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
     torch.save(model.state_dict(), os.path.join(save_dir, case_name))
+
+

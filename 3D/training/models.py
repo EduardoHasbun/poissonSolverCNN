@@ -313,9 +313,9 @@ class UNetInterface(nn.Module):
                                          padding_mode, upsample_mode)
 
     def forward(self, x):
-        x1, x2 = x * self.inner_mask, x * (self.outer_mask) # Divide the domain into 2 parts
+        x_inner, x_outer = x * self.inner_mask, x * (self.outer_mask) # Divide the domain into 2 parts
 
-        out1 = self.submodel1(x1)
-        out2 = self.submodel2(x2)
+        out_inner = self.submodel1(x_inner)
+        out_outer = self.submodel2(x_outer)
 
-        return out1, out2
+        return out_inner, out_outer
