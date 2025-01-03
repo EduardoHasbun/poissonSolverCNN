@@ -89,13 +89,9 @@ def generate_random(args):
     min_charges, max_charges = cfg['spherical_harmonics']['min_charges'], cfg['spherical_harmonics']['max_charges']
     num_charges = np.random.randint(min_charges, max_charges + 1)
     charge_range = cfg['spherical_harmonics']['charge_range']
-    # q = np.random.uniform(charge_range[0], charge_range[1], num_charges)
-    q = ([1.0])
+    q = np.random.uniform(charge_range[0], charge_range[1], num_charges)
     location_range = cfg['spherical_harmonics']['location_range']
-    # xq = np.random.uniform(location_range[0], location_range[1], (num_charges, 3))
-    xq = np.array([[0.2, 0.1, 0.1]])
-    # print(f'Random charges (q): {q}')
-    # print(f'Random locations (xq): {xq}')
+    xq = np.random.uniform(location_range[0], location_range[1], (num_charges, 3))
 
 
     # Parameters for Spherical Harmonics
@@ -105,12 +101,28 @@ def generate_random(args):
     N = cfg['spherical_harmonics']['N']
 
     # Calculate the spherical harmonics field
-    field = Spherical_Harmonics(x, y, z, q, xq, E_1, E_2, kappa, R, labels, points, N)
+    field = Spherical_Harmonics(x, y, z, q, xq, E_1, E_2, kappa, R, labels, points, N).reshape((nnx, nny, nnz))
+   # Indices for the middle point
+    mid_x, mid_y, mid_z = nnx // 2, nny // 2, nnz // 2
+
+    # Calculate a weighted average of surrounding neighbors
+    neighbors = [
+        field[mid_x + 1, mid_y, mid_z],
+        field[mid_x - 1, mid_y, mid_z],
+        field[mid_x, mid_y + 1, mid_z],
+        field[mid_x, mid_y - 1, mid_z],
+        field[mid_x, mid_y, mid_z + 1],
+        field[mid_x, mid_y, mid_z - 1]
+    ]
+
+    # Use the average of the neighbors to set the middle point
+    field[mid_x, mid_y, mid_z] = np.mean(neighbors)
+
     
     # RHS for punctual charges
     rhs = G(points, q, xq, E_1).reshape((nnx, nny, nnz))
     
-    return rhs, field.reshape((nnx, nny, nnz))
+    return rhs, field
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate dataset for spherical harmonics')
@@ -148,10 +160,12 @@ if __name__ == '__main__':
     if plotting:
         for i in range(nits):
             fig, ax = plt.subplots(1, 3, figsize=(15, 5))  # Changed to 1 row, 3 columns
-            ax[0].imshow(rhs_data_array[i, :, :, cfg['domain']['nnz'] // 2])
+            rhs_plot = ax[0].imshow(rhs_data_array[i, :, :, cfg['domain']['nnz'] // 2])
             ax[0].set_title('RHS')
-            ax[1].imshow(potentials_data_array[i, :, :, cfg['domain']['nnz'] // 2])
+            cbar_rhs = fig.colorbar(rhs_plot, ax=ax[0])
+            potentials_plot = ax[1].imshow(potentials_data_array[i, :, :, cfg['domain']['nnz'] // 2])
             ax[1].set_title('Potentials')
+            cbar_potentials = fig.colorbar(potentials_plot, ax=ax[1])
             ax[2].plot(potentials_data_array[i, :, cfg['domain']['nny'] // 2, cfg['domain']['nnz'] // 2], label='Potentials x-line')  # Plotting x line for Potentials
             ax[2].set_title('X Line')
             ax[2].legend()
