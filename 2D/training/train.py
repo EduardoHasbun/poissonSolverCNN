@@ -31,12 +31,17 @@ scales = [value for key, value in sorted(scales_data.items())]
 kernel_size = arch[arch_type]['args']['kernel_sizes']
 xmin, xmax, ymin, ymax, nnx, nny = cfg['globals']['xmin'], cfg['globals']['xmax'],\
             cfg['globals']['ymin'], cfg['globals']['ymax'], cfg['globals']['nnx'], cfg['globals']['nny']
+data_dir = cfg['general']['data_dir']
 Lx = xmax-xmin
 Ly = ymax-ymin
 save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random.npy')
+data_dir = os.path.join(save_dir, '..', data_dir)
 save_dir = os.path.join(save_dir, 'trained_models')
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
 case_name = cfg['general']['name_case']
+
+
 
 
 # Parameters to Nomalize
