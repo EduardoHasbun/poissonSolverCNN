@@ -21,10 +21,7 @@ ploting = False
 # Parameters for data generation
 xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
 nny, ymin, ymax = cfg['domain']['nny'], cfg['domain']['ymin'], cfg['domain']['ymax']
-e_in, e_out = cfg['domain']['epsilon_in'], cfg['domain']['epsilon_out']
-interface_center = (cfg['domain']['interface_center']['x'], cfg['domain']['interface_center']['y'])
-interface_radius = cfg['domain']['interface_radius']
-n_res_factor = 16
+n_res_factor = cfg['n_res_factor']
 
 
 # Create a grid

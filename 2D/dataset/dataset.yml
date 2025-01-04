@@ -1,6 +1,7 @@
 n_it: 20000
 output_dir: 'C:\Codigos\poissonSolverCNN\dataset\generated\'
 name: random_data.npy
+n_res_factor: 16
 
 domain:
   xmin: 0.0
