@@ -21,4 +21,4 @@ spherical_harmonics:
   location_range: [-0.8, 0.8]
 
 n_it: 7000
-plotting: True
+plotting: False
