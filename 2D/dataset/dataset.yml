@@ -3,18 +3,11 @@ output_dir: 'C:\Codigos\poissonSolverCNN\dataset\generated\'
 name: random_data.npy
 
 domain:
-  geom: 'cartesian'
-  mat: 'cart_dirichlet'
-  bcs: 'dirichlet'
   xmin: 0.0
   ymin: 0.0
   xmax: 5.0
   ymax: 5.0
   nnx: 101
   nny: 101
-  interface_center:
-    x: 2.5
-    y: 2.5
-  interface_radius: 1.5
-  epsilon_in: 1
-  epsilon_out: 80
+
+

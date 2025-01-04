@@ -56,26 +56,68 @@ elif arch_model == 'MSNet':
     model = MSNet(scales, kernel_size, input_res = nnx)
 model = model.float()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
-# Dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, nnx, nny)
+Dirichlet_loss = DirichletBoundaryLoss(bound_weight)
+# dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, nnx, nny)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
+# Initialize lists to store losses
+epoch_losses = []  # To store total losses per epoch
+batch_losses = []  # To store batch losses
+laplacian_losses = []  # To store Laplacian losses
+dirichlet_losses = []  # To store Dirichlet losses
+
 # Train loop
-for epoch in range (num_epochs):
+for epoch in range(num_epochs):
     total_loss = 0
+    epoch_laplacian_loss = 0
+    epoch_dirichlet_loss = 0
     for batch_idx, batch in enumerate(dataloader):
         data = batch[:, np.newaxis, :, :]
         optimizer.zero_grad()
-        data = torch.FloatTensor(data) 
+        data = torch.FloatTensor(data)
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1)) / ratio_max
         output = model(data)
-        loss = laplacian_loss(output, data = data, data_norm = data_norm)
-        loss += dirichlet_loss_function(output, data_norm)
+        
+        # Calculate individual losses
+        laplacian_loss_value = laplacian_loss(output, data=data, data_norm=data_norm)
+        dirichlet_loss_value = Dirichlet_loss(output)
+        loss = laplacian_loss_value + dirichlet_loss_value
+        
+        # Backpropagation
         loss.backward()
         optimizer.step()
+        
+        # Update total loss
         total_loss += loss.item()
-        if batch_idx % 20 ==0:
+        epoch_laplacian_loss += laplacian_loss_value.item()
+        epoch_dirichlet_loss += dirichlet_loss_value.item()
+        
+        # Save batch losses
+        batch_losses.append(loss.item())
+        laplacian_losses.append(laplacian_loss_value.item())
+        dirichlet_losses.append(dirichlet_loss_value.item())
+        
+        if batch_idx % 20 == 0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
-    print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
+
+    # Save epoch losses
+    epoch_losses.append(total_loss / len(dataloader))
+    print(f"Epoch [{epoch + 1}/{num_epochs}] - Total Loss: {total_loss / len(dataloader)}")
     torch.save(model.state_dict(), os.path.join(save_dir, case_name))
 
+# Save losses to a .txt file
+loss_file_path = os.path.join(save_dir, f"{case_name}_losses.txt")
+with open(loss_file_path, "w") as f:
+    f.write("Epoch Losses:\n")
+    f.write(", ".join(map(str, epoch_losses)) + "\n\n")
+    
+    f.write("Batch Losses:\n")
+    f.write(", ".join(map(str, batch_losses)) + "\n\n")
+    
+    f.write("Laplacian Losses:\n")
+    f.write(", ".join(map(str, laplacian_losses)) + "\n\n")
+    
+    f.write("Dirichlet Losses:\n")
+    f.write(", ".join(map(str, dirichlet_losses)) + "\n")
+
+print(f"Losses saved to {loss_file_path}")
