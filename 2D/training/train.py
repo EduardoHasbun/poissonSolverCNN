@@ -60,7 +60,7 @@ if arch_model == 'UNet':
 elif arch_model == 'MSNet':
     model = MSNet(scales, kernel_size, input_res = nnx)
 model = model.float()
-laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
+laplacian_loss = LaplacianLoss(cfg, lapl_weight, Lx, Ly)
 Dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 # dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, nnx, nny)
 optimizer = optim.Adam(model.parameters(), lr = lr)

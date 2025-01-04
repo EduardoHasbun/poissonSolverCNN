@@ -22,12 +22,14 @@ class LaplacianLossInterface(nn.Module):
     
 
 class LaplacianLoss(nn.Module):
-    def __init__(self, cfg, lapl_weight, e_in = 1, e_out = 1, interface = 1):
+    def __init__(self, cfg, lapl_weight, Lx, Ly):
         super().__init__()
         self.weight = lapl_weight
         self.dx = (cfg['globals']['xmax'] - cfg['globals']['xmin']) / cfg['globals']['nnx']
         self.dy = (cfg['globals']['ymax'] - cfg['globals']['ymin']) / cfg['globals']['nny']
         self.dz = (cfg['globals']['zmax'] - cfg['globals']['zmin']) / cfg['globals']['nnz']
+        self.Lx = Lx
+        self.Ly = Ly
     def forward(self, output, data=None, data_norm=1.):
         laplacian = lapl(output / data_norm, self.dx, self.dy)
         return self.Lx**2 * self.Ly**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
