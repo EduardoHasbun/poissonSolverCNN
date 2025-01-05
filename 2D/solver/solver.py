@@ -9,9 +9,8 @@ sys.path.append('C:/Codigos/poissonSolverCNN/2D/training')
 from models import UNet, MSNet
 import operators as op
 
-
 # Load YAML config
-with open('C:\Codigos/poissonSolverCNN/2D/solver/solver.yml', 'r') as file:
+with open('C:/Codigos/poissonSolverCNN/2D/solver/solver.yml', 'r') as file:
     cfg = yaml.load(file, Loader=yaml.FullLoader)
 
 # Get paths and configurations from YAML
@@ -24,10 +23,10 @@ arch_dir = os.path.join('..', '..', cfg['arch']['arch_dir'])
 with open(arch_dir) as yaml_stream1:
     arch = yaml.safe_load(yaml_stream1)
 arch_model = arch[arch_type]['type']
-# Get scales and kernel sizes
 scales_data = arch.get(arch_type, {}).get('args', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
 kernel_size = arch[arch_type]['args']['kernel_sizes']
+params = cfg['init']['args']
 
 # Set mesh
 xmin, xmax, nnx = cfg['mesh']['xmin'], cfg['mesh']['xmax'], cfg['mesh']['nnx']
@@ -54,30 +53,44 @@ def gaussians(x, y, params):
         profile += gaussian(x, y, *params[index, :])
     return profile
 
-# Define functions
-def function2solve(x, y):
-    return -6 * (x + y)
+# Define the analytical solution for Poisson equation for punctual charges
+def poisson_punctual_solution(x, y, charges):
+    """
+    Calculates the analytical solution of the Poisson equation for punctual charges.
+    charges: List of tuples [(amplitude, x0, y0), ...]
+    """
+    solution = np.zeros_like(x)
+    for charge in charges:
+        amplitude, x0, y0 = charge
+        distance = np.sqrt((x - x0)**2 + (y - y0)**2)
+        solution += -amplitude / (4 * np.pi) * np.log(distance + 1e-10)  # Avoid log(0)
+    return solution
 
-def resolution(x, y):
-    return x**3 + y**3 
+# Extract punctual charge parameters (amplitude and location) from params
+punctual_charges = []
+ngauss = int(len(params) / 5)
+params_charges = np.array(params).reshape(ngauss, 5)
+for index in range(ngauss):
+    amplitude, x0, y0, _, _ = params_charges[index]
+    punctual_charges.append((amplitude, x0, y0))
 
+# Generate analytical solution for Poisson equation
+resolution_data = poisson_punctual_solution(X, Y, punctual_charges)
 
 # Set parameters
-alpha = 0.03
+alpha = 1.0
 ratio_max = op.ratio_potrhs(alpha, Lx, Ly)
 
 # Create input data and resolution data
-input_data = function2solve(X, Y) * ratio_max
+input_data = gaussians(X, Y, params) * ratio_max
 input_data = input_data[np.newaxis, np.newaxis, :, :]
 input_data = torch.from_numpy(input_data).float()
-resolution_data = resolution(X, Y)
-input_array = input_data.detach().numpy()[0, 0, :, :]
 
 # Create Model
 if arch_model == 'UNet':
-    model = UNet(scales, kernel_sizes = kernel_size, input_res = nnx)
+    model = UNet(scales, kernel_sizes=kernel_size, input_res=nnx)
 elif arch_model == 'MSNet':
-    model = MSNet(scales, kernel_size, input_res = nnx)
+    model = MSNet(scales, kernel_size, input_res=nnx)
 model.load_state_dict(torch.load(model_dir))
 model = model.float()
 model.eval()
@@ -87,32 +100,33 @@ output = model(input_data)
 output_array = output.detach().numpy()[0, 0, :, :] * ratio_max
 
 # Plotting
-fig, axs = plt.subplots(1, 3, figsize=(10, 5))
+fig, axs = plt.subplots(1, 3, figsize=(15, 5))
 fig.suptitle(case_name, fontsize=16)
 
-# Plot Output
+# Plot Output from NN
+vmin, vmax = np.min(output_array), np.max(output_array)
 img_output = axs[0].imshow(output_array, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-axs[0].set_title('Output')
+axs[0].set_title('NN Output')
 axs[0].set_xlabel('X')
 axs[0].set_ylabel('Y')
 plt.colorbar(img_output, ax=axs[0])
 
-# Plot Resolution
-img_resolution = axs[1].imshow(resolution_data, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-axs[1].set_title('Resolution')
+# Plot Analytical Solution
+img_resolution = axs[1].imshow(resolution_data, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)  
+axs[1].set_title('Analytical Solution (Poisson)')
 axs[1].set_xlabel('X')
 axs[1].set_ylabel('Y')
 plt.colorbar(img_resolution, ax=axs[1])
 
 # Plot Relative Error
-relative_error = abs(output_array - resolution_data) / np.max(resolution_data) * 100
-print(f'Error Maximo: {np.max(relative_error)}, Error Promedio: {np.average(relative_error)}')
-img_error = axs[2].imshow(relative_error, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-axs[2].set_title('Relative Error')
+relative_error = abs(output_array - resolution_data) / np.max(abs(resolution_data)) * 100
+print(f'Max Error: {np.max(relative_error):.2f}%, Avg Error: {np.average(relative_error):.2f}%')
+img_error = axs[2].imshow(relative_error, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=0, vmax=10)
+axs[2].set_title('Relative Error (%)')
 axs[2].set_xlabel('X')
 axs[2].set_ylabel('Y')
 plt.colorbar(img_error, ax=axs[2], label='Error %')
 
-# Save the plot
+# Save and show the plot
 plt.tight_layout()
 plt.savefig(os.path.join(plots_dir, f'{case_name}.png'))

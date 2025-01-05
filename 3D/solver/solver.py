@@ -44,7 +44,6 @@ def ratio_potrhs(alpha, Lx, Ly, Lz):
 
 alpha = 0.1
 ratio = ratio_potrhs(alpha, Lx, Ly, Lz)
-ratio = 0.20531964
 
 input_data = function2Solve(X,Y,Z)
 input_data = input_data[np.newaxis, np.newaxis, :, :, :]

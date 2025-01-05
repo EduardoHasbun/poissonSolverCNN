@@ -41,11 +41,8 @@ if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 case_name = cfg['general']['name_case']
 
-
-
-
 # Parameters to Nomalize
-alpha = 0.1
+alpha = 0.5
 ratio_max = ratio_potrhs(alpha, Lx, Ly)
 
 
