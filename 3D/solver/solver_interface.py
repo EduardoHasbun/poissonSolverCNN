@@ -68,7 +68,7 @@ outer_mask = ~interface_mask | interface_boundary
 
 # Charges
 charges = cfg['init']['charges']
-locations = cfg['init']['locations']
+locations = np.array(cfg['init']['locations'])
 E_1 = cfg['spherical_harmonics']['E_1']
 E_2 = cfg['spherical_harmonics']['E_2']
 kappa = cfg['spherical_harmonics']['kappa']
@@ -197,4 +197,4 @@ axs[2].set_ylabel('Y')
 cbar_output = plt.colorbar(img_error, ax=axs[2], label='Error %')
 plt.tight_layout()
 os.makedirs('results', exist_ok=True)
-plt.savefig(os.path.join(plots_dir, f'Test_3D 2.png'))
+plt.savefig(os.path.join(plots_dir, case_name + '.png'))

@@ -78,7 +78,7 @@ for index in range(ngauss):
 resolution_data = poisson_punctual_solution(X, Y, punctual_charges)
 
 # Set parameters
-alpha = 0.5
+alpha = 2.0
 ratio_max = op.ratio_potrhs(alpha, Lx, Ly)
 
 # Create input data and resolution data
