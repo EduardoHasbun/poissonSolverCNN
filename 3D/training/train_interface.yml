@@ -1,5 +1,5 @@
 general:
-    name_case: 'interface3d_1'
+    name_case: 'interface3d_2'
     data_dir: 'dataset/generated/rhs_data.npy' 
     target_dir: 'dataset/generated/potentials_data.npy'
 
@@ -40,8 +40,8 @@ loss:
         bound_weight: 1.0e-3
         interface_weight: 5.0e+1               # Weighting of the loss on the boundaries (float)
         lapl_weight: 2.0e+4                # Weighting of the loss on the Laplacian (float)
-        inside_weight: 5.0e+9
-        optimizer_lr: 4.e-4 
+        inside_weight: 5.0e+8
+        optimizer_lr: 2.e-4 
 
 trainer:
     epochs: 100                              # Number of epochs
