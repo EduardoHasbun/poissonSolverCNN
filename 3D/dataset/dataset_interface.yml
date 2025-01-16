@@ -18,7 +18,7 @@ spherical_harmonics:
   min_charges: 1
   max_charges: 4
   charge_range: [-1.0, 1.0]
-  location_range: [-0.8, 0.8]
+  max_radius: 0.6
 
-n_it: 7000
+n_it: 8000
 plotting: False

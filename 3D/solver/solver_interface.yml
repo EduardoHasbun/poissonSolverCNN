@@ -1,5 +1,5 @@
 general:
-  case_name: interface3d_1pth
+  case_name: interface3d_1
   model_dir: 'C:\Codigos\poissonSolverCNN\3D\training\trained_models\interface3d_1'
 
 arch:
@@ -22,9 +22,9 @@ domain:
   xmax: 2.5
   ymax: 2.5
   zmax: 2.5
-  nnx: 50
-  nny: 50
-  nnz: 50
+  nnx: 51
+  nny: 51
+  nnz: 51
   interface_center:
     x: 0
     y: 0
@@ -35,7 +35,7 @@ spherical_harmonics:
   E_1: 1
   E_2: 80
   kappa: 0.1
-  N: 7
+  N: 6
   
 
 

@@ -170,7 +170,7 @@ output_array = output.detach().numpy()[0, 0, :, :, :]
 input_plot = input_data.detach().numpy()[0, 0, :, :, :]
 input_slice = input_plot[:,:,nnz//2]
 ouptut_slice = output_array[:,:,nnz//2]
-relative_error_inner = np.abs(output_array - analitical_solution) / np.max(analitical_solution) * 100
+relative_error_inner = np.abs(output_array - analitical_solution) / np.abs(np.max(analitical_solution)) * 100
 fig, axs = plt.subplots(1, 3, figsize=(10, 5)) 
 fig.suptitle('3D', fontsize=16) 
 
