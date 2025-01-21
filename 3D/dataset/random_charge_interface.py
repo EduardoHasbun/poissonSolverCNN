@@ -147,7 +147,7 @@ if __name__ == '__main__':
 
     args_list = [(cfg, i) for i in range(nits)]
     for idx, (rhs_data, potentials_data) in log_progress(enumerate(pool.imap(generate_random, args_list)), total=nits, desc="Processing"):
-        if idx % 1 == 0:
+        if idx % 1000 == 0:
             filename_rhs = f"rhs_{idx}.npy"
             filename_potentials = f"potentials_{idx}.npy"
             filepath_rhs = os.path.join('generated', filename_rhs)
