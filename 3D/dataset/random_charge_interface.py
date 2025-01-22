@@ -26,50 +26,64 @@ def G(X, q, xq, epsilon):
     result = np.expand_dims(result, axis=1)
     return result
 
+
 def Spherical_Harmonics(x, y, z, q, xq, E_1, E_2, kappa, R, labels, points, N):
-    PHI = np.zeros(len(points))
-    for K in range(len(points)):
-        px, py, pz = points[K]
-        ix = int((px - x[0]) / (x[1] - x[0]))
-        iy = int((py - y[0]) / (y[1] - y[0]))
-        iz = int((pz - z[0]) / (z[1] - z[0]))
-        rho = np.sqrt(np.sum(points[K, :] ** 2))
-        zenit = np.arccos(points[K, 2] / rho)
-        azim = np.arctan2(points[K, 1], points[K, 0])
-        phi = 0.0 + 0.0j
-        for n in range(N):
-            for m in range(-n, n + 1):
-                Enm = 0.0
-                for k in range(len(q)):
-                    rho_k = np.sqrt(np.sum(xq[k, :] ** 2))
-                    zenit_k = np.arccos(xq[k, 2] / rho_k)
-                    azim_k = np.arctan2(xq[k, 1], xq[k, 0])
-                    Enm += (
-                        q[k]
-                        * rho_k**n
-                        * 4 * np.pi / (2 * n + 1)
-                        * sp.sph_harm(m, n, -azim_k, zenit_k)
-                    )
-                Anm = Enm * (1 / (4 * np.pi)) * ((2 * n + 1)) / (
-                    np.exp(-kappa * R) * ((E_1 - E_2) * n * get_K(kappa * R, n) + E_2 * (2 * n + 1) * get_K(kappa * R, n + 1))
-                )
-                Bnm = 1 / (R ** (2 * n + 1)) * (
-                    np.exp(-kappa * R) * get_K(kappa * R, n) * Anm - 1 / (4 * np.pi * E_1) * Enm
-                )
-                if labels[ix, iy, iz] == "molecule":
-                    phi += Bnm * rho**n * sp.sph_harm(m, n, azim, zenit)
-                if labels[ix, iy, iz] == "solvent":
-                    phi += (
-                        Anm
-                        * rho ** (-n - 1)
-                        * np.exp(-kappa * rho)
-                        * get_K(kappa * rho, n)
-                        * sp.sph_harm(m, n, azim, zenit)
-                    )
-        if labels[ix, iy, iz] == "solvent":
-            phi -= G(np.array([points[K]]), q, xq, E_1)
-        PHI[K] = np.real(phi)
-    return PHI
+    # Precompute values for all points
+    points = np.array(points)
+    rho = np.linalg.norm(points, axis=1)
+    zenit = np.arccos(points[:, 2] / rho)
+    azim = np.arctan2(points[:, 1], points[:, 0])
+
+    xq = np.array(xq)
+    rho_k = np.linalg.norm(xq, axis=1)
+    zenit_k = np.arccos(xq[:, 2] / rho_k)
+    azim_k = np.arctan2(xq[:, 1], xq[:, 0])
+    
+    # Precompute the grid indices for labels
+    ix = ((points[:, 0] - x[0]) / (x[1] - x[0])).astype(int)
+    iy = ((points[:, 1] - y[0]) / (y[1] - y[0])).astype(int)
+    iz = ((points[:, 2] - z[0]) / (z[1] - z[0])).astype(int)
+
+    PHI = np.zeros(len(points), dtype=np.complex128)
+
+    # Loop over n and m
+    for n in range(N):
+        for m in range(-n, n + 1):
+            # Compute Enm for all points
+            Enm = np.sum(
+                q[:, None]
+                * rho_k[:, None]**n
+                * (4 * np.pi / (2 * n + 1))
+                * sp.sph_harm(m, n, -azim_k[:, None], zenit_k[:, None]),
+                axis=0
+            )
+            Anm = Enm * (1 / (4 * np.pi)) * ((2 * n + 1)) / (
+                np.exp(-kappa * R) * ((E_1 - E_2) * n * get_K(kappa * R, n) + E_2 * (2 * n + 1) * get_K(kappa * R, n + 1))
+            )
+            Bnm = 1 / (R ** (2 * n + 1)) * (
+                np.exp(-kappa * R) * get_K(kappa * R, n) * Anm - 1 / (4 * np.pi * E_1) * Enm
+            )
+
+            # Compute phi based on labels
+            is_molecule = labels[ix, iy, iz] == "molecule"
+            is_solvent = labels[ix, iy, iz] == "solvent"
+
+            PHI[is_molecule] += (
+                Bnm * rho[is_molecule]**n * sp.sph_harm(m, n, azim[is_molecule], zenit[is_molecule])
+            )
+            PHI[is_solvent] += (
+                Anm
+                * rho[is_solvent] ** (-n - 1)
+                * np.exp(-kappa * rho[is_solvent])
+                * get_K(kappa * rho[is_solvent], n)
+                * sp.sph_harm(m, n, azim[is_solvent], zenit[is_solvent])
+            )
+
+    # Final adjustment for solvent
+    is_solvent = labels[ix, iy, iz] == "solvent"
+    PHI[is_solvent] -= G(points[is_solvent], q, xq, E_1)
+
+    return np.real(PHI)
 
 def get_K(x, n):
     K = 0.0
@@ -145,12 +159,18 @@ if __name__ == '__main__':
     if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
 
+    rhs_data_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny'], cfg['domain']['nnz']))
+    potentials_data_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny'], cfg['domain']['nnz']))
+
     args_list = [(cfg, i) for i in range(nits)]
     for idx, (rhs_data, potentials_data) in log_progress(enumerate(pool.imap(generate_random, args_list)), total=nits, desc="Processing"):
-        if idx % 1000 == 0:
+        rhs_data_array[idx] = rhs_data
+        potentials_data_array[idx] = potentials_data
+        if idx + 1 % 1000 == 0:
             filename_rhs = f"rhs_{idx}.npy"
             filename_potentials = f"potentials_{idx}.npy"
             filepath_rhs = os.path.join('generated', filename_rhs)
             filepath_potentials = os.path.join('generated', filename_potentials)
-            np.save(filepath_rhs, rhs_data)
-            np.save(filepath_potentials, potentials_data)
+            np.save(filepath_rhs, rhs_data_array)
+            np.save(filepath_potentials, potentials_data_array)
+            print(f"Saved {filename_rhs} with shape {np.shape(rhs_data_array)}")
