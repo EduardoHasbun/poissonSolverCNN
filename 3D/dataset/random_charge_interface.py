@@ -16,14 +16,13 @@ def spherical_to_cartesian(radius, zenith, azimuth):
     return np.array([x, y, z])
 
 def G(X, q, xq, epsilon):
-    r_vec_expanded = np.expand_dims(X, axis=1)
-    x_qs_expanded = np.expand_dims(xq, axis=0)
-    r_diff = r_vec_expanded - x_qs_expanded
-    r = np.sqrt(np.sum(np.square(r_diff), axis=2))
-    q_over_r = q / r
-    total_sum = np.sum(q_over_r, axis=1)
-    result = (1 / (epsilon * 4 * np.pi)) * total_sum
-    result = np.expand_dims(result, axis=1)
+    r_vec_expanded = np.expand_dims(X, axis=1)  # Shape: (n, 1, 3)
+    x_qs_expanded = np.expand_dims(xq, axis=0)  # Shape: (1, m, 3)
+    r_diff = r_vec_expanded - x_qs_expanded     # Shape: (n, m, 3)
+    r = np.sqrt(np.sum(np.square(r_diff), axis=2))  # Shape: (n, m)
+    q_over_r = q / r  # Shape: (n, m)
+    total_sum = np.sum(q_over_r, axis=1)  # Shape: (n,)
+    result = (1 / (epsilon * 4 * np.pi)) * total_sum  # Shape: (n,)
     return result
 
 
