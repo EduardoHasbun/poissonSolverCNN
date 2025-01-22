@@ -165,11 +165,10 @@ if __name__ == '__main__':
     for idx, (rhs_data, potentials_data) in log_progress(enumerate(pool.imap(generate_random, args_list)), total=nits, desc="Processing"):
         rhs_data_array[idx] = rhs_data
         potentials_data_array[idx] = potentials_data
-        if idx + 1 % 1000 == 0:
-            filename_rhs = f"rhs_{idx}.npy"
-            filename_potentials = f"potentials_{idx}.npy"
-            filepath_rhs = os.path.join('generated', filename_rhs)
-            filepath_potentials = os.path.join('generated', filename_potentials)
-            np.save(filepath_rhs, rhs_data_array)
-            np.save(filepath_potentials, potentials_data_array)
-            print(f"Saved {filename_rhs} with shape {np.shape(rhs_data_array)}")
+
+    rhs_file_path = os.path.join('generated', 'rhs_data.npy')
+    potentials_file_path = os.path.join('generated', 'potentials_data.npy')
+
+    os.makedirs('generated', exist_ok=True)
+    np.save(rhs_file_path, rhs_data_array)
+    np.save(potentials_file_path, potentials_data_array)
