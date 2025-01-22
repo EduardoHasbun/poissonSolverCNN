@@ -20,5 +20,5 @@ spherical_harmonics:
   charge_range: [-1.0, 1.0]
   max_radius: 0.6
 
-n_it: 8000
+n_it: 10000
 plotting: False
