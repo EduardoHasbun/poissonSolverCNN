@@ -67,7 +67,7 @@ outer_mask = ~interface_mask | interface_boundary
 
 
 # Charges
-charges = cfg['init']['charges']
+charges = np.array(cfg['init']['charges'])
 locations = np.array(cfg['init']['locations'])
 E_1 = cfg['spherical_harmonics']['E_1']
 E_2 = cfg['spherical_harmonics']['E_2']
@@ -76,50 +76,73 @@ N = cfg['spherical_harmonics']['N']
 
 # Functions
 def G(X, q, xq, epsilon):
-    r_vec_expanded = np.expand_dims(X, axis=1)
-    x_qs_expanded = np.expand_dims(xq, axis=0)
-    r_diff = r_vec_expanded - x_qs_expanded
-    r = np.sqrt(np.sum(np.square(r_diff), axis=2))
-    q_over_r = q / r
-    total_sum = np.sum(q_over_r, axis=1)
-    result = (1 / (epsilon * 4 * np.pi)) * total_sum
-    result = np.expand_dims(result, axis=1)
+    r_vec_expanded = np.expand_dims(X, axis=1)  # Shape: (n, 1, 3)
+    x_qs_expanded = np.expand_dims(xq, axis=0)  # Shape: (1, m, 3)
+    r_diff = r_vec_expanded - x_qs_expanded     # Shape: (n, m, 3)
+    r = np.sqrt(np.sum(np.square(r_diff), axis=2))  # Shape: (n, m)
+    q_over_r = q / r  # Shape: (n, m)
+    total_sum = np.sum(q_over_r, axis=1)  # Shape: (n,)
+    result = (1 / (epsilon * 4 * np.pi)) * total_sum  # Shape: (n,)
     return result
 
+
 def Spherical_Harmonics(x, y, z, q, xq, E_1, E_2, kappa, R, labels, points, N):
-    PHI = np.zeros(len(points))
-    for K in range(len(points)):
-        px, py, pz = points[K]
-        ix = int((px - x[0]) / (x[1] - x[0]))
-        iy = int((py - y[0]) / (y[1] - y[0]))
-        iz = int((pz - z[0]) / (z[1] - z[0]))
-        rho = np.sqrt(np.sum(points[K,:] ** 2))
-        zenit = np.arccos(points[K, 2] / rho)
-        azim = np.arctan2(points[K, 1], points[K, 0])
-        phi = 0.0 + 0.0 * 1j
-        for n in range(N):
-            for m in range(-n, n + 1):
-                Enm = 0.0
-                for k in range(len(q)):
-                    rho_k = np.sqrt(np.sum(xq[k,:] ** 2))
-                    zenit_k = np.arccos(xq[k, 2] / rho_k)
-                    azim_k = np.arctan2(xq[k, 1], xq[k, 0])
-                    Enm += (
-                        q[k]
-                        * rho_k**n
-                        *4*np.pi/(2*n+1)
-                        * sp.sph_harm(m, n, -azim_k, zenit_k)
-                    )
-                Anm = Enm * (1/(4*np.pi)) * ((2*n+1)) / (np.exp(-kappa*R)* ((E_1-E_2)*n*get_K(kappa*R,n)+E_2*(2*n+1)*get_K(kappa*R,n+1)))
-                Bnm = 1/(R**(2*n+1))*(np.exp(-kappa*R)*get_K(kappa*R,n)*Anm - 1/(4*np.pi*E_1)*Enm)
-                if labels[ix, iy, iz]=='molecule':
-                    phi += Bnm * rho**n * sp.sph_harm(m, n, azim, zenit)
-                if labels[ix, iy, iz]=='solvent':
-                    phi += Anm * rho**(-n-1)* np.exp(-kappa*rho) * get_K(kappa*rho,n) * sp.sph_harm(m, n, azim, zenit)
-        if labels[ix, iy, iz] == "solvent":
-            phi -= G(np.array([points[K]]), q, xq, E_1)
-        PHI[K] = np.real(phi)
-    return PHI
+    # Precompute values for all points
+    points = np.array(points)
+    rho = np.linalg.norm(points, axis=1)
+    zenit = np.arccos(points[:, 2] / rho)
+    azim = np.arctan2(points[:, 1], points[:, 0])
+
+    xq = np.array(xq)
+    rho_k = np.linalg.norm(xq, axis=1)
+    zenit_k = np.arccos(xq[:, 2] / rho_k)
+    azim_k = np.arctan2(xq[:, 1], xq[:, 0])
+    
+    # Precompute the grid indices for labels
+    ix = ((points[:, 0] - x[0]) / (x[1] - x[0])).astype(int)
+    iy = ((points[:, 1] - y[0]) / (y[1] - y[0])).astype(int)
+    iz = ((points[:, 2] - z[0]) / (z[1] - z[0])).astype(int)
+
+    PHI = np.zeros(len(points), dtype=np.complex128)
+
+    # Loop over n and m
+    for n in range(N):
+        for m in range(-n, n + 1):
+            # Compute Enm for all points
+            Enm = np.sum(
+                q[:, None]
+                * rho_k[:, None]**n
+                * (4 * np.pi / (2 * n + 1))
+                * sp.sph_harm(m, n, -azim_k[:, None], zenit_k[:, None]),
+                axis=0
+            )
+            Anm = Enm * (1 / (4 * np.pi)) * ((2 * n + 1)) / (
+                np.exp(-kappa * R) * ((E_1 - E_2) * n * get_K(kappa * R, n) + E_2 * (2 * n + 1) * get_K(kappa * R, n + 1))
+            )
+            Bnm = 1 / (R ** (2 * n + 1)) * (
+                np.exp(-kappa * R) * get_K(kappa * R, n) * Anm - 1 / (4 * np.pi * E_1) * Enm
+            )
+
+            # Compute phi based on labels
+            is_molecule = labels[ix, iy, iz] == "molecule"
+            is_solvent = labels[ix, iy, iz] == "solvent"
+
+            PHI[is_molecule] += (
+                Bnm * rho[is_molecule]**n * sp.sph_harm(m, n, azim[is_molecule], zenit[is_molecule])
+            )
+            PHI[is_solvent] += (
+                Anm
+                * rho[is_solvent] ** (-n - 1)
+                * np.exp(-kappa * rho[is_solvent])
+                * get_K(kappa * rho[is_solvent], n)
+                * sp.sph_harm(m, n, azim[is_solvent], zenit[is_solvent])
+            )
+
+    # Final adjustment for solvent
+    is_solvent = labels[ix, iy, iz] == "solvent"
+    PHI[is_solvent] -= G(points[is_solvent], q, xq, E_1)
+
+    return np.real(PHI)
 
 def get_K(x, n):
     K = 0.0
@@ -157,6 +180,16 @@ input_data = input_data[np.newaxis, np.newaxis, :, :, :]
 input_data = torch.from_numpy(input_data).float()
 analitical_solution = Spherical_Harmonics(x, y, z, charges, locations, E_1, E_2, kappa, R, labels, points, N)
 analitical_solution = analitical_solution.reshape(nnx, nny, nnz)
+mid_x, mid_y, mid_z = nnx // 2, nny // 2, nnz // 2
+neighbors = [
+        analitical_solution[mid_x + 1, mid_y, mid_z],
+        analitical_solution[mid_x - 1, mid_y, mid_z],
+        analitical_solution[mid_x, mid_y + 1, mid_z],
+        analitical_solution[mid_x, mid_y - 1, mid_z],
+        analitical_solution[mid_x, mid_y, mid_z + 1],
+        analitical_solution[mid_x, mid_y, mid_z - 1]
+    ]
+analitical_solution[mid_x, mid_y, mid_z] = np.mean(neighbors)
 
 #Solver
 out_in, out_out = model(input_data)
