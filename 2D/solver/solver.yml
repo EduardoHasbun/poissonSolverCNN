@@ -1,6 +1,6 @@
 general:
-  case_name: Unet4_ks3_rf100
-  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/trained_models/Unet4_ks3_rf100.pth'
+  case_name: Unet4_ks3_rf100_test
+  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/trained_models/Unet4_ks3_rf100_test'
 
 arch:
     arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf100.yml'
