@@ -1,11 +1,11 @@
 general:
-    name_case: 'Unet4_ks3_rf100_test.pth'
+    name_case: 'Unet4_ks3_rf200_test.pth'
     data_dir: 'dataset/generated/random_data.npy' 
 
 
 arch:
     model: "UNet"
-    arch_dir: 'Archs/Unet_ks3_rf100.yml'
+    arch_dir: 'Archs/Unet_ks3_rf200.yml'
     type: 'UNet4'
 
 
