@@ -1,7 +1,7 @@
 domain:
-    nnx: 51                              
-    nny: 51                                
-    nnz: 51
+    nnx: 61                              
+    nny: 61                                
+    nnz: 61
     xmin: -2.5
     xmax: 2.5
     ymin: -2.5
@@ -14,11 +14,11 @@ spherical_harmonics:
   E_2: 80
   kappa: 0.125
   R: 1.0
-  N: 6
+  N: 10
   min_charges: 1
-  max_charges: 4
+  max_charges: 5
   charge_range: [-1.0, 1.0]
-  max_radius: 0.6
+  max_radius: 0.65
 
 n_it: 10000
 plotting: False

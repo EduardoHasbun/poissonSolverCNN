@@ -172,3 +172,14 @@ if __name__ == '__main__':
     os.makedirs('generated', exist_ok=True)
     np.save(rhs_file_path, rhs_data_array)
     np.save(potentials_file_path, potentials_data_array)
+
+
+    if plotting:
+        for idx in range(nits):
+            fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+            ax[0].imshow(rhs_data_array[idx, cfg['domain']['nnx'] // 2], cmap='jet')
+            ax[0].set_title('RHS')
+            ax[1].imshow(potentials_data_array[idx, cfg['domain']['nnx'] // 2], cmap='jet')
+            ax[1].set_title('Potentials')
+            plt.savefig(os.path.join(plots_dir, f'plot_{idx}.png'))
+            plt.close()

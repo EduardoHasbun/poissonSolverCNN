@@ -35,7 +35,7 @@ spherical_harmonics:
   E_1: 1
   E_2: 80
   kappa: 0.1
-  N: 6
+  N: 10
   
 
 

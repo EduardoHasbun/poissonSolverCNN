@@ -11,9 +11,9 @@ arch:
 
 
 globals:                                    # Domain sizes and others, used to compute global attributes
-    nnx: 51                                # Number of points in x direction
-    nny: 51                                # Number of points in y direction
-    nnz: 51
+    nnx: 61                                # Number of points in x direction
+    nny: 61                                # Number of points in y direction
+    nnz: 61
     xmin: -2.5
     xmax: 2.5
     ymin: -2.5
@@ -44,4 +44,4 @@ loss:
         optimizer_lr: 4.e-4 
 
 trainer:
-    epochs: 100 
+    epochs: 100                              # Number of epochs
