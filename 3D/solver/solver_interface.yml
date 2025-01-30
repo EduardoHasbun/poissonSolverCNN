@@ -22,9 +22,9 @@ domain:
   xmax: 2.5
   ymax: 2.5
   zmax: 2.5
-  nnx: 51
-  nny: 51
-  nnz: 51
+  nnx: 61
+  nny: 61
+  nnz: 61
   interface_center:
     x: 0
     y: 0
