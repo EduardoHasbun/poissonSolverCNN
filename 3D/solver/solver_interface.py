@@ -231,3 +231,14 @@ cbar_output = plt.colorbar(img_error, ax=axs[2], label='Error %')
 plt.tight_layout()
 os.makedirs('results', exist_ok=True)
 plt.savefig(os.path.join(plots_dir, case_name + '.png'))
+
+
+
+# L2 error norm
+error = output_array - analitical_solution
+error_flat = error.ravel()
+l2_error = np.linalg.norm(error_flat, 2)
+print("Norma L2 (discreta):", l2_error)
+l2_analytical = np.linalg.norm(analitical_solution.ravel(), 2)
+relative_l2_error = l2_error / l2_analytical
+print("Error relativo L2:", relative_l2_error)
