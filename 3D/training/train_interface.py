@@ -124,5 +124,8 @@ for epoch in range (num_epochs):
         total_loss += loss.item()
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
+            
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
     torch.save(model.state_dict(), os.path.join(save_dir, case_name))
+    if epoch % 10 == 0:
+        torch.save(model.state_dict(), os.path.join(save_dir, case_name + f'_epoch_{epoch}'))
