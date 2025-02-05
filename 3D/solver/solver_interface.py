@@ -203,31 +203,43 @@ output_array = output.detach().numpy()[0, 0, :, :, :]
 input_plot = input_data.detach().numpy()[0, 0, :, :, :]
 input_slice = input_plot[:,:,nnz//2]
 ouptut_slice = output_array[:,:,nnz//2]
-relative_error_inner = np.abs(output_array - analitical_solution) / np.abs(np.max(analitical_solution)) * 100
-fig, axs = plt.subplots(1, 3, figsize=(10, 5)) 
+relative_error_inner = (
+    np.abs(output_array - analitical_solution) 
+    / np.abs(analitical_solution)
+) * 100
+fig, axs = plt.subplots(2, 2, figsize=(10, 10)) 
 fig.suptitle('3D', fontsize=16) 
 
 # Output
-img_output = axs[0].imshow(ouptut_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-axs[0].set_title('Ouput')
-axs[0].set_xlabel('X')
-axs[0].set_ylabel('Y')
-cbar_input = plt.colorbar(img_output, ax=axs[0], label='Magnitude')
+img_output = axs[0,0].imshow(ouptut_slice, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+axs[0,0].set_title('Ouput')
+axs[0,0].set_xlabel('X')
+axs[0,0].set_ylabel('Y')
+cbar_input = plt.colorbar(img_output, ax=axs[0,0], label='Magnitude')
 
 # Analitical Solution
-img_resolution = axs[1].imshow(analitical_solution[:, :, nnz//2], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-axs[1].set_title('Resolution')
-axs[1].set_xlabel('X')
-axs[1].set_ylabel('Y')
-plt.colorbar(img_resolution, ax=axs[1], label='Magnitude')
+img_resolution = axs[0,1].imshow(analitical_solution[:, :, nnz//2], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+axs[0,1].set_title('Resolution')
+axs[0,1].set_xlabel('X')
+axs[0,1].set_ylabel('Y')
+plt.colorbar(img_resolution, ax=axs[0,1], label='Magnitude')
 
 # Relative Error
-img_error = axs[2].imshow(relative_error_inner[:,:,nnz//2], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+img_error = axs[1,0].imshow(relative_error_inner[:,:,nnz//2], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 print(f'Error Maximo: {np.max(relative_error_inner)}, Error Promedio: {np.average(relative_error_inner)}')
-axs[2].set_title('Relative Error')
-axs[2].set_xlabel('X')
-axs[2].set_ylabel('Y')
-cbar_output = plt.colorbar(img_error, ax=axs[2], label='Error %')
+axs[1,0].set_title('Relative Error')
+axs[1,0].set_xlabel('X')
+axs[1,0].set_ylabel('Y')
+cbar_output = plt.colorbar(img_error, ax=axs[1,0], label='Relative Error %')
+
+# Absolute Error
+img_error_abs = axs[1,1].imshow(np.abs(output_array - analitical_solution)[:,:,nnz//2], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+axs[1,1].set_title('Absolute Error')
+axs[1,1].set_xlabel('X')
+axs[1,1].set_ylabel('Y')
+cbar_output = plt.colorbar(img_error_abs, ax=axs[1,1], label='Absolute Error')
+
+
 plt.tight_layout()
 os.makedirs('results', exist_ok=True)
 plt.savefig(os.path.join(plots_dir, case_name + '.png'))
@@ -236,9 +248,42 @@ plt.savefig(os.path.join(plots_dir, case_name + '.png'))
 
 # L2 error norm
 error = output_array - analitical_solution
+print('Error absoluto maximo:', np.max(error))
 error_flat = error.ravel()
 l2_error = np.linalg.norm(error_flat, 2)
 print("Norma L2 (discreta):", l2_error)
 l2_analytical = np.linalg.norm(analitical_solution.ravel(), 2)
 relative_l2_error = l2_error / l2_analytical
 print("Error relativo L2:", relative_l2_error)
+
+
+# After you have 'output_array' and 'analitical_solution' defined
+# and your 'charges' and 'locations' arrays, do:
+
+# Make sure locations is in shape (n_charges, 3)
+# charges has shape (n_charges,)
+# 'x', 'y', 'z' are your 1D coordinate arrays.
+
+for i, (charge, loc) in enumerate(zip(charges, locations)):
+    # Find the indices in x, y, z that are closest to the charge location
+    i_x = np.argmin(np.abs(x - loc[0]))
+    i_y = np.argmin(np.abs(y - loc[1]))
+    i_z = np.argmin(np.abs(z - loc[2]))
+
+    # Compute absolute error at that grid point
+    abs_err = np.abs(output_array[i_x, i_y, i_z] - analitical_solution[i_x, i_y, i_z])
+
+    # Compute relative error at that grid point
+    # (make sure the analytical solution at this point isn't zero!)
+    denom = np.abs(analitical_solution[i_x, i_y, i_z])
+    if denom < 1e-14:
+        rel_err = np.nan  # or handle differently if needed
+    else:
+        rel_err = (abs_err / denom) * 100
+
+    # Print or store the error
+    print(f"Charge {i}:")
+    print(f"  Location        = {loc}")
+    print(f"  Grid index      = ({i_x}, {i_y}, {i_z})")
+    print(f"  Absolute error  = {abs_err}")
+    print(f"  Relative error  = {rel_err:.4f} %\n")

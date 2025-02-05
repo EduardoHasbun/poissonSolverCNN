@@ -1,12 +1,12 @@
 general:
-    name_case: 'interface3d_3'
+    name_case: 'interface3d_4'
     data_dir: 'dataset/generated/rhs_data.npy' 
     target_dir: 'dataset/generated/potentials_data.npy'
 
 
 arch:
     model: "UNet"
-    arch_dir: 'Unet_ks3_rf200.yml'
+    arch_dir: 'Unet_ks3_rf300.yml'
     type: 'UNet4'
 
 
