@@ -5,7 +5,7 @@ general:
 
 arch:
     model: "MSNet"
-    arch_dir: 'Archs/Unet_ks3_rf400.yml'
+    arch_dir: 'Archs/MSNet_ks3_rf50.yml'
     type: 'MSNet3'
 
 
