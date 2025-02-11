@@ -39,7 +39,7 @@ loss:
     args:
         bound_weight: 1.0e-3
         interface_weight: 5.0e+1               # Weighting of the loss on the boundaries (float)
-        lapl_weight: 2.0e+4                # Weighting of the loss on the Laplacian (float)
+        lapl_weight: 2.0e+8                # Weighting of the loss on the Laplacian (float)
         inside_weight: 5.0e+9
         optimizer_lr: 4.e-4 
 

@@ -1,12 +1,12 @@
 general:
-    name_case: 'MSNet4_ks3_rf50.pth'
+    name_case: 'MSNet3_ks3_rf100.pth'
     data_dir: 'dataset/generated/random_data.npy' 
 
 
 arch:
     model: "MSNet"
-    arch_dir: 'Archs/MSNet_ks3_rf50.yml'
-    type: 'MSNet4'
+    arch_dir: 'Archs/MSNet_ks3_rf100.yml'
+    type: 'MSNet3'
 
 
 globals:                                    # Domain sizes and others, used to compute global attributes
