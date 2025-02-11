@@ -256,7 +256,7 @@ def lapl_interface(field, dx, dy, dz, interface_mask, epsilon_in, epsilon_out):
     divergence = torch.zeros_like(field[:, 0, :, :, :])  # Shape: (batch_size, h, w, l)
 
     # Divergence calculation 
-    divergence[:, 1:-1, 1:-1] = (
+    divergence[:, 1:-1, 1:-1, 1:-1] = (
         (flux_x_ip[:, 0, 1:-1, 1:-1, 1:] - flux_x_ip[:, 0, 1:-1, 1:-1, :-1]) / dx +
         (flux_y_ip[:, 0, 1:-1, 1:, 1:-1] - flux_y_ip[:, 0, 1:-1, :-1, 1:-1]) / dy +
         (flux_z_ip[:, 0, 1:, 1:-1, 1:-1] - flux_z_ip[:, 0, :-1, 1:-1, 1:-1]) / dz
