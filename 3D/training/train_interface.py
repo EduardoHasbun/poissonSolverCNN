@@ -113,10 +113,10 @@ for epoch in range (num_epochs):
         subdomain_in, subdomain_out = model(data)
 
         # Loss
-        loss = inside_loss(subdomain_in, target, inner_mask)
-        loss += inside_loss(subdomain_out, target, outer_mask)
+        loss = laplacian_loss(subdomain_in, data, data_norm, inner_mask)
+        loss += laplacian_loss(subdomain_out, data, data_norm, outer_mask)
+        loss += interface_loss(subdomain_in, subdomain_out)
         loss += dirichlet_loss(subdomain_out)
-        # loss += interface_loss(subdomain_in, subdomain_out)
 
         # Backpropagation
         loss.backward()

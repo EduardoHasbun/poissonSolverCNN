@@ -1,5 +1,5 @@
 general:
-    name_case: 'interface3d_4'
+    name_case: 'interface3d_5'
     data_dir: 'dataset/generated/rhs_data.npy' 
     target_dir: 'dataset/generated/potentials_data.npy'
 
