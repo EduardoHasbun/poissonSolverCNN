@@ -11,16 +11,17 @@ import numpy as np
 
 
 class LaplacianLossInterface(nn.Module):
-    def __init__(self, cfg, lapl_weight):
+    def __init__(self, cfg, lapl_weight, eta = 1.0):
         super().__init__()
         self.weight = lapl_weight
         self.dx = (cfg['globals']['xmax'] - cfg['globals']['xmin']) / cfg['globals']['nnx']
         self.dy = (cfg['globals']['ymax'] - cfg['globals']['ymin']) / cfg['globals']['nny']
         self.epsilon_inside = cfg['globals']['epsilon_inside']
         self.epsilon_outside = cfg['globals']['epsilon_outside']
+        self.eta = eta
 
     def forward(self, output, data = None, data_norm = 1., mask = 1.):
-        laplacian = lapl_interface(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside)
+        laplacian = lapl_interface(output / data_norm, self.dx, self.dy, mask, self.epsilon_inside, self.epsilon_outside, self.eta)
         loss = F.mse_loss(laplacian[:, 0, mask], data[:, 0, mask]) * self.weight
         return loss
 
@@ -179,7 +180,7 @@ def lapl(field, dx, dy):
     return laplacian
 
 
-def lapl_interface(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
+def lapl_interface(field, dx, dy, interface_mask, epsilon_in, epsilon_out, eta):
     batch_size, _, h, w = field.shape
     laplacian = torch.zeros_like(field).type(field.type())
 
@@ -193,18 +194,18 @@ def lapl_interface(field, dx, dy, interface_mask, epsilon_in, epsilon_out):
     epsilon_y_ip = harmonic_mean(epsilon[:, :, :-1, :], epsilon[:, :, 1:, :])  # Shape: (batch_size, 1, h-1, w)
 
     # Compute flux differences in x-direction
-    flux_x_ip = epsilon_x_ip * (-field[:, :, :, 1:] + field[:, :, :, :-1]) / dx  # Shape: (batch_size, 1, h, w-1)
+    flux_x_ip = epsilon_x_ip * (-field[:, :, :, 1:] + field[:, :, :, :-1]) / (dx + eta)  # Shape: (batch_size, 1, h, w-1)
 
     # Compute flux differences in y-direction
-    flux_y_ip = epsilon_y_ip * (-field[:, :, 1:, :] + field[:, :, :-1, :]) / dy  # Shape: (batch_size, 1, h-1, w)
+    flux_y_ip = epsilon_y_ip * (-field[:, :, 1:, :] + field[:, :, :-1, :]) / (dy + eta)  # Shape: (batch_size, 1, h-1, w)
 
     # Initialize divergence
     divergence = torch.zeros_like(field[:, 0, :, :])  # Shape: (batch_size, h, w)
 
     # Divergence calculation 
     divergence[:, 1:-1, 1:-1] = (
-        (-flux_x_ip[:, 0, 1:-1, 1:] + flux_x_ip[:, 0, 1:-1, :-1]) / dx +
-        (-flux_y_ip[:, 0, 1:, 1:-1] + flux_y_ip[:, 0, :-1, 1:-1]) / dy
+        (-flux_x_ip[:, 0, 1:-1, 1:] + flux_x_ip[:, 0, 1:-1, :-1]) / (dx + eta) +
+        (-flux_y_ip[:, 0, 1:, 1:-1] + flux_y_ip[:, 0, :-1, 1:-1]) / (dy + eta)
     )
 
     laplacian[:, 0, :, :] = divergence
