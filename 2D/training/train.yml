@@ -1,11 +1,11 @@
 general:
-    name_case: 'MSNet3_ks3_rf200.pth'
+    name_case: 'MSNet3_ks3_rf300.pth'
     data_dir: 'dataset/generated/random_data.npy' 
 
 
 arch:
     model: "MSNet"
-    arch_dir: 'Archs/MSNet_ks3_rf200.yml'
+    arch_dir: 'Archs/MSNet_ks3_rf300.yml'
     type: 'MSNet3'
 
 
