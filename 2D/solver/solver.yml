@@ -1,9 +1,9 @@
 general:
-  case_name: MSNet3_ks3_rf100
-  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/trained_models/MSNet3_ks3_rf100.pth'
+  case_name: MSNet3_ks3_rf200
+  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/trained_models/MSNet3_ks3_rf200.pth'
 
 arch:
-    arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/MSNet_ks3_rf100.yml'
+    arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/MSNet_ks3_rf200.yml'
     type: 'MSNet3'
 
 init:

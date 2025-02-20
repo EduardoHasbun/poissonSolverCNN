@@ -1,6 +1,6 @@
 general:
     name_case: 'interface3d_6'
-    data_dir: 'dataset/generated/rhs_data.npy' 
+    data_dir: 'dataset/generated/data.npy' 
     target_dir: 'dataset/generated/potentials_data.npy'
 
 
