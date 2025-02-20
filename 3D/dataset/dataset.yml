@@ -2,13 +2,13 @@
 domain:
   xmin: -2.5
   xmax: 2.5
-  nnx: 51
+  nnx: 61
   ymin: -2.5
   ymax: 2.5
-  nny: 51
+  nny: 61
   zmin: -2.5
   zmax: 2.5
-  nnz: 51
+  nnz: 61
 n_it: 10000
 plotting: True
 output_dir: ./generated
