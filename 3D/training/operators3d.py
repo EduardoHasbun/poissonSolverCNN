@@ -245,22 +245,22 @@ def lapl_interface(field, dx, dy, dz, interface_mask, epsilon_in, epsilon_out, e
     epsilon_z_ip = harmonic_mean(epsilon[:, :, :-1, :, :], epsilon[:, :, 1:, :, :]) # Shape: (batch_size, 1, h-1, w, l)
 
     # Compute flux differences in x-direction
-    flux_x_ip = epsilon_x_ip * (field[:, :, :, :, 1:] - field[:, :, :, :, :-1]) / (dx + eta)  # Shape: (batch_size, 1, h, w, l-1)
+    flux_x_ip = epsilon_x_ip * (field[:, :, :, :, 1:] - field[:, :, :, :, :-1]) / dx  # Shape: (batch_size, 1, h, w, l-1)
 
     # Compute flux differences in y-direction
-    flux_y_ip = epsilon_y_ip * (field[:, :, :, 1:, :] - field[:, :, :, :-1, :]) / (dy + eta)  # Shape: (batch_size, 1, h, w-1, l)
+    flux_y_ip = epsilon_y_ip * (field[:, :, :, 1:, :] - field[:, :, :, :-1, :]) / dy  # Shape: (batch_size, 1, h, w-1, l)
 
     # Compute flux differences in z-direction
-    flux_z_ip = epsilon_z_ip * (field[:, :, 1:, :, :] - field[:, :, :-1, :, :]) / (dz + eta)  # Shape: (batch_size, 1, h-1, w, l)
+    flux_z_ip = epsilon_z_ip * (field[:, :, 1:, :, :] - field[:, :, :-1, :, :]) / dz # Shape: (batch_size, 1, h-1, w, l)
 
     # Initialize divergence
     divergence = torch.zeros_like(field[:, 0, :, :, :])  # Shape: (batch_size, h, w, l)
 
     # Divergence calculation 
     divergence[:, 1:-1, 1:-1, 1:-1] = (
-        (flux_x_ip[:, 0, 1:-1, 1:-1, 1:] - flux_x_ip[:, 0, 1:-1, 1:-1, :-1]) / (dx + eta) +
-        (flux_y_ip[:, 0, 1:-1, 1:, 1:-1] - flux_y_ip[:, 0, 1:-1, :-1, 1:-1]) / (dy + eta) +
-        (flux_z_ip[:, 0, 1:, 1:-1, 1:-1] - flux_z_ip[:, 0, :-1, 1:-1, 1:-1]) / (dz + eta)
+        (flux_x_ip[:, 0, 1:-1, 1:-1, 1:] - flux_x_ip[:, 0, 1:-1, 1:-1, :-1]) / dx +
+        (flux_y_ip[:, 0, 1:-1, 1:, 1:-1] - flux_y_ip[:, 0, 1:-1, :-1, 1:-1]) / dy +
+        (flux_z_ip[:, 0, 1:, 1:-1, 1:-1] - flux_z_ip[:, 0, :-1, 1:-1, 1:-1]) / dz
     )
 
     laplacian[:, 0, :, :, :] = divergence

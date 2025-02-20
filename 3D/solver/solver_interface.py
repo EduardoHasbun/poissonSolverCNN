@@ -170,7 +170,7 @@ for param in model.parameters():
     param.data = param.data.float()
 model.eval() 
 alpha = 0.1
-ratio = ratio_potrhs(alpha, Lx, Ly, Lz)
+ratio = ratio_potrhs(alpha, Lx, Ly, Lz) * 0.01
 
 
 # Create input data and solution data
@@ -199,7 +199,6 @@ output[0, 0, ~interface_mask] = out_out[0, 0, ~interface_mask]
 output_array = output.detach().numpy()[0, 0, :, :] * ratio
 
 # Plots
-output_array = output.detach().numpy()[0, 0, :, :, :] 
 input_plot = input_data.detach().numpy()[0, 0, :, :, :]
 input_slice = input_plot[:,:,nnz//2]
 ouptut_slice = output_array[:,:,nnz//2]
