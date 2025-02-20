@@ -1,10 +1,4 @@
-solver:
-  epsilon_1: 1.0
-  epsilon_2: 80.0
-  kappa: 0.1
-  R_mol: 1.0
-  charges:
-    - 1.0
+
 domain:
   xmin: -2.5
   xmax: 2.5
@@ -15,6 +9,6 @@ domain:
   zmin: -2.5
   zmax: 2.5
   nnz: 51
-n_iterations: 1
+n_it: 10000
 plotting: True
 output_dir: ./generated
