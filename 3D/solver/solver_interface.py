@@ -170,7 +170,7 @@ for param in model.parameters():
     param.data = param.data.float()
 model.eval() 
 alpha = 0.1
-ratio = ratio_potrhs(alpha, Lx, Ly, Lz) * 0.01
+ratio = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 
 # Create input data and solution data
