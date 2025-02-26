@@ -6,7 +6,7 @@ general:
 arch:
     model: "UNet"
     arch_dir: 'Archs/Unet_ks3_rf200.yml'
-    type: 'Unet4'
+    type: 'UNet4'
 
 
 globals:                                    # Domain sizes and others, used to compute global attributes
