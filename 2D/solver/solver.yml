@@ -1,10 +1,10 @@
 general:
-  case_name: MSNet3_ks3_rf200
-  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/trained_models/MSNet3_ks3_rf200.pth'
+  case_name: MSNet4_ks3_rf50
+  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/trained_models/MSNet4_ks3_rf50.pth'
 
 arch:
-    arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/MSNet_ks3_rf200.yml'
-    type: 'MSNet3'
+    arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/MSNet_ks3_rf50.yml'
+    type: 'MSNet4'
 
 init:
   func: 'gaussians'

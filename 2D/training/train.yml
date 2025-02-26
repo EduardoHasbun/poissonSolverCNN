@@ -1,12 +1,12 @@
 general:
-    name_case: 'MSNet4_ks3_rf200.pth'
+    name_case: 'Unet4_ks3_rf200_opti_1e-2.pth'
     data_dir: 'dataset/generated/random_data.npy' 
 
 
 arch:
-    model: "MSNet"
-    arch_dir: 'Archs/MSNet_ks3_rf200.yml'
-    type: 'MSNet4'
+    model: "UNet"
+    arch_dir: 'Archs/Unet_ks3_rf200.yml'
+    type: 'Unet4'
 
 
 globals:                                    # Domain sizes and others, used to compute global attributes
@@ -27,10 +27,10 @@ loss:
     args:
         bound_weight: 8.0e+2                  # Weighting of the loss on the boundaries (float)
         lapl_weight: 8.0e+5                   # Weighting of the loss on the Laplacian (float)
-        optimizer_lr: 2.e-4   
+        optimizer_lr: 1.e-2                   # Learning rate of the optimizer (float)   
 
 trainer:
-    epochs: 250                            # Number of epochs
+    epochs: 150                            # Number of epochs
 
 
 
