@@ -1,6 +1,6 @@
 general:
-  case_name: interface3d_6
-  model_dir: 'C:\Codigos\poissonSolverCNN\3D\training\trained_models\interface3d_6'
+  case_name: interface3d_7_epoch_20
+  model_dir: 'C:\Codigos\poissonSolverCNN\3D\training\trained_models\interface3d_7'
 
 arch:
     arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf300.yml'
