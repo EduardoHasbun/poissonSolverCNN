@@ -55,7 +55,7 @@ def ratio_potrhs(alpha, Lx, Ly):
 
 
 # Set parameters
-alpha = 0.5
+alpha = 0.038
 ratio_max = op.ratio_potrhs(alpha, Lx, Ly)
 
 
@@ -132,7 +132,7 @@ axs[1].set_ylabel('Y')
 plt.colorbar(img_resolution, ax=axs[1])
 
 # Plot Relative Error
-img_error = axs[2].imshow(relative_error, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=0, vmax=10)
+img_error = axs[2].imshow(relative_error, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[2].set_title('Relative Error (%)')
 axs[2].set_xlabel('X')
 axs[2].set_ylabel('Y')

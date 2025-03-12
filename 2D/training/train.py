@@ -82,7 +82,7 @@ for epoch in range(num_epochs):
         
         # Calculate individual losses
         laplacian_loss_value = laplacian_loss(output, data=data, data_norm=data_norm)
-        dirichlet_loss_value = dirichlet_loss_function(output, data_norm)
+        dirichlet_loss_value = dirichlet_loss_function(output)
         loss = laplacian_loss_value + dirichlet_loss_value
         
         # Backpropagation
@@ -105,7 +105,7 @@ for epoch in range(num_epochs):
     # Save epoch losses
     epoch_losses.append(total_loss / len(dataloader))
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Total Loss: {total_loss / len(dataloader)}")
-    if epoch % 10 == 0:
+    if epoch % 20 == 0:
         torch.save(model.state_dict(), os.path.join(save_dir, case_name + f'_epoch_{epoch}'))
 
 # Save losses to a .txt file
