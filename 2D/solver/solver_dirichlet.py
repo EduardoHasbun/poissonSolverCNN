@@ -43,52 +43,27 @@ errors_file = os.path.join(plots_dir, 'errors_log.txt')
 if not os.path.exists(plots_dir):
     os.makedirs(plots_dir)
 
-# Define Gaussian Functions
-def gaussian(x, y, amplitude, x0, y0, sigma_x, sigma_y):
-    return amplitude * np.exp(-((x - x0) / sigma_x)**2 - ((y - y0) / sigma_y)**2)
 
-def gaussians(x, y, params):
-    profile = np.zeros_like(x)
-    ngauss = int(len(params) / 5)
-    params = np.array(params).reshape(ngauss, 5)
-    for index in range(ngauss):
-        profile += gaussian(x, y, *params[index, :])
-    return profile
-
-# Define the analytical solution for Poisson equation for punctual charges
-def poisson_punctual_solution(x, y, charges):
-    solution = np.zeros_like(x)
-    for charge in charges:
-        amplitude, x0, y0 = charge
-        distance = np.sqrt((x - x0)**2 + (y - y0)**2)
-        solution += -amplitude / (4 * np.pi) * np.log(distance + 1e-10)  # Avoid log(0)
-    return solution
-
-# Define the analytical solution for a specific case
 def function2solve(x, y):
-    return torch.pow(x,3) + torch.pow(y,3)
-def resolvedfunction(x, y):
-    return 6 * x + 6 * y
+    return -6 * (x + y)
 
-# Extract punctual charge parameters (amplitude and location) from params
-punctual_charges = []
-ngauss = int(len(params) / 5)
-params_charges = np.array(params).reshape(ngauss, 5)
-for index in range(ngauss):
-    amplitude, x0, y0, _, _ = params_charges[index]
-    punctual_charges.append((amplitude, x0, y0))
+def resolution(x, y):
+    return x**3 + y**3 
 
-# Generate analytical solution for Poisson equation
-resolution_data = poisson_punctual_solution(X, Y, punctual_charges)
+def ratio_potrhs(alpha, Lx, Ly):
+    return alpha / (np.pi**2 / 4)**2 / (1 / Lx**2 + 1 / Ly**2)
+
 
 # Set parameters
 alpha = 0.5
 ratio_max = op.ratio_potrhs(alpha, Lx, Ly)
 
-# Create input data and resolution data
-input_data = gaussians(X, Y, params) * ratio_max
-input_data = input_data[np.newaxis, np.newaxis, :, :]
+
+# Create input data and resolution data for the error
+input_data = function2solve(X, Y) * ratio_max
+input_data = input_data[np.newaxis, np.newaxis, :, :] 
 input_data = torch.from_numpy(input_data).float()
+resolution_data = resolution(X, Y)
 
 # Create Model
 if arch_model == 'UNet':
@@ -100,8 +75,8 @@ model = model.float()
 model.eval()
 
 # Solver
-output = model(input_data)
-output_array = output.detach().numpy()[0, 0, :, :] * ratio_max
+output = model(input_data) 
+output_array = output.detach().numpy()[0, 0, :, :] * ratio_max 
 
 # Compute Errors
 relative_error = abs(output_array - resolution_data) / np.max(abs(resolution_data)) * 100
@@ -150,7 +125,7 @@ axs[0].set_ylabel('Y')
 plt.colorbar(img_output, ax=axs[0])
 
 # Plot Analytical Solution
-img_resolution = axs[1].imshow(resolution_data, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)
+img_resolution = axs[1].imshow(resolution_data, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[1].set_title('Analytical Solution (Poisson)')
 axs[1].set_xlabel('X')
 axs[1].set_ylabel('Y')
