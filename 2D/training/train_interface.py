@@ -102,8 +102,8 @@ for epoch in range (num_epochs):
         # Loss
         laplacian_loss_inside = laplacian_loss(subdomain_in, data = data, data_norm = data_norm, mask = inner_mask)
         laplacian_loss_outside = laplacian_loss(subdomain_out, data = data, data_norm = data_norm, mask = outer_mask)
-        dirichlet_loss += dirichlet_loss(subdomain_out)
-        interface_loss += interface_loss(subdomain_in, subdomain_out, data_norm = data_norm)
+        dirichlet_loss = dirichlet_loss(subdomain_out)
+        interface_loss = interface_loss(subdomain_in, subdomain_out, data_norm = data_norm)
         loss = laplacian_loss_inside + laplacian_loss_outside + dirichlet_loss + interface_loss
 
         # Backpropagation
