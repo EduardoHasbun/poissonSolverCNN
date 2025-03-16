@@ -132,10 +132,16 @@ for epoch in range (num_epochs):
 # Save losses to a .txt file
 loss_file_path = os.path.join(save_dir, f"{case_name}_losses.txt")
 with open(loss_file_path, "w") as f:
-    f.write("Laplacian Losses:\n")
-    f.write(", ".join(map(str, laplacian_losses)) + "\n\n")
+    f.write("Laplacian Losses Inside:\n")
+    f.write(", ".join(map(str, laplacian_losses_inside)) + "\n\n")
+
+    f.write("Laplacian Losses Outside:\n")
+    f.write(", ".join(map(str, laplacian_losses_outside)) + "\n\n")
     
     f.write("Dirichlet Losses:\n")
     f.write(", ".join(map(str, dirichlet_losses)) + "\n")
+
+    f.write("Interface Losses:\n")  
+    f.write(", ".join(map(str, interface_losses)) + "\n")
 
 print(f"Losses saved to {loss_file_path}")
