@@ -36,9 +36,12 @@ interface_radius = cfg['globals']['interface_radius']
 epsilon_inside, epsilon_outside = cfg['globals']['epsilon_inside'], cfg['globals']['epsilon_outside']
 Lx, Ly = xmax-xmin, ymax-ymin
 dx, dy = Lx / nnx, Ly / nny
+data_dir = cfg['general']['data_dir']
 save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random.npy')
+data_dir = os.path.join(save_dir, '..', data_dir)
 save_dir = os.path.join(save_dir, 'trained_models')
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
 case_name = cfg['general']['name_case']
 
 
