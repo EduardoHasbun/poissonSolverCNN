@@ -82,7 +82,8 @@ interface_loss = InterfaceBoundaryLoss(interface_weight, interface_boundary, int
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
 # Initialize lists to store losses
-laplacian_losses = []  # To store Laplacian losses
+laplacian_losses_inside = []  # To store Laplacian losses inside
+laplacian_losses_outside = []  # To store Laplacian losses outside
 dirichlet_losses = []  # To store Dirichlet losses
 interface_losses = []  # To store Interface losses
 total_losses = [] # To store total losses   
@@ -100,16 +101,27 @@ for epoch in range (num_epochs):
         subdomain_in, subdomain_out = model(data)
 
         # Loss
-        laplacian_loss_inside = laplacian_loss(subdomain_in, data = data, data_norm = data_norm, mask = inner_mask)
-        laplacian_loss_outside = laplacian_loss(subdomain_out, data = data, data_norm = data_norm, mask = outer_mask)
-        dirichlet_loss = dirichlet_loss(subdomain_out)
-        interface_loss = interface_loss(subdomain_in, subdomain_out, data_norm = data_norm)
-        loss = laplacian_loss_inside + laplacian_loss_outside + dirichlet_loss + interface_loss
+        laplacian_loss_inside_value = laplacian_loss(subdomain_in, data = data, data_norm = data_norm, mask = inner_mask)
+        laplacian_loss_outside_value = laplacian_loss(subdomain_out, data = data, data_norm = data_norm, mask = outer_mask)
+        dirichlet_loss_value = dirichlet_loss(subdomain_out)
+        interface_loss_value = interface_loss(subdomain_in, subdomain_out, data_norm = data_norm)
+        loss = laplacian_loss_inside_value + laplacian_loss_outside_value + dirichlet_loss_value + interface_loss_value
 
         # Backpropagation
         loss.backward()
         optimizer.step()
+
+        # Update total loss
         total_loss += loss.item()
+
+        # Save batch losses
+        laplacian_losses_inside.append(laplacian_loss_inside_value.item())
+        laplacian_losses_outside.append(laplacian_loss_outside_value.item())
+        interface_losses.append(interface_loss_value.item())
+        dirichlet_losses.append(dirichlet_loss_value.item())
+        total_losses.append(loss.item())
+
+
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
     # Save epoch losses

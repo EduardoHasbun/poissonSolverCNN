@@ -90,8 +90,6 @@ for epoch in range(num_epochs):
         
         # Update total loss
         total_loss += loss.item()
-        epoch_laplacian_loss += laplacian_loss_value.item()
-        epoch_dirichlet_loss += dirichlet_loss_value.item()
         
         # Save batch losses
         laplacian_losses.append(laplacian_loss_value.item())
