@@ -1,11 +1,11 @@
 general:
-    name_case: 'interface_12.pth'
+    name_case: 'Unet4_ks3_rf200_interface'
     data_dir: 'dataset/generated/random_data.npy' 
 
 
 arch:
     model: "UNet"
-    arch_dir: 'Unet_ks3_rf100.yml'
+    arch_dir: 'Unet_ks3_rf200.yml'
     type: 'UNet4'
 
 
@@ -37,7 +37,7 @@ loss:
         optimizer_lr: 4.e-3   
 
 trainer:
-    epochs: 15                            # Number of epochs
+    epochs: 100                            # Number of epochs
 
 
 

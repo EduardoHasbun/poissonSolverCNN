@@ -78,6 +78,11 @@ interface_loss = InterfaceBoundaryLoss(interface_weight, interface_boundary, int
                                         epsilon_inside, epsilon_outside, dx, dy)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
+# Initialize lists to store losses
+laplacian_losses = []  # To store Laplacian losses
+dirichlet_losses = []  # To store Dirichlet losses
+interface_losses = []  # To store Interface losses
+total_losses = [] # To store total losses   
 
 print(f"Model used: {cfg['arch']['arch_dir']}, {arch_type}")
 # Train loop
@@ -92,10 +97,11 @@ for epoch in range (num_epochs):
         subdomain_in, subdomain_out = model(data)
 
         # Loss
-        loss = laplacian_loss(subdomain_in, data = data, data_norm = data_norm, mask = inner_mask)
-        loss += laplacian_loss(subdomain_out, data = data, data_norm = data_norm, mask = outer_mask)
-        loss += dirichlet_loss(subdomain_out)
-        loss += interface_loss(subdomain_in, subdomain_out, data_norm = data_norm)
+        laplacian_loss_inside = laplacian_loss(subdomain_in, data = data, data_norm = data_norm, mask = inner_mask)
+        laplacian_loss_outside += laplacian_loss(subdomain_out, data = data, data_norm = data_norm, mask = outer_mask)
+        dirichlet_loss += dirichlet_loss(subdomain_out)
+        interface_loss += interface_loss(subdomain_in, subdomain_out, data_norm = data_norm)
+        loss = laplacian_loss_inside + laplacian_loss_outside + dirichlet_loss + interface_loss
 
         # Backpropagation
         loss.backward()
@@ -103,5 +109,18 @@ for epoch in range (num_epochs):
         total_loss += loss.item()
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
-    print(f"Epoch [{epoch + 1}/{num_epochs}] - Loss: {total_loss / len(dataloader)}")
-    torch.save(model.state_dict(), os.path.join(save_dir, case_name))
+    # Save epoch losses
+    print(f"Epoch [{epoch + 1}/{num_epochs}] - Total Loss: {total_loss / len(dataloader)}")
+    if epoch % 20 == 0:
+        torch.save(model.state_dict(), os.path.join(save_dir, case_name + f'_epoch_{epoch}' + '.pth'))
+
+# Save losses to a .txt file
+loss_file_path = os.path.join(save_dir, f"{case_name}_losses.txt")
+with open(loss_file_path, "w") as f:
+    f.write("Laplacian Losses:\n")
+    f.write(", ".join(map(str, laplacian_losses)) + "\n\n")
+    
+    f.write("Dirichlet Losses:\n")
+    f.write(", ".join(map(str, dirichlet_losses)) + "\n")
+
+print(f"Losses saved to {loss_file_path}")

@@ -104,7 +104,7 @@ for epoch in range(num_epochs):
     # Save epoch losses
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Total Loss: {total_loss / len(dataloader)}")
     if epoch % 20 == 0:
-        torch.save(model.state_dict(), os.path.join(save_dir, case_name + f'_epoch_{epoch}'))
+        torch.save(model.state_dict(), os.path.join(save_dir, case_name + f'_epoch_{epoch}' + '.pth'))
 
 # Save losses to a .txt file
 loss_file_path = os.path.join(save_dir, f"{case_name}_losses.txt")
