@@ -63,10 +63,9 @@ dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
 # Initialize lists to store losses
-epoch_losses = []  # To store total losses per epoch
-batch_losses = []  # To store batch losses
 laplacian_losses = []  # To store Laplacian losses
 dirichlet_losses = []  # To store Dirichlet losses
+total_losses = [] # To store total losses   
 
 # Train loop
 for epoch in range(num_epochs):
@@ -95,15 +94,14 @@ for epoch in range(num_epochs):
         epoch_dirichlet_loss += dirichlet_loss_value.item()
         
         # Save batch losses
-        batch_losses.append(loss.item())
         laplacian_losses.append(laplacian_loss_value.item())
         dirichlet_losses.append(dirichlet_loss_value.item())
-        
+        total_losses.append(loss.item())
+
         if batch_idx % 20 == 0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
 
     # Save epoch losses
-    epoch_losses.append(total_loss / len(dataloader))
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Total Loss: {total_loss / len(dataloader)}")
     if epoch % 20 == 0:
         torch.save(model.state_dict(), os.path.join(save_dir, case_name + f'_epoch_{epoch}'))
@@ -111,12 +109,6 @@ for epoch in range(num_epochs):
 # Save losses to a .txt file
 loss_file_path = os.path.join(save_dir, f"{case_name}_losses.txt")
 with open(loss_file_path, "w") as f:
-    f.write("Epoch Losses:\n")
-    f.write(", ".join(map(str, epoch_losses)) + "\n\n")
-    
-    f.write("Batch Losses:\n")
-    f.write(", ".join(map(str, batch_losses)) + "\n\n")
-    
     f.write("Laplacian Losses:\n")
     f.write(", ".join(map(str, laplacian_losses)) + "\n\n")
     

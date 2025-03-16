@@ -1,5 +1,5 @@
 general:
-  case_name: interface3d_7_epoch_20
+  case_name: interface3d_8_epoch_30
   model_dir: 'C:\Codigos\poissonSolverCNN\3D\training\trained_models\interface3d_7'
 
 arch:
