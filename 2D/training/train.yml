@@ -1,5 +1,5 @@
 general:
-    name_case: 'Unet4_ks3_rf200_opti_1e-1'
+    name_case: 'Unet4_ks3_rf200_opti_1e+1'
     data_dir: 'dataset/generated/random_data.npy' 
 
 
@@ -27,7 +27,7 @@ loss:
     args:
         bound_weight: 8.0e+2                  # Weighting of the loss on the boundaries (float)
         lapl_weight: 8.0e+5                   # Weighting of the loss on the Laplacian (float)
-        optimizer_lr: 1.e-4                   # Learning rate of the optimizer (float)   
+        optimizer_lr: 1.e+1                   # Learning rate of the optimizer (float)   
 
 trainer:
-    epochs: 30                            # Number of epochs
+    epochs: 31                            # Number of epochs
