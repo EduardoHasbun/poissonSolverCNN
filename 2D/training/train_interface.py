@@ -37,7 +37,7 @@ epsilon_inside, epsilon_outside = cfg['globals']['epsilon_inside'], cfg['globals
 Lx, Ly = xmax-xmin, ymax-ymin
 dx, dy = Lx / nnx, Ly / nny
 save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random.npy')
+data_dir = os.path.join(save_dir, '..', 'dataset', 'generated', 'random_data.npy')
 save_dir = os.path.join(save_dir, 'trained_models')
 case_name = cfg['general']['name_case']
 
