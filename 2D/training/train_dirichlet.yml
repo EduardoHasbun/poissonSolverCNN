@@ -1,11 +1,11 @@
 general:
-    name_case: 'Unet4_ks3_rf200_opti_1e-1'
+    name_case: 'Unet4_ks3_rf300_dirichlet'
     data_dir: 'dataset/generated/random_data.npy' 
 
 
 arch:
     model: "UNet"
-    arch_dir: 'Archs/Unet_ks3_rf200.yml'
+    arch_dir: 'Archs/Unet_ks3_rf300.yml'
     type: 'UNet4'
 
 
@@ -25,9 +25,9 @@ data_loader:
 
 loss:
     args:
-        bound_weight: 8.0e+2                  # Weighting of the loss on the boundaries (float)
+        bound_weight: 8.0e+9                  # Weighting of the loss on the boundaries (float)
         lapl_weight: 8.0e+5                   # Weighting of the loss on the Laplacian (float)
         optimizer_lr: 1.e-4                   # Learning rate of the optimizer (float)   
 
 trainer:
-    epochs: 30                            # Number of epochs
+    epochs: 200                            # Number of epochs
