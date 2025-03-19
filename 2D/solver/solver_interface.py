@@ -85,7 +85,7 @@ def analytical_solution(x, y, x0, y0, e_in, e_out, R, q):
     return solution
 
 # Set parameters
-alpha = 0.55
+alpha = 0.1
 ratio_max = op.ratio_potrhs(alpha, Lx, Ly)
 
 
@@ -108,7 +108,7 @@ out_in, out_out = model(input_data)
 output = torch.zeros_like(out_in)
 output[0, 0, interface_mask] = out_in[0, 0, interface_mask]
 output[0, 0, ~interface_mask] = out_out[0, 0, ~interface_mask]
-output_array = output.detach().numpy()[0, 0, :, :] * ratio_max 
+output_array = output.detach().numpy()[0, 0, :, :] * -ratio_max 
 
 
 # Plots
