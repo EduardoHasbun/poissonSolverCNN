@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Load the text file
-file_path = "C:/Codigos/poissonSolverCNN/2D/training/trained_models/Unet4_ks3_rf100.pth_losses.txt"
+file_path = "C:/Codigos/poissonSolverCNN/2D/training/trained_models/Unet4_ks3_rf200_opti_1e-5.pth_losses.txt"
 with open(file_path, "r") as file:
     lines = file.readlines()
 
@@ -53,14 +53,19 @@ for line in lines:
     except ValueError as e:
         print(f"Skipping malformed line: {line}")
 
+# Define how many steps you want to plot
+max_steps = 5000  # Change this value as needed
+
+# Slice data to limit the number of steps displayed
+laplacian_losses = laplacian_losses[:max_steps]
+dirichlet_losses = dirichlet_losses[:max_steps]
+
 # Define a reasonable maximum for better visualization
 max_loss = max(
-    max(epoch_losses, default=0),
-    max(batch_losses, default=0),
     max(laplacian_losses, default=0),
     max(dirichlet_losses, default=0)
 )
-y_limit = max_loss * 0.1  # Set limit to 10% of max loss
+y_limit = max_loss * 0.08  # Set limit to 10% of max loss
 
 # Plot
 plt.figure(figsize=(10, 5))
@@ -72,7 +77,7 @@ if dirichlet_losses:
 plt.ylim(0, y_limit)
 plt.xlabel("Step")
 plt.ylabel("Loss")
-plt.title("Losses Over Time")
+plt.title(f"Losses Over Time (First {max_steps} Steps)")
 plt.legend()
 plt.grid()
 plt.show()

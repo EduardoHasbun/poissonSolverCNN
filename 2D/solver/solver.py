@@ -64,11 +64,6 @@ def poisson_punctual_solution(x, y, charges):
         solution += -amplitude / (4 * np.pi) * np.log(distance + 1e-10)  # Avoid log(0)
     return solution
 
-# Define the analytical solution for a specific case
-def function2solve(x, y):
-    return torch.pow(x,3) + torch.pow(y,3)
-def resolvedfunction(x, y):
-    return 6 * x + 6 * y
 
 # Extract punctual charge parameters (amplitude and location) from params
 punctual_charges = []
@@ -82,7 +77,7 @@ for index in range(ngauss):
 resolution_data = poisson_punctual_solution(X, Y, punctual_charges)
 
 # Set parameters
-alpha = 0.5
+alpha = 2.0
 ratio_max = op.ratio_potrhs(alpha, Lx, Ly)
 
 # Create input data and resolution data
@@ -157,7 +152,7 @@ axs[1].set_ylabel('Y')
 plt.colorbar(img_resolution, ax=axs[1])
 
 # Plot Relative Error
-img_error = axs[2].imshow(relative_error, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=0, vmax=10)
+img_error = axs[2].imshow(relative_error, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=0, vmax=20)
 axs[2].set_title('Relative Error (%)')
 axs[2].set_xlabel('X')
 axs[2].set_ylabel('Y')

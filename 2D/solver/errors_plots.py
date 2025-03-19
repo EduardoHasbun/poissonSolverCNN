@@ -6,14 +6,16 @@ import pandas as pd
 # Data
 data = {
     "Case Name": [
-        "Unet4_ks3_rf50", "Unet3_ks3_rf50", "Unet3_ks3_rf100", "Unet4_ks3_rf100",
-        "Unet4_ks3_rf200", "Unet3_ks3_rf200", "Unet3_ks3_rf300", "Unet4_ks3_rf300", 
-        "Unet3_ks3_rf400", "Unet4_ks3_rf400", "MSNet3_ks3_rf50", "MSNet4_ks3_rf50",
-        "MSNet3_ks3_rf100", "MSNet3_ks3_rf200", "MSNet4_ks3_rf200"
+        "1e-5_epoch_20", "1e-5_epoch_40", "1e-5_epoch_60", "1e-5_epoch_80", "1e-5_epoch_100"
     ],
-    "Max Error (%)": [93.81, 88.87, 270.79, 226.82, 98.83, 169.87, 89.81, 101.50, 89.03, 88.83, 127.00, 72.85, 86.34, 96.57, 72.43],
-    "Avg Error (%)": [2.98, 3.83, 14.36, 7.99, 3.35, 15.12, 3.58, 3.91, 3.66, 3.52, 3.03, 3.02, 3.00, 2.85, 3.44]
+    "Max Error (%)": [
+        91.97, 93.66, 92.93, 92.60, 92.04
+    ],
+    "Avg Error (%)": [
+        2.91, 2.83, 2.84, 2.85, 2.91
+    ]
 }
+
 
 df = pd.DataFrame(data)
 

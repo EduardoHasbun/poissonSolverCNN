@@ -58,8 +58,8 @@ elif arch_model == 'MSNet':
     model = MSNet(scales, kernel_size, input_res = nnx)
 model = model.float()
 laplacian_loss = LaplacianLoss(cfg, lapl_weight, Lx, Ly)
-# Dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, nnx, nny)
+Dirichlet_loss = DirichletBoundaryLoss(bound_weight)
+# dirichlet_loss_function = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, nnx, nny)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
 # Initialize lists to store losses
@@ -81,7 +81,7 @@ for epoch in range(num_epochs):
         
         # Calculate individual losses
         laplacian_loss_value = laplacian_loss(output, data=data, data_norm=data_norm)
-        dirichlet_loss_value = dirichlet_loss_function(output)
+        dirichlet_loss_value = Dirichlet_loss(output)
         loss = laplacian_loss_value + dirichlet_loss_value
         
         # Backpropagation
