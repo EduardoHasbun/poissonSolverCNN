@@ -1,5 +1,5 @@
 general:
-    name_case: 'interface_Unet200.pth'
+    name_case: 'interface_Unet200'
     data_dir: 'dataset/generated/random_data.npy' 
 
 

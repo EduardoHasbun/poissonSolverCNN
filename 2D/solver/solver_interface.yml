@@ -1,6 +1,6 @@
 general:
-  case_name: Unet4_ks3_rf200_interface_epoch_40
-  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/trained_models/Unet4_ks3_rf200_interface_epoch_40.pth'
+  case_name: interface_Unet200_epoch_40
+  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/trained_models/interface_Unet200.pth_epoch_40.pth'
 
 arch:
     arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf200.yml'
