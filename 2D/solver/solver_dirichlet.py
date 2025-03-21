@@ -11,7 +11,7 @@ from models import UNet, MSNet
 import operators as op
 
 # Load YAML config
-with open('C:/Codigos/poissonSolverCNN/2D/solver/solver.yml', 'r') as file:
+with open('C:/Codigos/poissonSolverCNN/2D/solver/solver_dirichlet.yml', 'r') as file:
     cfg = yaml.load(file, Loader=yaml.FullLoader)
 
 # Get paths and configurations from YAML
