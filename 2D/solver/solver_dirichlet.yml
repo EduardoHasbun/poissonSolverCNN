@@ -1,6 +1,6 @@
 general:
-  case_name: Dirichlet_Unet4_ks3_rf100_epoch_40
-  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/trained_models/Dirichlet_Unet4_ks3_rf100_epoch_40.pth'
+  case_name: Dirichlet_Unet4_ks3_rf200_epoch_60
+  model_dir: 'C:/Codigos/poissonSolverCNN/2D/training/trained_models/Dirichlet_Unet4_ks3_rf200_epoch_60.pth'
 
 arch:
     arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf100.yml'
