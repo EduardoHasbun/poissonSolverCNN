@@ -30,4 +30,4 @@ loss:
         optimizer_lr: 4.e-5                   # Learning rate of the optimizer (float)   
 
 trainer:
-    epochs: 141                            # Number of epochs
+    epochs: 101                            # Number of epochs
