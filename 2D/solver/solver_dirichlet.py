@@ -27,7 +27,7 @@ arch_model = arch[arch_type]['type']
 scales_data = arch.get(arch_type, {}).get('args', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
 kernel_size = arch[arch_type]['args']['kernel_sizes']
-params = cfg['init']['args']
+
 
 # Set mesh
 xmin, xmax, nnx = cfg['mesh']['xmin'], cfg['mesh']['xmax'], cfg['mesh']['nnx']

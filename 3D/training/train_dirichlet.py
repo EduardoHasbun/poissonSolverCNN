@@ -50,7 +50,8 @@ if loss_type == 'inside':
 
 # Parameters to Nomalize
 alpha = 0.1
-ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
+# ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
+ratio_max = 0.20531964
 
 
 # Create Data
@@ -81,7 +82,7 @@ if loss_type == 'laplacian':
 elif loss_type == 'inside':
     inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
     print('Using Inside Loss \n')
-dirichlet_loss = DirichletBoundaryLoss(bound_weight)
+dirichlet_loss = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz)
 optimizer = optim.Adam(model.parameters(), lr = lr)
 
 # Train loop
@@ -103,7 +104,7 @@ for epoch in range (num_epochs):
         elif loss_type == 'inside':
             loss = inside_loss(output, target)
 
-        loss += dirichlet_loss(output)
+        loss += DirichletBoundaryLossFunction(output)
         loss.backward()
         optimizer.step()
         total_loss += loss.item()

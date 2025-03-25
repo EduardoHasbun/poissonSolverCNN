@@ -10,5 +10,5 @@ domain:
   zmax: 2.5
   nnz: 61
 n_it: 10000
-plotting: True
+plotting: False
 output_dir: ./generated
