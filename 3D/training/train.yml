@@ -9,10 +9,10 @@ arch:
     type: 'UNet4'
 
 
-globals:                                    # Domain sizes and others, used to compute global attributes
-    nnx: 35                                # Number of points in x direction
-    nny: 35                                # Number of points in y direction
-    nnz: 35
+globals:                                   # Domain sizes and others, used to compute global attributes
+    nnx: 61                                # Number of points in x direction
+    nny: 61                                # Number of points in y direction
+    nnz: 61                                # Number of points in z direction
     xmin: 0.0
     xmax: 5.0
     ymin: 0.0
