@@ -51,7 +51,7 @@ if __name__ == '__main__':
     for idx, random_data in log_progress(enumerate(pool.imap(generate_random, range(nits))), total=nits, desc="Processing"):
         random_data_array[idx] = random_data
 
-    file_path = os.path.join('generated', 'data.npy')
+    file_path = os.path.join('generated', 'rnadom.npy')
     print(np.shape(random_data_array))
     os.makedirs('generated', exist_ok=True)
     np.save(file_path, random_data_array)
