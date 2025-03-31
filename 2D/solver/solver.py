@@ -134,7 +134,7 @@ log_case_error(case_name, max_error, avg_error, r2_value)
 
 # Plotting
 fig, axs = plt.subplots(1, 3, figsize=(15, 5))
-fig.suptitle(case_name, fontsize=16)
+# fig.suptitle(case_name, fontsize=16)
 
 # Plot Output from NN
 vmin, vmax = np.min(output_array), np.max(output_array)
@@ -146,7 +146,7 @@ plt.colorbar(img_output, ax=axs[0])
 
 # Plot Analytical Solution
 img_resolution = axs[1].imshow(resolution_data, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)
-axs[1].set_title('Analytical Solution (Poisson)')
+axs[1].set_title('Analytical Solution')
 axs[1].set_xlabel('X')
 axs[1].set_ylabel('Y')
 plt.colorbar(img_resolution, ax=axs[1])

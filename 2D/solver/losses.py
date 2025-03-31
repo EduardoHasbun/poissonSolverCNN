@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Load the text file
-file_path = "C:/Codigos/poissonSolverCNN/2D/training/trained_models/Unet4_ks3_rf200_opti_1e-5.pth_losses.txt"
+file_path = "C:/Codigos/poissonSolverCNN/2D/training/trained_models/UNet4_ks3_rf200.pth_losses.txt"
 with open(file_path, "r") as file:
     lines = file.readlines()
 
@@ -77,7 +77,6 @@ if dirichlet_losses:
 plt.ylim(0, y_limit)
 plt.xlabel("Step")
 plt.ylabel("Loss")
-plt.title(f"Losses Over Time (First {max_steps} Steps)")
 plt.legend()
 plt.grid()
 plt.show()
