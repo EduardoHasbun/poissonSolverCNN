@@ -41,7 +41,6 @@ xmin, xmax = cfg['globals']['xmin'], cfg['globals']['xmax']
 ymin, ymax = cfg['globals']['ymin'], cfg['globals']['ymax']
 zmin, zmax = cfg['globals']['zmin'], cfg['globals']['zmax']
 nnx, nny, nnz = cfg['globals']['nnx'], cfg['globals']['nny'], cfg['globals']['nnz']
-Lx, Ly, Lz = xmax - xmin, ymax - ymin, zmax - zmin
 
 # Setup directories
 case_name = cfg['general']['name_case']
@@ -79,7 +78,7 @@ model = model.float()
 
 # Define losses
 if loss_type == 'laplacian':
-    laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight, Lx = Lx, Ly = Ly, Lz = Lz)
+    laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
     print('Using Laplacian Loss \n')
 elif loss_type == 'inside':
     inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
