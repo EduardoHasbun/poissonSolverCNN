@@ -41,6 +41,7 @@ xmin, xmax = cfg['globals']['xmin'], cfg['globals']['xmax']
 ymin, ymax = cfg['globals']['ymin'], cfg['globals']['ymax']
 zmin, zmax = cfg['globals']['zmin'], cfg['globals']['zmax']
 nnx, nny, nnz = cfg['globals']['nnx'], cfg['globals']['nny'], cfg['globals']['nnz']
+Lx, Ly, Lz = xmax - xmin, ymax - ymin, zmax - zmin
 
 # Setup directories
 case_name = cfg['general']['name_case']
