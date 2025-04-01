@@ -23,7 +23,7 @@ class LaplacianLossInterface(nn.Module):
     
 
 class LaplacianLoss(nn.Module):
-    def __init__(self, cfg, lapl_weight, Lx, Ly):
+    def __init__(self, cfg, lapl_weight, Lx, Ly, LZ):
         super().__init__()
         self.weight = lapl_weight
         self.dx = (cfg['globals']['xmax'] - cfg['globals']['xmin']) / cfg['globals']['nnx']
@@ -31,9 +31,10 @@ class LaplacianLoss(nn.Module):
         self.dz = (cfg['globals']['zmax'] - cfg['globals']['zmin']) / cfg['globals']['nnz']
         self.Lx = Lx
         self.Ly = Ly
+        self.Lz = LZ
     def forward(self, output, data=None, data_norm=1.):
-        laplacian = lapl(output / data_norm, self.dx, self.dy)
-        return self.Lx**2 * self.Ly**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
+        laplacian = lapl(output / data_norm, self.dx, self.dy, self.dz)
+        return self.Lx**2 * self.Ly**2 * self.Lz**2 * F.mse_loss(laplacian[:, 0, 1:-1, 1:-1], - data[:, 0, 1:-1, 1:-1]) * self.weight
     
 
     
