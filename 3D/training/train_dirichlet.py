@@ -42,7 +42,8 @@ Lx, Ly, Lz = xmax - xmin, ymax - ymin, zmax - zmin
 # --- Directories ---
 case_name = cfg['general']['name_case']
 data_dir = os.path.join('..', cfg['general']['data_dir'])
-save_dir = os.path.join(os.getcwd(), cfg['general']['save_dir'])
+save_dir = os.getcwd()
+save_dir = os.path.join(save_dir, 'trained_models')
 os.makedirs(save_dir, exist_ok=True)
 
 # --- Normalize parameter ---
