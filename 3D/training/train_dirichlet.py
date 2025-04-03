@@ -3,7 +3,7 @@ from models import UNet3D, MSNet3D
 import yaml
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
-from operators3d import ratio_potrhs, LaplacianLoss, DirichletBoundaryLossFunction, InsideLoss
+from operators3d import ratio_potrhs, LaplacianLoss, DirichletBoundaryLossFunction
 import torch.optim as optim
 import os
 import argparse
@@ -29,7 +29,6 @@ model_type = cfg['arch']['model']
 batch_size = cfg['data_loader']['batch_size']
 num_epochs = cfg['trainer']['epochs']
 lapl_weight = cfg['loss']['args']['lapl_weight']
-inside_weight = cfg['loss']['args']['inside_weight']
 bound_weight = cfg['loss']['args']['bound_weight']
 loss_type = cfg['loss']['type']
 lr = cfg['loss']['args']['optimizer_lr']
@@ -44,7 +43,6 @@ Lx, Ly, Lz = xmax - xmin, ymax - ymin, zmax - zmin
 # --- Directories ---
 case_name = cfg['general']['name_case']
 data_dir = os.path.join('..', cfg['general']['data_dir'])
-target_dir = os.path.join('..', cfg['general']['target_dir']) if loss_type == 'inside' else None
 save_dir = os.path.join(os.getcwd(), cfg['general']['save_dir'])
 os.makedirs(save_dir, exist_ok=True)
 
@@ -54,11 +52,7 @@ ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 # --- Load dataset ---
 dataset = np.load(data_dir).astype(np.float32)
-if loss_type == 'inside':
-    target = np.load(target_dir).astype(np.float32)
-    data_set = TensorDataset(torch.from_numpy(dataset), torch.from_numpy(target))
-else:
-    data_set = TensorDataset(torch.from_numpy(dataset))
+data_set = TensorDataset(torch.from_numpy(dataset))
 dataloader = DataLoader(data_set, batch_size=batch_size, shuffle=True)
 
 # --- Model ---
@@ -74,12 +68,7 @@ else:
 model = model.float()
 
 # --- Loss functions ---
-if loss_type == 'laplacian':
-    laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
-    print('Using Laplacian Loss\n')
-elif loss_type == 'inside':
-    inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
-    print('Using Inside Loss\n')
+laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
 dirichlet_loss = DirichletBoundaryLossFunction(bound_weight, xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz)
 
 optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -93,23 +82,15 @@ for epoch in range(num_epochs):
     for batch_idx, batch in enumerate(dataloader):
         optimizer.zero_grad()
 
-        if loss_type == 'inside':
-            data, target = batch
-            target = target[:, np.newaxis, :, :, :].float()
-        else:
-            data = batch[0]
+        data = batch[0]
         data = data[:, np.newaxis, :, :, :].float()
 
         data_norm = torch.ones((data.size(0), 1, 1, 1, 1)) / ratio_max
         output = model(data)
 
-        if loss_type == 'laplacian':
-            lap_loss = laplacian_loss(output, data=data, data_norm=data_norm)
-            loss = lap_loss
-            laplacian_losses.append(lap_loss.item())
-        elif loss_type == 'inside':
-            in_loss = inside_loss(output, target)
-            loss = in_loss
+        lap_loss = laplacian_loss(output, data=data, data_norm=data_norm)
+        loss = lap_loss
+        laplacian_losses.append(lap_loss.item())
 
         dir_loss = dirichlet_loss(output)
         loss += dir_loss
