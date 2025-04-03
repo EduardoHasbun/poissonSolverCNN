@@ -28,8 +28,8 @@ data_loader:
 
 loss:
     args:
-        bound_weight: 9.0e+11                  # Weighting of the loss on the boundaries (float)
-        lapl_weight: 5.0e+6                   # Weighting of the loss on the Laplacian (float)
+        bound_weight: 9.0e+5                  # Weighting of the loss on the boundaries (float)
+        lapl_weight: 5.0e+1                   # Weighting of the loss on the Laplacian (float)
         optimizer_lr: 4.e-5                   # Learning rate of the optimizer (float)   
 
 trainer:
