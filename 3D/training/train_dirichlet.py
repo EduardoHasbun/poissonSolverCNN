@@ -1,6 +1,5 @@
 import torch
-from unet3d import UNet3D
-from msnet3d import MSNet3D
+from models import UNet3D, MSNet3D
 import yaml
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
