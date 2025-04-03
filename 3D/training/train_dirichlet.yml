@@ -1,6 +1,6 @@
 general:
     name_case: 'Dirichlet_Unet4_ks3_rf400_3D'
-    data_dir: 'dataset/generated/random_data.npy' 
+    data_dir: 'dataset/generated/random.npy' 
 
 
 arch:
