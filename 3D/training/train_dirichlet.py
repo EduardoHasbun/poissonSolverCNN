@@ -30,7 +30,6 @@ batch_size = cfg['data_loader']['batch_size']
 num_epochs = cfg['trainer']['epochs']
 lapl_weight = cfg['loss']['args']['lapl_weight']
 bound_weight = cfg['loss']['args']['bound_weight']
-loss_type = cfg['loss']['type']
 lr = cfg['loss']['args']['optimizer_lr']
 
 # --- Domain and resolution ---
