@@ -65,7 +65,7 @@ class LaplacianLossInterface(nn.Module):
         k_w = k_w.unsqueeze(0).unsqueeze(0)
         k_w = k_w.expand(output.shape[0], -1, -1, -1, -1)
         loss = F.mse_loss(laplacian[:, 0, self.inner_mask], torch.zeros_like(laplacian[:, 0, self.inner_mask])) 
-        loss += F.mse_loss(laplacian[:, 0, self.outer_mask], k_w[self.outer_mask] ** 2 * output[:, 0, self.outer_mask])
+        loss += F.mse_loss(laplacian[:, 0, self.outer_mask], k_w[:, 0, self.outer_mask] ** 2 * output[:, 0, self.outer_mask])
         return loss * self.weight
 
 
