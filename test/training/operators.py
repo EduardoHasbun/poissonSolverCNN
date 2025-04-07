@@ -28,22 +28,22 @@ class LaplacianLossInterface(nn.Module):
         epsilon = e_in * self.eps_0
 
         # Mask out zero charges
-        q = np.asarray(q)
-        xq = np.asarray(xq)
-        mask = ~np.isclose(q, 0.0)
+        q = torch.asarray(q)
+        xq = torch.asarray(xq)
+        mask = ~torch.isclose(q, 0.0)
         q = q[mask]          # (m,)
         xq = xq[mask]        # (m, 3)
 
         if len(q) == 0:
-            return np.zeros(points.shape[0])  # No charges → kappa = 0
+            return torch.zeros(points.shape[0])  # No charges → kappa = 0
 
         # Compute distances
-        r = np.linalg.norm(points[:, None, :] - xq[None, :, :], axis=2)  # (N, M)
+        r = torch.linalg.norm(points[:, None, :] - xq[None, :, :], axis=2)  # (N, M)
 
         sigma = 1e-10  # Gaussian width
-        z = np.round(q / self.e).astype(int)
-        z2_density = np.sum(
-            (z**2)[None, :] * np.exp(-r**2 / (2 * sigma**2)) / ((2 * np.pi * sigma**2)**1.5),
+        z = torch.round(q / self.e).astype(int)
+        z2_density = torch.sum(
+            (z**2)[None, :] * torch.exp(-r**2 / (2 * sigma**2)) / ((2 * torch.pi * sigma**2)**1.5),
             axis=1
         )
 
