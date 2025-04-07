@@ -29,6 +29,10 @@ def spherical_to_cartesian(radius, zenith, azimuth):
 
 def generate_random(args):
     cfg, i = args
+
+    # NEW: ensure different RNG state per process
+    np.random.seed(os.getpid() + i)
+
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
     ymin, ymax, nny = cfg['domain']['ymin'], cfg['domain']['ymax'], cfg['domain']['nny']
     zmin, zmax, nnz = cfg['domain']['zmin'], cfg['domain']['zmax'], cfg['domain']['nnz']
@@ -52,6 +56,7 @@ def generate_random(args):
 
     rhs = rhs_punctual_charges(points, q, xq).reshape((nnx, nny, nnz))
     return rhs, q, xq
+
 
 
 if __name__ == '__main__':
