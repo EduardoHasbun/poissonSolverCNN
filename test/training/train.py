@@ -172,7 +172,7 @@ dataloader = DataLoader(dataset,
 model = UNet3DCombined(
     scales=scales,
     kernel_sizes=kernel_size,
-    input_shape=(nnx, nny, nnz)
+    input_res=(nnx, nny, nnz)
 ).double().to(device)
 
 laplacian_loss = LaplacianLossInterface(cfg, lapl_weight, inner_mask, outer_mask, points)
@@ -220,7 +220,7 @@ for epoch in range(num_epochs):
         loss = lap_total + dirich_total + interf_total
         loss.backward()
         optimizer.step()
-        
+
         laplacian_losses.append(lap_total.item() / batch_size)
         dirichlet_losses.append(dirich_total.item() / batch_size)
         interface_losses.append(interf_total.item() / batch_size)
