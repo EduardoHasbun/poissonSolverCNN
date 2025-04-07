@@ -69,9 +69,10 @@ dx, dy, dz = Lx / nnx, Ly / nny, Lz / nnz
 # -----------------------------------------------
 # Paths
 # -----------------------------------------------
-save_dir = os.getcwd()
-data_dir = os.path.join(save_dir, '..', cfg['general']['data_dir'])
-save_dir = os.path.join(save_dir, 'trained_models')
+script_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(script_dir)
+data_dir = os.path.join(parent_dir, cfg['general']['data_dir'])
+save_dir = os.path.join(script_dir, 'trained_models')
 os.makedirs(save_dir, exist_ok=True)
 case_name = cfg['general']['name_case']
 
