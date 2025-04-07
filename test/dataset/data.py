@@ -30,7 +30,7 @@ def spherical_to_cartesian(radius, zenith, azimuth):
 def generate_random(args):
     cfg, i = args
 
-    # NEW: ensure different RNG state per process
+    # Ensure different RNG state per process
     np.random.seed(os.getpid() + i)
 
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
