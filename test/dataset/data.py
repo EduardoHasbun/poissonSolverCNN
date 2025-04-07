@@ -91,10 +91,10 @@ if __name__ == '__main__':
     os.makedirs('generated', exist_ok=True)
 
     # Save 
-    np.savez(os.path.join('generated', 'dataset.npz'),
-            rhs=rhs_data_array,
-            q=q_array,
-            xq=xq_array)
+    np.savez_compressed(os.path.join('generated', 'dataset.npz'),
+                        rhs=rhs_data_array,
+                        q=q_array,
+                        xq=xq_array)
 
     # Optional plotting
     if plotting:

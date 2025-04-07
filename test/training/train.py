@@ -7,7 +7,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
 
-from models import UNetCombined3D
+from models import UNet3DCombined
 from operators import (
     ratio_potrhs,
     LaplacianLossInterface,
@@ -139,7 +139,7 @@ dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 # -----------------------------------------------
 # Modelo y funciones de pérdida
 # -----------------------------------------------
-model = UNetCombined3D(
+model = UNet3DCombined(
     scales=scales,
     kernel_sizes=kernel_size,
     input_shape=(nnx, nny, nnz)
