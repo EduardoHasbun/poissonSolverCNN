@@ -55,8 +55,11 @@ class LaplacianLossInterface(nn.Module):
 
     def forward(self, output, q, xq, data_norm = 1.):
         laplacian = lapl_interface(output / data_norm, self.dx, self.dy, self.dz, self.inner_mask, self.epsilon_inside, self.epsilon_outside)
-        k_w = self.k_w(self.points, q, xq, self.epsilon_inside).reshape(self.cfg['globals']['nnx'],
-                                                self.cfg['globals']['nny'], self.cfg['globals']['nnz']).unsqueeze(0).unsqueeze(0).expand(output.shape[0], 1, -1, -1, -1)
+        k_w = k_w.reshape(self.cfg['globals']['nnx'],
+                  self.cfg['globals']['nny'],
+                  self.cfg['globals']['nnz'])
+        k_w = k_w.unsqueeze(0).unsqueeze(0)
+        k_w = k_w.expand(output.shape[0], -1, -1, -1, -1)
         loss = F.mse_loss(laplacian[:, 0, self.inner_mask], torch.zeros_like(laplacian[:, 0, self.inner_mask])) 
         loss += F.mse_loss(laplacian[:, 0, self.outer_mask], k_w[self.outer_mask] ** 2 * output[:, 0, self.outer_mask])
         return loss * self.weight
