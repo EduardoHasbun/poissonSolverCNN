@@ -7,6 +7,7 @@ import argparse
 from tqdm import tqdm as log_progress
 import matplotlib.pyplot as plt
 import time
+import pickle
 
 
 def rhs_punctual_charges(points, q, xq, sigma=0.02):
@@ -91,10 +92,8 @@ if __name__ == '__main__':
     os.makedirs('generated', exist_ok=True)
 
     # Save 
-    np.savez_compressed(os.path.join('generated', 'dataset.npz'),
-                        rhs=rhs_data_array,
-                        q=q_array,
-                        xq=xq_array)
+    with open('generated/dataset.pkl', 'wb') as f:
+        pickle.dump({'rhs': rhs_data_array, 'q': q_list, 'xq': xq_list}, f)
 
     # Optional plotting
     if plotting:
