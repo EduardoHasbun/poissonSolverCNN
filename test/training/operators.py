@@ -184,13 +184,13 @@ class InterfaceBoundaryLoss(nn.Module):
         return normal_derivate_inner, normal_derivate_outer
     
     
-    def G(X, q, xq, epsilon):
+    def G(self, q, xq):
         # Mask out zero charges
         q_mask = ~torch.isclose(q, torch.tensor(0.0, dtype=q.dtype, device=q.device))
         q = q[q_mask]            # (m,)
         xq = xq[q_mask]          # (m, 3)
 
-        r_vec_expanded = X.unsqueeze(1)         # (n, 1, 3)
+        r_vec_expanded = self.points.unsqueeze(1)         # (n, 1, 3)
         x_qs_expanded = xq.unsqueeze(0)         # (1, m, 3)
         r_diff = r_vec_expanded - x_qs_expanded # (n, m, 3)
         r = torch.norm(r_diff, dim=2)           # (n, m)
@@ -198,7 +198,7 @@ class InterfaceBoundaryLoss(nn.Module):
 
         q_over_r = q / r                        # (n, m)
         total_sum = torch.sum(q_over_r, dim=1) # (n,)
-        result = (1 / (epsilon * 4 * torch.pi)) * total_sum
+        result = (1 / (self.e_in * 4 * torch.pi)) * total_sum
         return result
 
 
