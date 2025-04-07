@@ -25,31 +25,36 @@ class LaplacianLossInterface(nn.Module):
     
 
     def k_w(self, points, q, xq, e_in, T=300):
+        # Ensure all are torch tensors
+        if not isinstance(points, torch.Tensor):
+            points = torch.tensor(points, dtype=torch.float32, device=q.device)
+
         epsilon = e_in * self.eps_0
 
         # Mask out zero charges
-        q = torch.asarray(q)
-        xq = torch.asarray(xq)
+        q = torch.as_tensor(q, device=points.device)
+        xq = torch.as_tensor(xq, device=points.device)
         mask = ~torch.isclose(q, torch.tensor(0.0, dtype=q.dtype, device=q.device))
         q = q[mask]          # (m,)
         xq = xq[mask]        # (m, 3)
 
         if len(q) == 0:
-            return torch.zeros(points.shape[0])  # No charges → kappa = 0
+            return torch.zeros(points.shape[0], device=points.device)  # No charges → kappa = 0
 
         # Compute distances
-        r = torch.linalg.norm(points[:, None, :] - xq[None, :, :], axis=2)  # (N, M)
+        r = torch.linalg.norm(points[:, None, :] - xq[None, :, :], dim=2)  # (N, M)
 
         sigma = 1e-10  # Gaussian width
-        z = torch.round(q / self.e).astype(int)
+        z = torch.round(q / self.e).int()
         z2_density = torch.sum(
             (z**2)[None, :] * torch.exp(-r**2 / (2 * sigma**2)) / ((2 * torch.pi * sigma**2)**1.5),
-            axis=1
+            dim=1
         )
 
         kappa_squared = (self.e**2 / (epsilon * self.kB * T)) * z2_density
-        kappa = np.sqrt(kappa_squared)
+        kappa = torch.sqrt(kappa_squared)
         return kappa
+
 
 
     def forward(self, output, q, xq, data_norm = 1.):
