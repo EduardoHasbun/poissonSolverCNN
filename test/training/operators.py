@@ -26,21 +26,30 @@ class LaplacianLossInterface(nn.Module):
     def k_w(self, points, q, xq, e_in, T=300):
         epsilon = e_in * self.eps_0
 
-        # Compute distances to each charge (N, M)
+        # Mask out zero charges
+        q = np.asarray(q)
+        xq = np.asarray(xq)
+        mask = ~np.isclose(q, 0.0)
+        q = q[mask]          # (m,)
+        xq = xq[mask]        # (m, 3)
+
+        if len(q) == 0:
+            return np.zeros(points.shape[0])  # No charges → kappa = 0
+
+        # Compute distances
         r = np.linalg.norm(points[:, None, :] - xq[None, :, :], axis=2)  # (N, M)
 
-        # Smooth delta function approximation (local charge density per unit volume)
-        sigma = 1e-10  # width of Gaussian (~1 Å)
-
-        # Assume valence z = q / e (integer), and n = density / |z| / e
+        sigma = 1e-10  # Gaussian width
         z = np.round(q / self.e).astype(int)
-        z2_density = np.sum((z**2)[None, :] * np.exp(-r**2 / (2 * sigma**2)) / ((2 * np.pi * sigma**2)**1.5), axis=1)
+        z2_density = np.sum(
+            (z**2)[None, :] * np.exp(-r**2 / (2 * sigma**2)) / ((2 * np.pi * sigma**2)**1.5),
+            axis=1
+        )
 
-        # Final inverse Debye length squared
         kappa_squared = (self.e**2 / (epsilon * self.kB * T)) * z2_density
         kappa = np.sqrt(kappa_squared)
-
         return kappa
+
        
 
     def forward(self, output, q, xq, data_norm = 1.):
@@ -167,28 +176,43 @@ class InterfaceBoundaryLoss(nn.Module):
     
     
     def G(X, q, xq, epsilon):
-        r_vec_expanded = torch.expand_dims(X, axis=1)  # Shape: (n, 1, 3)
-        x_qs_expanded = torch.expand_dims(xq, axis=0)  # Shape: (1, m, 3)
-        r_diff = r_vec_expanded - x_qs_expanded     # Shape: (n, m, 3)
-        r = torch.sqrt(torch.sum(torch.square(r_diff), axis=2))  # Shape: (n, m)
-        q_over_r = q / r  # Shape: (n, m)
-        total_sum = torch.sum(q_over_r, axis=1)  # Shape: (n,)
-        result = (1 / (epsilon * 4 * torch.pi)) * total_sum  # Shape: (n,)
+        # Mask out zero charges
+        q_mask = ~torch.isclose(q, torch.tensor(0.0, dtype=q.dtype, device=q.device))
+        q = q[q_mask]            # (m,)
+        xq = xq[q_mask]          # (m, 3)
+
+        r_vec_expanded = X.unsqueeze(1)         # (n, 1, 3)
+        x_qs_expanded = xq.unsqueeze(0)         # (1, m, 3)
+        r_diff = r_vec_expanded - x_qs_expanded # (n, m, 3)
+        r = torch.norm(r_diff, dim=2)           # (n, m)
+        r[r == 0] = torch.finfo(torch.float32).eps  # avoid div by zero
+
+        q_over_r = q / r                        # (n, m)
+        total_sum = torch.sum(q_over_r, dim=1) # (n,)
+        result = (1 / (epsilon * 4 * torch.pi)) * total_sum
         return result
 
 
-    def grad_G(self, X, q, xq, epsilon):
-        r_vec_expanded = X.unsqueeze(1)        # (n, 1, 3)
-        x_qs_expanded = xq.unsqueeze(0)        # (1, m, 3)
-        r_diff = r_vec_expanded - x_qs_expanded  # (n, m, 3)
-        r_squared = torch.sum(r_diff**2, dim=2)  # (n, m)
-        r_cubed = r_squared.pow(1.5)
-        r_cubed[r_cubed == 0] = torch.finfo(torch.float32).eps  # prevent divide by zero
 
-        coef = -q / r_cubed  # (n, m)
-        grad = coef.unsqueeze(2) * r_diff  # (n, m, 3)
-        total_grad = torch.sum(grad, dim=1)  # (n, 3)
+    def grad_G(self, X, q, xq, epsilon):
+        # Mask out zero charges
+        q_mask = ~torch.isclose(q, torch.tensor(0.0, dtype=q.dtype, device=q.device))
+        q = q[q_mask]         # (m,)
+        xq = xq[q_mask]       # (m, 3)
+
+        r_vec_expanded = X.unsqueeze(1)       # (n, 1, 3)
+        x_qs_expanded = xq.unsqueeze(0)       # (1, m, 3)
+        r_diff = r_vec_expanded - x_qs_expanded   # (n, m, 3)
+
+        r_squared = torch.sum(r_diff**2, dim=2)   # (n, m)
+        r_cubed = r_squared.pow(1.5)
+        r_cubed[r_cubed == 0] = torch.finfo(torch.float32).eps
+
+        coef = -q / r_cubed                      # (n, m)
+        grad = coef.unsqueeze(2) * r_diff       # (n, m, 3)
+        total_grad = torch.sum(grad, dim=1)     # (n, 3)
         return total_grad / (epsilon * 4 * torch.pi)
+
 
 
     def forward(self, output, q, xq, data_norm = 1.):

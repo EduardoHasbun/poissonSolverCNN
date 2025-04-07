@@ -127,15 +127,20 @@ outer_mask = outer_mask.to(device)
 # -----------------------------------------------
 # Cargar datos y DataLoader
 # -----------------------------------------------
-data_npz = np.load(data_dir, allow_pickle=True)
-data = data_npz['rhs']
-q_list = data_npz['q']
-xq_list = data_npz['xq']
-q_tensor = torch.from_numpy(q_list).double()
-xq_tensor = torch.from_numpy(xq_list).double()
-data_tensor = torch.from_numpy(data).double()
-dataset = TensorDataset(data_tensor, q_tensor, xq_tensor)
+data_npz = np.load(data_dir)
+rhs_data = data_npz['rhs']      # shape: (N, nnx, nny, nnz)
+q_data = data_npz['q']          # shape: (N, max_charges)
+xq_data = data_npz['xq']        # shape: (N, max_charges, 3)
+
+# Convert to tensors
+rhs_tensor = torch.from_numpy(rhs_data).double()
+q_tensor   = torch.from_numpy(q_data).double()
+xq_tensor  = torch.from_numpy(xq_data).double()
+
+# Dataset and DataLoader
+dataset = TensorDataset(rhs_tensor, q_tensor, xq_tensor)
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
 
 # -----------------------------------------------
 # Modelo y funciones de pérdida
