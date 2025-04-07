@@ -55,7 +55,7 @@ class LaplacianLossInterface(nn.Module):
 
     def forward(self, output, q, xq, data_norm = 1.):
         laplacian = lapl_interface(output / data_norm, self.dx, self.dy, self.dz, self.inner_mask, self.epsilon_inside, self.epsilon_outside)
-        k_w = k_w.reshape(self.cfg['globals']['nnx'],
+        k_w = self.k_w(self.points, q, xq, self.epsilon_inside).reshape(self.cfg['globals']['nnx'],
                   self.cfg['globals']['nny'],
                   self.cfg['globals']['nnz'])
         k_w = k_w.unsqueeze(0).unsqueeze(0)
