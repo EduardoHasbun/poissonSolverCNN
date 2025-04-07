@@ -203,7 +203,7 @@ class InterfaceBoundaryLoss(nn.Module):
 
 
 
-    def grad_G(self, X, q, xq, epsilon):
+    def grad_G(self, X, q, xq):
         # Mask out zero charges
         q_mask = ~torch.isclose(q, torch.tensor(0.0, dtype=q.dtype, device=q.device))
         q = q[q_mask]         # (m,)
@@ -220,7 +220,7 @@ class InterfaceBoundaryLoss(nn.Module):
         coef = -q / r_cubed                      # (n, m)
         grad = coef.unsqueeze(2) * r_diff       # (n, m, 3)
         total_grad = torch.sum(grad, dim=1)     # (n, 3)
-        return total_grad / (epsilon * 4 * torch.pi)
+        return total_grad / (self.e_in * 4 * torch.pi)
 
 
 
