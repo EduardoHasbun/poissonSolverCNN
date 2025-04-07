@@ -60,7 +60,7 @@ lr            = cfg['loss']['args']['optimizer_lr']
 
 arch_model = cfg['arch']['model']
 arch_type  = cfg['arch']['type']
-arch_dir   = os.path.join('../../Archs/', cfg['arch']['arch_dir'])
+arch_dir   = os.path.join(cfg['arch']['arch_dir'])
 
 with open(arch_dir) as yaml_arch:
     arch = yaml.safe_load(yaml_arch)
