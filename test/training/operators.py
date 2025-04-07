@@ -203,13 +203,13 @@ class InterfaceBoundaryLoss(nn.Module):
 
 
 
-    def grad_G(self, X, q, xq):
+    def grad_G(self, q, xq):
         # Mask out zero charges
         q_mask = ~torch.isclose(q, torch.tensor(0.0, dtype=q.dtype, device=q.device))
         q = q[q_mask]         # (m,)
         xq = xq[q_mask]       # (m, 3)
 
-        r_vec_expanded = X.unsqueeze(1)       # (n, 1, 3)
+        r_vec_expanded = self.points.unsqueeze(1)       # (n, 1, 3)
         x_qs_expanded = xq.unsqueeze(0)       # (1, m, 3)
         r_diff = r_vec_expanded - x_qs_expanded   # (n, m, 3)
 
@@ -226,7 +226,7 @@ class InterfaceBoundaryLoss(nn.Module):
 
     def forward(self, output, q, xq, data_norm = 1.):
         output = output / data_norm
-        g_c = self.G(self.points, q, xq, self.e_in).reshape(self.cfg['globals']['nnx'],
+        g_c = self.G(q, xq).reshape(self.cfg['globals']['nnx'],
                     self.cfg['globals']['nny'],
                     self.cfg['globals']['nnz'])
         g_c = g_c.unsqueeze(0).unsqueeze(0)
