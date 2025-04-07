@@ -1,6 +1,6 @@
 general:
     name_case: 'interface_combined_model'
-    data_dir: 'dataset/generated/dataset.pkl' 
+    data_dir: 'dataset/generated/dataset.npz' 
 
 
 arch:

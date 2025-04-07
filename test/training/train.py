@@ -4,34 +4,8 @@ import numpy as np
 import os
 import argparse
 import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset, Dataset
-import pickle
-
-class PoissonChargeDataset(Dataset):
-    def __init__(self, rhs_data, q_list, xq_list):
-        self.rhs_data = torch.from_numpy(rhs_data).double()
-        self.q_list = q_list
-        self.xq_list = xq_list
-
-    def __len__(self):
-        return len(self.rhs_data)
-
-    def __getitem__(self, idx):
-        rhs = self.rhs_data[idx]
-        q = torch.from_numpy(self.q_list[idx]).double()
-        xq = torch.from_numpy(self.xq_list[idx]).double()
-        return rhs, q, xq
-
-
-def poisson_collate_fn(batch):
-    """
-    Permite batch_size > 1 para datos con longitud variable (q, xq)
-    """
-    rhs_batch = torch.stack([item[0] for item in batch])  # (B, nx, ny, nz)
-    q_batch = [item[1] for item in batch]  # lista de tensores (q_i)
-    xq_batch = [item[2] for item in batch]  # lista de tensores (xq_i)
-    return rhs_batch, q_batch, xq_batch
-
+from torch.utils.data import DataLoader, TensorDataset
+import matplotlib.pyplot as plt
 
 from models import UNet3DCombined
 from operators import (
@@ -60,7 +34,7 @@ lr            = cfg['loss']['args']['optimizer_lr']
 
 arch_model = cfg['arch']['model']
 arch_type  = cfg['arch']['type']
-arch_dir   = os.path.join('../', cfg['arch']['arch_dir'])
+arch_dir   = os.path.join('../../Archs/', cfg['arch']['arch_dir'])
 
 with open(arch_dir) as yaml_arch:
     arch = yaml.safe_load(yaml_arch)
@@ -153,18 +127,16 @@ outer_mask = outer_mask.to(device)
 # -----------------------------------------------
 # Cargar datos y DataLoader
 # -----------------------------------------------
-with open(data_dir, 'rb') as f:
-    data_dict = pickle.load(f)
-rhs_data = data_dict['rhs']
-q_list = data_dict['q']
-xq_list = data_dict['xq']
-dataset = PoissonChargeDataset(rhs_data, q_list, xq_list)
-dataloader = DataLoader(dataset,
-                        batch_size=batch_size,
-                        shuffle=True,
-                        collate_fn=poisson_collate_fn)
-
-
+data_npz = np.load(data_dir, allow_pickle=True)
+data = data_npz['rhs']
+q_list = data_npz['q']
+xq_list = data_npz['xq']
+print(q_list.shape, xq_list.shape)
+q_tensor = torch.from_numpy(q_list).double()
+xq_tensor = torch.from_numpy(xq_list).double()
+data_tensor = torch.from_numpy(data).double()
+dataset = TensorDataset(data_tensor, q_tensor, xq_tensor)
+dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 # -----------------------------------------------
 # Modelo y funciones de pérdida
@@ -172,7 +144,7 @@ dataloader = DataLoader(dataset,
 model = UNet3DCombined(
     scales=scales,
     kernel_sizes=kernel_size,
-    input_res=[nnx, nny, nnz]
+    input_shape=(nnx, nny, nnz)
 ).double().to(device)
 
 laplacian_loss = LaplacianLossInterface(cfg, lapl_weight, inner_mask, outer_mask, points)
@@ -192,40 +164,31 @@ print(f"Model used: {cfg['arch']['arch_dir']}, {arch_type}")
 for epoch in range(num_epochs):
     total_loss = 0.0
 
-    for batch_idx, (rhs_batch, q_batch, xq_batch) in enumerate(dataloader):
-        rhs_batch = rhs_batch.unsqueeze(1).to(device)  # (B, 1, nx, ny, nz)
-        mask_tensor = inner_mask.unsqueeze(0).unsqueeze(0).expand_as(rhs_batch).double().to(device)
-        data_norm = torch.ones((rhs_batch.size(0),1,1,1,1), dtype=torch.double, device=device) / ratio_max
+    for batch_idx, (batch, q_batch, xq_batch) in enumerate(dataloader):
+        batch = batch.unsqueeze(1).to(device)  
+        mask_tensor = inner_mask.unsqueeze(0).unsqueeze(0).expand_as(batch).double().to(device)
+        data_norm = torch.ones((batch.size(0),1,1,1,1), dtype=torch.double, device=device) / ratio_max
 
-        input_tensor = torch.cat([rhs_batch, mask_tensor], dim=1)
+        input_tensor = torch.cat([batch, mask_tensor], dim=1)  
 
-        output = model(input_tensor)
+        q_batch = q_batch.to(device)     
+        xq_batch = xq_batch.to(device)   
 
-        # Calcular las pérdidas acumulando por muestra
-        lap_total, dirich_total, interf_total = 0, 0, 0
-        for i in range(rhs_batch.size(0)):
-            q_i = q_batch[i].to(device)
-            xq_i = xq_batch[i].to(device)
-            out_i = output[i].unsqueeze(0)  # (1, 1, nx, ny, nz)
-            dn_i = data_norm[i].unsqueeze(0)
+        output = model(input_tensor)  
 
-            lap_i = laplacian_loss(out_i, q_i, xq_i, dn_i)
-            dirich_i = dirichlet_loss(out_i)
-            interf_i = interface_loss(out_i, q_i, xq_i, data_norm=dn_i)
+        laplacian = laplacian_loss(output, q_batch, xq_batch, data_norm)
+        dirichlet = dirichlet_loss(output)
+        interface = interface_loss(output, q_batch, xq_batch, data_norm=data_norm)
 
-            lap_total += lap_i
-            dirich_total += dirich_i
-            interf_total += interf_i
-
-        loss = lap_total + dirich_total + interf_total
+        loss = laplacian + dirichlet + interface
         loss.backward()
         optimizer.step()
 
-        laplacian_losses.append(lap_total.item() / batch_size)
-        dirichlet_losses.append(dirich_total.item() / batch_size)
-        interface_losses.append(interf_total.item() / batch_size)
-        total_losses.append(loss.item() / batch_size)
-
+        total_loss += loss.item()
+        laplacian_losses.append(laplacian.item())
+        dirichlet_losses.append(dirichlet.item())
+        interface_losses.append(interface.item())
+        total_losses.append(loss.item())
 
         if batch_idx % 20 == 0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item():.6f}")
@@ -241,7 +204,7 @@ for epoch in range(num_epochs):
 loss_file = os.path.join(save_dir, f"{case_name}_losses.txt")
 with open(loss_file, "w") as f:
     f.write("Laplacian Losses:\n")
-    f.write(", ".join(map(str, laplacian)) + "\n\n")
+    f.write(", ".join(map(str, laplacian_losses)) + "\n\n")
     f.write("Dirichlet Losses:\n")
     f.write(", ".join(map(str, dirichlet_losses)) + "\n\n")
     f.write("Interface Losses:\n")
