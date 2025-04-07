@@ -34,7 +34,7 @@ def generate_random(args):
     zmin, zmax, nnz = cfg['domain']['zmin'], cfg['domain']['zmax'], cfg['domain']['nnz']
     R = cfg['gausseans']['R']
     max_radius = cfg['gausseans']['max_radius'] * R
-    sigma = cfg['gausseans']['sigma']
+    sigma = float(cfg['gausseans']['sigma'])
 
     x, y, z = np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny), np.linspace(zmin, zmax, nnz)
     X, Y, Z = np.meshgrid(x, y, z, indexing="ij")
