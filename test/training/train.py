@@ -128,7 +128,7 @@ outer_mask = outer_mask.to(device)
 # Cargar datos y DataLoader
 # -----------------------------------------------
 data_npz = np.load(data_dir, allow_pickle=True)
-data = data_npz['data']
+data = data_npz['dataset']
 q_list = data_npz['q']
 xq_list = data_npz['xq']
 q_tensor = torch.from_numpy(q_list).double()
