@@ -17,5 +17,5 @@ gausseans:
   max_radius: 0.7
   sigma: 1e-4
 
-n_it: 5
+n_it: 10000
 plotting: False
