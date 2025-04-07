@@ -131,7 +131,6 @@ data_npz = np.load(data_dir, allow_pickle=True)
 data = data_npz['rhs']
 q_list = data_npz['q']
 xq_list = data_npz['xq']
-print(q_list.shape, xq_list.shape)
 q_tensor = torch.from_numpy(q_list).double()
 xq_tensor = torch.from_numpy(xq_list).double()
 data_tensor = torch.from_numpy(data).double()
