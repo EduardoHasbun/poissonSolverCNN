@@ -30,7 +30,7 @@ class LaplacianLossInterface(nn.Module):
         # Mask out zero charges
         q = torch.asarray(q)
         xq = torch.asarray(xq)
-        mask = ~torch.isclose(q, 0.0)
+        mask = ~torch.isclose(q, torch.tensor(0.0, dtype=q.dtype, device=q.device))
         q = q[mask]          # (m,)
         xq = xq[mask]        # (m, 3)
 
@@ -51,7 +51,6 @@ class LaplacianLossInterface(nn.Module):
         kappa = np.sqrt(kappa_squared)
         return kappa
 
-       
 
     def forward(self, output, q, xq, data_norm = 1.):
         laplacian = lapl_interface(output / data_norm, self.dx, self.dy, self.dz, self.inner_mask, self.epsilon_inside, self.epsilon_outside)
