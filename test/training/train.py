@@ -172,7 +172,7 @@ dataloader = DataLoader(dataset,
 model = UNet3DCombined(
     scales=scales,
     kernel_sizes=kernel_size,
-    input_res=(nnx, nny, nnz)
+    input_res=[nnx, nny, nnz]
 ).double().to(device)
 
 laplacian_loss = LaplacianLossInterface(cfg, lapl_weight, inner_mask, outer_mask, points)
