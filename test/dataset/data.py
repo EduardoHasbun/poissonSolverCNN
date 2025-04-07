@@ -2,12 +2,10 @@ import numpy as np
 import os
 from multiprocessing import Pool, cpu_count
 import yaml
-from scipy import special as sp
 import argparse
 from tqdm import tqdm as log_progress
 import matplotlib.pyplot as plt
 import time
-import pickle
 
 
 def rhs_punctual_charges(points, q, xq, sigma=0.02):
@@ -92,8 +90,10 @@ if __name__ == '__main__':
     os.makedirs('generated', exist_ok=True)
 
     # Save 
-    with open('generated/dataset.pkl', 'wb') as f:
-        pickle.dump({'rhs': rhs_data_array, 'q': q_list, 'xq': xq_list}, f)
+    np.savez_compressed(os.path.join('generated', 'dataset.npz'),
+                        rhs=rhs_data_array,
+                        q=q_array,
+                        xq=xq_array)
 
     # Optional plotting
     if plotting:
@@ -104,3 +104,9 @@ if __name__ == '__main__':
             ax.set_title('RHS')
             plt.savefig(os.path.join(plots_dir, f'plot_{idx}.png'))
             plt.close()
+
+    with open(os.path.join('generated', 'charges_data.txt'), 'w') as f:
+        for i in range(nits):
+            f.write(f"Sample {i}:\n")
+            f.write("q = " + ", ".join(map(str, q_list[i])) + "\n")
+            f.write("xq = [" + "; ".join(" ".join(map(str, x)) for x in xq_list[i]) + "]\n\n")
