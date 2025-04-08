@@ -85,7 +85,7 @@ class DirichletBoundaryLoss(nn.Module):
     
 
 class InterfaceBoundaryLoss(nn.Module):
-    def __init__(self, bound_weight, boundary, inner_mask, outer_mask, center, radius, points, e_in, e_out, dx, dy, dz):
+    def __init__(self, cfg, bound_weight, boundary, inner_mask, outer_mask, center, radius, points, e_in, e_out, dx, dy, dz):
         super().__init__()
         self.weight = bound_weight
         self.boundary = boundary
@@ -99,6 +99,7 @@ class InterfaceBoundaryLoss(nn.Module):
         self.dz = dz
         self.center = center
         self.radius = radius
+        self.cfg = cfg
 
         # Get boundary indices
         boundary_indices = torch.nonzero(self.boundary, as_tuple=True)

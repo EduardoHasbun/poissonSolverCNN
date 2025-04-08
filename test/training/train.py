@@ -153,7 +153,7 @@ model = UNet3DCombined(
 
 laplacian_loss = LaplacianLossInterface(cfg, lapl_weight, inner_mask, outer_mask, points)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
-interface_loss = InterfaceBoundaryLoss(inter_weight, interface_boundary, inner_mask, outer_mask,
+interface_loss = InterfaceBoundaryLoss(cfg, inter_weight, interface_boundary, inner_mask, outer_mask,
     interface_center, interface_radius, points, epsilon_inside, epsilon_outside, dx, dy, dz)
 
 optimizer = optim.Adam(model.parameters(), lr=lr)
