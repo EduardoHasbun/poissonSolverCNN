@@ -248,10 +248,10 @@ class InterfaceBoundaryLoss(nn.Module):
                         + gc_grad_boundary[:, 1] * self.normal_y
                         + gc_grad_boundary[:, 2] * self.normal_z)
         lhs = self.e_in * (
-            normal_derivate_inner[:, self.boundary] 
+            normal_derivate_inner
             + gc_normal_deriv.unsqueeze(0)          
         )
-        rhs = self.e_out * normal_derivate_outer[:, self.boundary]
+        rhs = self.e_out * normal_derivate_outer
         loss += F.mse_loss(lhs, rhs)
 
         return loss * self.weight
