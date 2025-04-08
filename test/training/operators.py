@@ -185,12 +185,14 @@ class InterfaceBoundaryLoss(nn.Module):
     
     
     def G(self, q, xq):
+        if not isinstance(points, torch.Tensor):
+            points = torch.tensor(points, dtype=torch.float32, device=q.device)
         # Mask out zero charges
         q_mask = ~torch.isclose(q, torch.tensor(0.0, dtype=q.dtype, device=q.device))
         q = q[q_mask]            # (m,)
         xq = xq[q_mask]          # (m, 3)
 
-        r_vec_expanded = self.points.unsqueeze(1)         # (n, 1, 3)
+        r_vec_expanded = points.unsqueeze(1)         # (n, 1, 3)
         x_qs_expanded = xq.unsqueeze(0)         # (1, m, 3)
         r_diff = r_vec_expanded - x_qs_expanded # (n, m, 3)
         r = torch.norm(r_diff, dim=2)           # (n, m)
