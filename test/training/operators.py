@@ -123,8 +123,8 @@ class InterfaceBoundaryLoss(nn.Module):
 
     def compute_gradients(self, output, data_norm = 1.):
         output = output / data_norm
-        subdomain_in = output[:, 0, self.inner_mask]
-        subdomain_out = output[:, 0, self.outer_mask]
+        subdomain_in = output
+        subdomain_out = output
         gradients_x_boundary_inner = torch.zeros_like(subdomain_in)
         gradients_x_boundary_outer = torch.zeros_like(subdomain_out)
         gradients_y_boundary_inner = torch.zeros_like(subdomain_in)
