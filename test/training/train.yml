@@ -5,7 +5,7 @@ general:
 
 arch:
     model: "UNet"
-    arch_dir: 'Unet_ks3_rf400.yml'
+    arch_dir: 'Unet_ks3_rf200.yml'
     type: 'UNet4'
 
 
