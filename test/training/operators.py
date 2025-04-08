@@ -185,8 +185,8 @@ class InterfaceBoundaryLoss(nn.Module):
     
     
     def G(self, q, xq):
-        if not isinstance(points, torch.Tensor):
-            points = torch.tensor(points, dtype=torch.float32, device=q.device)
+        if not isinstance(self.points, torch.Tensor):
+            points = torch.tensor(self.points, dtype=torch.float32, device=q.device)
         # Mask out zero charges
         q_mask = ~torch.isclose(q, torch.tensor(0.0, dtype=q.dtype, device=q.device))
         q = q[q_mask]            # (m,)
