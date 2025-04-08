@@ -167,8 +167,8 @@ class InterfaceBoundaryLoss(nn.Module):
         back_outer = subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx - 1]
 
         gradients_z_boundary_inner[:, 0, self.x_idx, self.y_idx, self.z_idx] = torch.where(self.normal_z > 0, 
-            (subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx] - back_inner) / self.dy, 
-            (front_inner - subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx]) / self.dy)
+            (subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx] - back_inner) / self.dz, 
+            (front_inner - subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx]) / self.dz)
         
         gradients_z_boundary_outer[:, 0, self.x_idx, self.y_idx, self.z_idx] = torch.where(self.normal_z > 0, 
             (-subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] + front_outer) / self.dz, 
@@ -239,14 +239,17 @@ class InterfaceBoundaryLoss(nn.Module):
         molecule = output + g_c
         loss = F.mse_loss(molecule[:, 0, self.boundary], output[:, 0, self.boundary])
         normal_derivate_inner, normal_derivate_outer = self.compute_gradients(output, data_norm)
-        gc_grad = self.grad_G(q, xq)[:, 2]
         gc_grad = self.grad_G(q, xq).reshape(self.cfg['globals']['nnx'],
-                    self.cfg['globals']['nny'],
-                    self.cfg['globals']['nnz'])
-        gc_grad = gc_grad.unsqueeze(0).unsqueeze(0)
-        gc_grad = gc_grad.expand(output.shape[0], -1, -1, -1, -1)   
-        loss += F.mse_loss(self.e_in * (normal_derivate_inner[:, 0, self.boundary] + 
-                                        gc_grad[:, 0, self.boundary]), self.e_out * normal_derivate_outer[:, 0, self.boundary]) 
+                    self.cfg['globals']['nny'], 
+                    self.cfg['globals']['nnz'], 3)
+
+        gc_grad_boundary = gc_grad[self.x_idx, self.y_idx, self.z_idx, :]  
+        gc_normal_deriv = (gc_grad_boundary[:, 0] * self.normal_x
+                        + gc_grad_boundary[:, 1] * self.normal_y
+                        + gc_grad_boundary[:, 2] * self.normal_z)
+        loss += F.mse_loss(self.e_in * (normal_derivate_inner[:, self.boundary]+ gc_normal_deriv.unsqueeze(0)),
+                         self.e_out * normal_derivate_outer[:, self.boundary])
+
         return loss * self.weight
 
 
