@@ -239,6 +239,7 @@ class InterfaceBoundaryLoss(nn.Module):
         molecule = output + g_c
         loss = F.mse_loss(molecule[:, 0, self.boundary], output[:, 0, self.boundary])
         normal_derivate_inner, normal_derivate_outer = self.compute_gradients(output, data_norm)
+        gc_grad = self.grad_G(q, xq)[:, 2]
         gc_grad = self.grad_G(q, xq).reshape(self.cfg['globals']['nnx'],
                     self.cfg['globals']['nny'],
                     self.cfg['globals']['nnz'])
