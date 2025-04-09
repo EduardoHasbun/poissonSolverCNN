@@ -1,5 +1,5 @@
 general:
-    name_case: 'interface_combined_model'
+    name_case: 'aa_Interface_combined'
     data_dir: 'dataset/generated/dataset.npz' 
 
 
@@ -9,10 +9,10 @@ arch:
     type: 'UNet4'
 
 
-globals:                                    # Domain sizes and others, used to compute global attributes
-    nnx: 31                                # Number of points in x direction
-    nny: 31                                # Number of points in y direction
-    nnz: 31
+globals:                                    
+    nnx: 25                                
+    nny: 25                               
+    nnz: 25
     xmin: -0.01
     xmax: 0.01
     ymin: -0.01
@@ -35,10 +35,10 @@ data_loader:
 loss:
     type: laplacian
     args:
-        bound_weight: 5.0e+0              # Weighting of the loss on the boundaries (float)
-        interface_weight: 3.0e+3             # Weighting of the loss on the boundaries (float)
-        lapl_weight: 9.0e+5               # Weighting of the loss on the Laplacian (float)
+        bound_weight: 5.0e+1              
+        interface_weight: 3.0e+3            
+        lapl_weight: 9.0e+5               
         optimizer_lr: 2.e-5 
 
 trainer:
-    epochs: 30                              # Number of epochs
+    epochs: 12                             

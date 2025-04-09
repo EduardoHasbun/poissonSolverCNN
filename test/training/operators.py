@@ -18,14 +18,13 @@ class LaplacianLossInterface(nn.Module):
         self.inner_mask = inner_mask
         self.outer_mask = outer_mask
         # Physical constants
-        self.e = 1.602176634e-19       # Elementary charge (C)
-        self.kB = 1.380649e-23         # Boltzmann constant (J/K)
-        self.eps_0 = 8.854187817e-12   # Vacuum permittivity (F/m)
+        self.e = 1.602176634e-19       
+        self.kB = 1.380649e-23         
+        self.eps_0 = 8.854187817e-12 
         self.points = points
     
 
     def k_w(self, points, q, xq, e_in, T=300):
-        # Ensure all are torch tensors
         if not isinstance(points, torch.Tensor):
             points = torch.tensor(points, dtype=torch.float32, device=q.device)
 
@@ -35,16 +34,16 @@ class LaplacianLossInterface(nn.Module):
         q = torch.as_tensor(q, device=points.device)
         xq = torch.as_tensor(xq, device=points.device)
         mask = ~torch.isclose(q, torch.tensor(0.0, dtype=q.dtype, device=q.device))
-        q = q[mask]          # (m,)
-        xq = xq[mask]        # (m, 3)
+        q = q[mask]        
+        xq = xq[mask]       
 
         if len(q) == 0:
-            return torch.zeros(points.shape[0], device=points.device)  # No charges → kappa = 0
+            return torch.zeros(points.shape[0], device=points.device)  
 
         # Compute distances
-        r = torch.linalg.norm(points[:, None, :] - xq[None, :, :], dim=2)  # (N, M)
+        r = torch.linalg.norm(points[:, None, :] - xq[None, :, :], dim=2)  
 
-        sigma = 1e-10  # Gaussian width
+        sigma = 1e-10  
         z = torch.round(q / self.e).int()
         z2_density = torch.sum(
             (z**2)[None, :] * torch.exp(-r**2 / (2 * sigma**2)) / ((2 * torch.pi * sigma**2)**1.5),
@@ -190,17 +189,17 @@ class InterfaceBoundaryLoss(nn.Module):
             points = torch.tensor(self.points, dtype=torch.float32, device=q.device)
         # Mask out zero charges
         q_mask = ~torch.isclose(q, torch.tensor(0.0, dtype=q.dtype, device=q.device))
-        q = q[q_mask]            # (m,)
-        xq = xq[q_mask]          # (m, 3)
+        q = q[q_mask]           
+        xq = xq[q_mask]          
 
-        r_vec_expanded = points.unsqueeze(1)         # (n, 1, 3)
-        x_qs_expanded = xq.unsqueeze(0)         # (1, m, 3)
-        r_diff = r_vec_expanded - x_qs_expanded # (n, m, 3)
-        r = torch.norm(r_diff, dim=2)           # (n, m)
-        r[r == 0] = torch.finfo(torch.float32).eps  # avoid div by zero
+        r_vec_expanded = points.unsqueeze(1)        
+        x_qs_expanded = xq.unsqueeze(0)         
+        r_diff = r_vec_expanded - x_qs_expanded 
+        r = torch.norm(r_diff, dim=2)          
+        r[r == 0] = torch.finfo(torch.float32).eps  
 
-        q_over_r = q / r                        # (n, m)
-        total_sum = torch.sum(q_over_r, dim=1) # (n,)
+        q_over_r = q / r                       
+        total_sum = torch.sum(q_over_r, dim=1) 
         result = (1 / (self.e_in * 4 * torch.pi)) * total_sum
         return result
 
@@ -211,20 +210,20 @@ class InterfaceBoundaryLoss(nn.Module):
             points = torch.tensor(self.points, dtype=torch.float32, device=q.device)
         # Mask out zero charges
         q_mask = ~torch.isclose(q, torch.tensor(0.0, dtype=q.dtype, device=q.device))
-        q = q[q_mask]         # (m,)
-        xq = xq[q_mask]       # (m, 3)
+        q = q[q_mask]         
+        xq = xq[q_mask]      
 
-        r_vec_expanded = points.unsqueeze(1)       # (n, 1, 3)
-        x_qs_expanded = xq.unsqueeze(0)       # (1, m, 3)
-        r_diff = r_vec_expanded - x_qs_expanded   # (n, m, 3)
+        r_vec_expanded = points.unsqueeze(1)       
+        x_qs_expanded = xq.unsqueeze(0)      
+        r_diff = r_vec_expanded - x_qs_expanded   
 
-        r_squared = torch.sum(r_diff**2, dim=2)   # (n, m)
+        r_squared = torch.sum(r_diff**2, dim=2)   
         r_cubed = r_squared.pow(1.5)
         r_cubed[r_cubed == 0] = torch.finfo(torch.float32).eps
 
-        coef = -q / r_cubed                      # (n, m)
-        grad = coef.unsqueeze(2) * r_diff       # (n, m, 3)
-        total_grad = torch.sum(grad, dim=1)     # (n, 3)
+        coef = -q / r_cubed                      
+        grad = coef.unsqueeze(2) * r_diff      
+        total_grad = torch.sum(grad, dim=1)     
         return total_grad / (self.e_in * 4 * torch.pi)
 
 
@@ -258,26 +257,25 @@ def lapl_interface(field, dx, dy, dz, interface_mask, epsilon_in, epsilon_out):
     laplacian = torch.zeros_like(field).type(field.type())
 
     # Get epsilon at grid points
-    epsilon = get_epsilon_tensor(field.shape, interface_mask, epsilon_in, epsilon_out)  # Shape: (h, w, l)
-    epsilon = epsilon.unsqueeze(0).unsqueeze(0)  # Shape: (1, 1, h, w, l)
-    epsilon = epsilon.expand(batch_size, 1, h, w, l)  # Shape: (batch_size, 1, h, w, l)
+    epsilon = get_epsilon_tensor(field.shape, interface_mask, epsilon_in, epsilon_out)  
+    epsilon = epsilon.unsqueeze(0).unsqueeze(0)  
+    epsilon = epsilon.expand(batch_size, 1, h, w, l)  
 
     # Compute epsilon at cell faces using harmonic mean
-    epsilon_x_ip = harmonic_mean(epsilon[:, :, :, :, :-1], epsilon[:, :, :, :, 1:])  # Shape: (batch_size, 1, h, w, l-1)
-    epsilon_y_ip = harmonic_mean(epsilon[:, :, :, :-1, :], epsilon[:, :, :, 1:, :])  # Shape: (batch_size, 1, h, w-1, l)
-    epsilon_z_ip = harmonic_mean(epsilon[:, :, :-1, :, :], epsilon[:, :, 1:, :, :]) # Shape: (batch_size, 1, h-1, w, l)
+    epsilon_x_ip = harmonic_mean(epsilon[:, :, :, :, :-1], epsilon[:, :, :, :, 1:])  
+    epsilon_y_ip = harmonic_mean(epsilon[:, :, :, :-1, :], epsilon[:, :, :, 1:, :])  
+    epsilon_z_ip = harmonic_mean(epsilon[:, :, :-1, :, :], epsilon[:, :, 1:, :, :]) 
 
     # Compute flux differences in x-direction
-    flux_x_ip = epsilon_x_ip * (field[:, :, :, :, 1:] - field[:, :, :, :, :-1]) / dx  # Shape: (batch_size, 1, h, w, l-1)
+    flux_x_ip = epsilon_x_ip * (field[:, :, :, :, 1:] - field[:, :, :, :, :-1]) / dx 
 
     # Compute flux differences in y-direction
-    flux_y_ip = epsilon_y_ip * (field[:, :, :, 1:, :] - field[:, :, :, :-1, :]) / dy  # Shape: (batch_size, 1, h, w-1, l)
+    flux_y_ip = epsilon_y_ip * (field[:, :, :, 1:, :] - field[:, :, :, :-1, :]) / dy  
 
     # Compute flux differences in z-direction
-    flux_z_ip = epsilon_z_ip * (field[:, :, 1:, :, :] - field[:, :, :-1, :, :]) / dz # Shape: (batch_size, 1, h-1, w, l)
-
+    flux_z_ip = epsilon_z_ip * (field[:, :, 1:, :, :] - field[:, :, :-1, :, :]) / dz 
     # Initialize divergence
-    divergence = torch.zeros_like(field[:, 0, :, :, :])  # Shape: (batch_size, h, w, l)
+    divergence = torch.zeros_like(field[:, 0, :, :, :]) 
 
     # Divergence calculation 
     divergence[:, 1:-1, 1:-1, 1:-1] = (
