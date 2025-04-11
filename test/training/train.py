@@ -5,7 +5,6 @@ import os
 import argparse
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
-import matplotlib.pyplot as plt
 
 from models import UNet3DCombined
 from operators import (
@@ -16,7 +15,7 @@ from operators import (
 )
 
 # -----------------------------------------------
-# Cargar configuración y arquitectura desde YAMLs
+# Load configuration and architecture from YAMLs
 # -----------------------------------------------
 parser = argparse.ArgumentParser(description='Training 3D Poisson')
 parser.add_argument('-c', '--cfg', type=str, default=None, help='Config filename')
@@ -44,7 +43,7 @@ scales = [value for key, value in sorted(scales_data.items())]
 kernel_size = arch[arch_type]['args']['kernel_sizes']
 
 # -----------------------------------------------
-# Definición de dominio y mallas 3D
+# Define domain and mesh
 # -----------------------------------------------
 xmin, xmax = cfg['globals']['xmin'], cfg['globals']['xmax']
 ymin, ymax = cfg['globals']['ymin'], cfg['globals']['ymax']
@@ -77,7 +76,7 @@ os.makedirs(save_dir, exist_ok=True)
 case_name = cfg['general']['name_case']
 
 # -----------------------------------------------
-# Device y normalización
+# Device and normalization
 # -----------------------------------------------
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Usando device: {device}")
@@ -86,7 +85,7 @@ alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 # -----------------------------------------------
-# Crear malla 3D y máscaras
+# CCreate 3D mesh and masks
 # -----------------------------------------------
 x = torch.linspace(xmin, xmax, nnx, dtype=torch.double)
 y = torch.linspace(ymin, ymax, nny, dtype=torch.double)
@@ -125,12 +124,12 @@ inner_mask = inner_mask.to(device)
 outer_mask = outer_mask.to(device)
 
 # -----------------------------------------------
-# Cargar datos y DataLoader
+# Load data and dataloader
 # -----------------------------------------------
 data_npz = np.load(data_dir)
-rhs_data = data_npz['rhs']      # shape: (N, nnx, nny, nnz)
-q_data = data_npz['q']          # shape: (N, max_charges)
-xq_data = data_npz['xq']        # shape: (N, max_charges, 3)
+rhs_data = data_npz['rhs']      
+q_data = data_npz['q']          
+xq_data = data_npz['xq']       
 
 # Convert to tensors
 rhs_tensor = torch.from_numpy(rhs_data).double()
@@ -143,7 +142,7 @@ dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
 # -----------------------------------------------
-# Modelo y funciones de pérdida
+# Model and loss functions
 # -----------------------------------------------
 model = UNet3DCombined(
     scales=scales,
@@ -163,7 +162,7 @@ laplacian_losses, dirichlet_losses, interface_losses, total_losses = [], [], [],
 print(f"Model used: {cfg['arch']['arch_dir']}, {arch_type}")
 
 # -----------------------------------------------
-# Bucle de entrenamiento
+# Training loop
 # -----------------------------------------------
 for epoch in range(num_epochs):
     total_loss = 0.0
@@ -203,7 +202,7 @@ for epoch in range(num_epochs):
     torch.save(model.state_dict(), model_path)
 
 # -----------------------------------------------
-# Guardar historial de pérdidas
+# Save losses
 # -----------------------------------------------
 loss_file = os.path.join(save_dir, f"{case_name}_losses.txt")
 with open(loss_file, "w") as f:

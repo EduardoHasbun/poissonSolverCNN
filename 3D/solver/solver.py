@@ -98,9 +98,10 @@ output = model(input_data)
 output_array = output.detach().numpy()[0, 0, :, :, :] * ratio_max
 
 # Cálculo de errores
-relative_error = np.abs(output_array - resolution_data) / np.max(np.abs(resolution_data)) * 100
+eps = 1e-8
+relative_error = np.abs(output_array - resolution_data) / (resolution_data) * 100
 max_error = np.max(relative_error)
-avg_error = np.mean(relative_error)
+avg_error = np.average(relative_error)
 
 # R2
 def calculate_r2(y_true, y_pred):
@@ -146,7 +147,7 @@ axs[1].set_ylabel('Y')
 plt.colorbar(img_res, ax=axs[1])
 
 # Error Relativo
-img_err = axs[2].imshow(relative_error[:, :, mid_z], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=0, vmax=20)
+img_err = axs[2].imshow(relative_error[:, :, mid_z], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[2].set_title('Relative Error (%)')
 axs[2].set_xlabel('X')
 axs[2].set_ylabel('Y')

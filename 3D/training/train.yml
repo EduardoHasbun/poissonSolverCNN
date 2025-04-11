@@ -1,5 +1,5 @@
 general:
-    name_case: 'Unet4_ks3_rf200.pth'
+    name_case: '3D_Unet4_ks3_rf200.pth'
     data_dir: 'dataset/generated/random.npy' 
 
 
@@ -31,8 +31,8 @@ loss:
     args:
         bound_weight: 5.0e+0
         interface_weight: 5.0e+5            # Weighting of the loss on the boundaries (float)
-        lapl_weight: 2.0e+4                # Weighting of the loss on the Laplacian (float)
-        optimizer_lr: 2.e-5 
+        lapl_weight: 2.0e+5                # Weighting of the loss on the Laplacian (float)
+        optimizer_lr: 7.e-5 
         inside_weight: 1.0e+7
 
 trainer:
