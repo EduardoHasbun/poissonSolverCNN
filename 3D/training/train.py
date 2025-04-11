@@ -57,7 +57,7 @@ alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 # Load data
-dataset = np.load(data_dir).astype(np.float32)
+dataset = np.load(data_dir)
 if loss_type == 'inside':
     target = np.load(target_dir).astype(np.float32)
     data_set = TensorDataset(torch.from_numpy(dataset), torch.from_numpy(target))
