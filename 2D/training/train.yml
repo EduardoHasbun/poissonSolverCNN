@@ -27,7 +27,7 @@ loss:
     args:
         bound_weight: 8.0e+2                  # Weighting of the loss on the boundaries (float)
         lapl_weight: 8.0e+5                   # Weighting of the loss on the Laplacian (float)
-        optimizer_lr: 1.e+1                   # Learning rate of the optimizer (float)   
+        optimizer_lr: 5.e-5                   # Learning rate of the optimizer (float)   
 
 trainer:
-    epochs: 31                            # Number of epochs
+    epochs: 40                            # Number of epochs

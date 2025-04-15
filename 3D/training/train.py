@@ -46,7 +46,7 @@ Lx, Ly, Lz = xmax - xmin, ymax - ymin, zmax - zmin
 # Setup directories
 case_name = cfg['general']['name_case']
 data_dir = os.path.join('..', cfg['general']['data_dir'])  
-save_dir = os.path.join(os.getcwd(), 'models')
+save_dir = os.path.join(os.getcwd(), 'trained_models')
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 if loss_type == 'inside':
