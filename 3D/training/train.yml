@@ -27,6 +27,7 @@ data_loader:
 
 
 loss:
+    type: laplacian
     args:
         bound_weight: 8.0e+2                  # Weighting of the loss on the boundaries (float)
         lapl_weight: 8.0e+5                   # Weighting of the loss on the Laplacian (float)
