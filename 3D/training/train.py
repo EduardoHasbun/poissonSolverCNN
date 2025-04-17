@@ -22,7 +22,7 @@ model_type = cfg['arch']['model']
 batch_size = cfg['data_loader']['batch_size']
 num_epochs = cfg['trainer']['epochs']
 lapl_weight = cfg['loss']['args']['lapl_weight']
-inside_weight = cfg['loss']['args']['inside_weight']
+# inside_weight = cfg['loss']['args']['inside_weight']
 bound_weight = cfg['loss']['args']['bound_weight']
 loss_type = cfg['loss']['type']
 lr = cfg['loss']['args']['optimizer_lr']
@@ -81,9 +81,9 @@ model = model.float()
 if loss_type == 'laplacian':
     laplacian_loss = LaplacianLoss(cfg, lapl_weight=lapl_weight)
     print('Using Laplacian Loss \n')
-elif loss_type == 'inside':
-    inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
-    print('Using Inside Loss \n')
+# elif loss_type == 'inside':
+#     inside_loss = InsideLoss(cfg, inside_weight=inside_weight)
+#     print('Using Inside Loss \n')
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 
 optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -112,9 +112,9 @@ for epoch in range(num_epochs):
             lap_loss = laplacian_loss(output, data=data, data_norm=data_norm)
             loss = lap_loss
             laplacian_losses.append(lap_loss.item())
-        elif loss_type == 'inside':
-            in_loss = inside_loss(output, target)
-            loss = in_loss
+        # elif loss_type == 'inside':
+        #     in_loss = inside_loss(output, target)
+        #     loss = in_loss
 
         dir_loss = dirichlet_loss(output)
         loss += dir_loss
