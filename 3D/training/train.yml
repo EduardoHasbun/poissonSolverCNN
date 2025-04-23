@@ -10,9 +10,9 @@ arch:
 
 
 globals:                                   # Domain sizes and others, used to compute global attributes
-    nnx: 61                                # Number of points in x direction
-    nny: 61                                # Number of points in y direction
-    nnz: 61                                # Number of points in z direction
+    nnx: 71                                # Number of points in x direction
+    nny: 71                                # Number of points in y direction
+    nnz: 71                                # Number of points in z direction
     xmin: 0.0
     xmax: 5.0
     ymin: 0.0
@@ -29,8 +29,8 @@ data_loader:
 loss:
     type: laplacian
     args:
-        bound_weight: 8.0e+2                  # Weighting of the loss on the boundaries (float)
-        lapl_weight: 8.0e+5                   # Weighting of the loss on the Laplacian (float)
+        bound_weight: 8.0e+0                  # Weighting of the loss on the boundaries (float)
+        lapl_weight: 8.0e+4                   # Weighting of the loss on the Laplacian (float)
         inside_weight: 1.0e+1
         optimizer_lr: 5.e-5                   # Learning rate of the optimizer (float)   
 

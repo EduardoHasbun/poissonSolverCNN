@@ -1,8 +1,8 @@
 
 domain:
-    nnx: 61                                # Number of points in x direction
-    nny: 61                                # Number of points in y direction
-    nnz: 61                                # Number of points in z direction
+    nnx: 71                                # Number of points in x direction
+    nny: 71                                # Number of points in y direction
+    nnz: 71                                # Number of points in z direction
     xmin: 0.0
     xmax: 5.0
     ymin: 0.0
@@ -10,5 +10,6 @@ domain:
     zmin: 0.0
     zmax: 5.0
 n_it: 10000
+n_res_factor: 14
 plotting: False
 output_dir: ./generated

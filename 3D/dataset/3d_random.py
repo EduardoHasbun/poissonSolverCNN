@@ -15,13 +15,14 @@ with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
 nits = cfg['n_it']
 plotting = False
+n_res_factor = cfg['n_res_factor']
 
 def generate_random(i):
     # Parameters for data generation
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
     ymin, ymax, nny = cfg['domain']['ymin'], cfg['domain']['ymax'], cfg['domain']['nny']
     zmin, zmax, nnz = cfg['domain']['zmin'], cfg['domain']['zmax'], cfg['domain']['nnz']
-    n_res_factor = 12
+    n_res_factor = cfg['n_res_factor']
 
     # Create a 1D grid for each axis
     x, y, z = np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny), np.linspace(zmin, zmax, nnz)

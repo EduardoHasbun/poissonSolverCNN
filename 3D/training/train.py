@@ -96,34 +96,40 @@ total_losses = []
 # Training loop
 for epoch in range(num_epochs):
     total_loss = 0
+    epoch_laplacian_loss = 0 
+    epoch_dirichlet_loss = 0
     for batch_idx, batch in enumerate(dataloader):
-        if loss_type == 'inside':
-            data, target = batch
-            target = target[:, np.newaxis, :, :, :].float()
-        else:
-            data = batch[:, np.newaxis, :, :, :].float()
+        # if loss_type == 'inside':
+        #     data, target = batch
+        #     target = target[:, np.newaxis, :, :, :].float()
+        # else:
+        data = batch[:, np.newaxis, :, :, :].float()
 
         optimizer.zero_grad()
         data = torch.FloatTensor(data)
         data_norm = torch.ones((data.size(0), 1, 1, 1, 1)) / ratio_max
         output = model(data)
 
-        if loss_type == 'laplacian':
-            lap_loss = laplacian_loss(output, data=data, data_norm=data_norm)
-            loss = lap_loss
-            laplacian_losses.append(lap_loss.item())
-        elif loss_type == 'inside':
-            in_loss = inside_loss(output, target)
-            loss = in_loss
+        # if loss_type == 'laplacian':
+        lap_loss_value = laplacian_loss(output, data=data, data_norm=data_norm)
+        dirichlet_loss_value = dirichlet_loss(output)
+        loss = lap_loss_value + dirichlet_loss_value
+        # elif loss_type == 'inside':
+        #     in_loss = inside_loss(output, target)
+        #     loss = in_loss
 
-        dir_loss = dirichlet_loss(output)
-        loss += dir_loss
-        dirichlet_losses.append(dir_loss.item())
-        total_losses.append(loss.item())
-
+        # Backpropagation
         loss.backward()
         optimizer.step()
+
+        # Update total loss
         total_loss += loss.item()
+        
+        # Save batch losses
+        laplacian_losses.append(lap_loss_value.item())
+        dirichlet_losses.append(dirichlet_loss_value.item())
+        total_losses.append(loss.item())
+
 
         if batch_idx % 20 == 0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
