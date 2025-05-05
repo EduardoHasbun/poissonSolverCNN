@@ -1,40 +1,39 @@
-#############################################################################################################
-#                                                                                                           #
-#                             RUN:    python 2d_random.py -c dataset.yml                                    #
-#                                                                                                           #
-#############################################################################################################
-
 import numpy as np
 import os
-from multiprocessing import get_context
-import argparse
 import yaml
-from scipy import interpolate
 import matplotlib.pyplot as plt
+import argparse
 from scipy.interpolate import RegularGridInterpolator as rgi
+from tqdm import tqdm as log_progress
+from multiprocessing import Pool, cpu_count
 
-os.environ['OPENBLAS_NUM_THREADS'] = '1'
-
-args = argparse.ArgumentParser(description='RHS random dataset')
-args.add_argument('-c', '--cfg', type=str, default=None,
-                help='Config filename')
-args.add_argument('--case', type=str, default=None, help='Case name')
 
 # Specific arguments
-args.add_argument('-nr', '--n_res_factor', default=16, type=int,
-                    help='grid of npts/nres on which the random set is taken')
-args = args.parse_args()
-
+parser = argparse.ArgumentParser(description='RHS random dataset')
+parser.add_argument('-c', '--cfg', type=str, default=None, help='Config filename')
+args = parser.parse_args()
 with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
-
 nits = cfg['n_it']
+name = cfg['name']
+ploting = False
 
-if __name__ == '__main__':
+# Parameters for data generation
+xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
+nny, ymin, ymax = cfg['domain']['nny'], cfg['domain']['ymin'], cfg['domain']['ymax']
+n_res_factor = cfg['n_res_factor']
+
+
+# Create a grid
+x, y= np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
+X, Y = np.meshgrid(x,y)
+
+def generate_random(i):
     # Parameters for data generation
     xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
     nny, ymin, ymax = cfg['domain']['nny'], cfg['domain']['ymin'], cfg['domain']['ymax']
-    n_res_factor = args.n_res_factor
+    n_res_factor = 16
+
     # Create a grid
     x, y= np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
 
@@ -42,38 +41,41 @@ if __name__ == '__main__':
     nnx_lower = int(nnx / n_res_factor)
     nny_lower = int(nny / n_res_factor)
     x_lower, y_lower = np.linspace(xmin, xmax, nnx_lower), np.linspace(ymin, ymax, nny_lower)
+    points = np.array(np.meshgrid(x, y, indexing='ij')).T.reshape(-1, 2)
 
-    def generate_random_data(nits):
-        """ Generate random data samples """
-        for i in range(nits):
-            z_lower = 2 * np.random.random((nny_lower, nnx_lower)) - 1
-            f = rgi((x_lower, y_lower,), z_lower, method='cubic')
-            yield f(x, y)
+    z_lower = 2 * np.random.random((nnx_lower, nny_lower)) - 1
+    f= rgi((x_lower, y_lower,), z_lower, method='cubic')
+    return f(points).reshape((nnx, nny))
 
-    # Create a directory for saving data 
-    data_dir = cfg['output_dir']
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
 
-    plots_dir = os.path.join(data_dir, 'plots')
+if __name__ == '__main__':
+    pool = Pool(processes=cpu_count())
+
+    plots_dir = os.path.join('generated', 'plots')
     if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
 
-    # Generate random data samples
-    random_data_array = np.empty((nits, nnx, nny))
-    for idx, random_data in enumerate(generate_random_data(nits)):
-        random_data_array[idx] = random_data
+    print('nnx: ', cfg['domain']['nnx'], 'nny: ', cfg['domain']['nny'], 'xmax: ', cfg['domain']['xmax'], 'ymax: ', cfg['domain']['ymax'])
 
-        if idx%100==0:
+    # Generate random data samples
+    data_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny']))
+    inside_domain_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny']))
+    outside_domain_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny']))
+    for idx, data in log_progress(enumerate(pool.imap(generate_random, range(nits))), total=nits, desc="Processing"):
+
+        data_array[idx] = data
+        if ploting and idx%1==0:
             plt.figure(figsize=(8, 6))
-            plt.imshow(random_data, extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-            plt.colorbar(label='Random Data')
-            plt.title(f'Random Data Sample {idx}')
-            plt.xlabel('X')
-            plt.ylabel('Y')
+            plt.imshow(data_array[idx], origin='lower', cmap='bwr')
+            plt.xticks([])
+            plt.yticks([])
+            # plt.colorbar(label='Random Data')
+            # plt.title(f'Random Data Sample {idx}')
+            # plt.xlabel('X')
+            # plt.ylabel('Y') 
             plt.savefig(os.path.join(plots_dir, f'random_data_plot_{idx}.png'))
             plt.close()
 
-    # Save the 3D numpy array as a single .npy file
-    data_filename = os.path.join(data_dir, 'random_data.npy')
-    np.save(data_filename, random_data_array)
+    file_path_domain = os.path.join('generated', name)
+    os.makedirs('generated', exist_ok=True)
+    np.save(file_path_domain, data_array)
