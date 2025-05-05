@@ -208,6 +208,9 @@ args = parser.parse_args()
 
 with open(args.cfg, 'r') as yaml_stream:
     cfg = yaml.safe_load(yaml_stream)
+
+with open(args.cfg, 'r') as yaml_stream:
+    cfg = yaml.safe_load(yaml_stream)
 scales_data = cfg.get('arch', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
 kernel_size = cfg['arch']['kernel_sizes']
