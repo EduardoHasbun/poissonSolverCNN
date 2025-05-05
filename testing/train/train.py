@@ -199,10 +199,15 @@ from torch.utils.data import DataLoader
 import numpy as np
 from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss
 import torch.optim as optim
+import argparse
 
-#Import external parameteres
-with open('C:\Codigos\poissonSolverCNN_Gpu/testing/train/tain.yml', 'r') as file:
-    cfg = yaml.load(file, Loader=yaml.FullLoader)
+# Import external parameters
+parser = argparse.ArgumentParser(description='Training')
+parser.add_argument('-c', '--cfg', type=str, default=None, help='Config filename')
+args = parser.parse_args()
+
+with open(args.cfg, 'r') as yaml_stream:
+    cfg = yaml.safe_load(yaml_stream)
 scales_data = cfg.get('arch', {}).get('scales', {})
 scales = [value for key, value in sorted(scales_data.items())]
 kernel_size = cfg['arch']['kernel_sizes']
