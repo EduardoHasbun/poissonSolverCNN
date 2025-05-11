@@ -1,11 +1,11 @@
 general:
-    name_case: '3D_Unet4_ks3_rf300.pth'
+    name_case: '3D_Unet4_ks3_rf400.pth'
     data_dir: 'dataset/generated/random.npy' 
 
 
 arch:
     model: "UNet"
-    arch_dir: 'Archs/Unet_ks3_rf300.yml'
+    arch_dir: 'Archs/Unet_ks3_rf400.yml'
     type: 'UNet4'
 
 
@@ -30,7 +30,7 @@ loss:
     type: laplacian
     args:
         bound_weight: 8.0e+0                  # Weighting of the loss on the boundaries (float)
-        lapl_weight: 8.0e+4                   # Weighting of the loss on the Laplacian (float)
+        lapl_weight: 8.0e+5                   # Weighting of the loss on the Laplacian (float)
         inside_weight: 1.0e+1
         optimizer_lr: 5.e-5                   # Learning rate of the optimizer (float)   
 
