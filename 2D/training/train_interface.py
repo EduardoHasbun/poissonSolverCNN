@@ -145,3 +145,5 @@ with open(loss_file_path, "w") as f:
     f.write(", ".join(map(str, interface_losses)) + "\n")
 
 print(f"Losses saved to {loss_file_path}")
+
+
