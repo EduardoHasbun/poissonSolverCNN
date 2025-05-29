@@ -37,7 +37,6 @@ xmin, xmax, ymin, ymax, zmin, zmax, nnx, nny, nnz = cfg['globals']['xmin'], cfg[
 interface_center = (cfg['globals']['interface_center']['x'], cfg['globals']['interface_center']['y'], cfg['globals']['interface_center']['z'])
 interface_radius = cfg['globals']['interface_radius']
 epsilon_inside, epsilon_outside = cfg['globals']['epsilon_inside'], cfg['globals']['epsilon_outside']
-eta = cfg['globals']['eta']
 Lx, Ly, Lz = xmax-xmin, ymax-ymin, zmax - zmin
 dx, dy, dz = Lx / nnx, Ly / nny, Lz / nnz
 save_dir = os.getcwd()
@@ -90,7 +89,7 @@ dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 # Create models and losses
 model = UNetInterface(scales, kernel_sizes=kernel_size, input_res=nnx, inner_mask = inner_mask, outer_mask = outer_mask)
 model = model.float()
-laplacian_loss = LaplacianLossInterface(cfg, lapl_weight = lapl_weight, eta = eta)
+laplacian_loss = LaplacianLossInterface(cfg, lapl_weight = lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 interface_loss = InterfaceBoundaryLoss(interface_weight, interface_boundary, interface_center, interface_radius,\
                                         epsilon_inside, epsilon_outside, dx, dy, dz)

@@ -5,7 +5,7 @@ import numpy as np
 
 
 class LaplacianLossInterface(nn.Module):
-    def __init__(self, cfg, lapl_weight, eta = 1.0):
+    def __init__(self, cfg, lapl_weight):
         super().__init__()
         self.weight = lapl_weight
         self.dx = (cfg['globals']['xmax'] - cfg['globals']['xmin']) / cfg['globals']['nnx']
@@ -13,11 +13,10 @@ class LaplacianLossInterface(nn.Module):
         self.dz = (cfg['globals']['zmax'] - cfg['globals']['zmin']) / cfg['globals']['nnz'] 
         self.epsilon_inside = cfg['globals']['epsilon_inside']
         self.epsilon_outside = cfg['globals']['epsilon_outside']
-        self.eta = eta
         
 
     def forward(self, output, data = None, data_norm = 1., mask = 1.):
-        laplacian = lapl_interface(output / data_norm, self.dx, self.dy, self.dz, mask, self.epsilon_inside, self.epsilon_outside, self.eta)
+        laplacian = lapl_interface(output / data_norm, self.dx, self.dy, self.dz, mask, self.epsilon_inside, self.epsilon_outside)
         loss = F.mse_loss(laplacian[:, 0, mask], data[:, 0, mask]) * self.weight
         return loss
     
@@ -231,7 +230,7 @@ def lapl(field, dx, dy, dz):
 
 
 
-def lapl_interface(field, dx, dy, dz, interface_mask, epsilon_in, epsilon_out, eta):
+def lapl_interface(field, dx, dy, dz, interface_mask, epsilon_in, epsilon_out):
     batch_size, _, h, w, l = field.shape
     laplacian = torch.zeros_like(field).type(field.type())
 

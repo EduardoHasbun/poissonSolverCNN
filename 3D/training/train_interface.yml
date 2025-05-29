@@ -27,7 +27,6 @@ globals:                                    # Domain sizes and others, used to c
     interface_radius: 0.3
     epsilon_inside: 1.0
     epsilon_outside: 80.0
-    eta: 0.1
 
     
 
