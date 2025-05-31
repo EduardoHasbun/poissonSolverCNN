@@ -10,9 +10,9 @@ arch:
 
 
 globals:                                   # Domain sizes and others, used to compute global attributes
-    nnx: 51                                # Number of points in x direction
-    nny: 51                                # Number of points in y direction
-    nnz: 51                                # Number of points in z direction
+    nnx: 71                                # Number of points in x direction
+    nny: 71                                # Number of points in y direction
+    nnz: 71                                # Number of points in z direction
     xmin: 0.0
     xmax: 1.0
     ymin: 0.0
