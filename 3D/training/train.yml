@@ -29,12 +29,13 @@ data_loader:
 loss:
     type: laplacian
     args:
-        bound_weight: 1.0e+0                  # Weighting of the loss on the boundaries (float)
-        lapl_weight: 1.0e+5                   # Weighting of the loss on the Laplacian (float)
-        inside_weight: 1.0e+1
-        optimizer_lr: 5.e-5                   # Learning rate of the optimizer (float)   
+        bound_weight: 1.0e+0
+        interface_weight: 5.0e+5            # Weighting of the loss on the boundaries (float)
+        lapl_weight: 1.0e+5                # Weighting of the loss on the Laplacian (float)
+        optimizer_lr: 2.e-5 
+        inside_weight: 1.0e+7
 
 trainer:
-    epochs: 20                            # Number of epochs
+    epochs: 31                              # Number of epochs
 
 

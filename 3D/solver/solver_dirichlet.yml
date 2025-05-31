@@ -1,0 +1,24 @@
+general:
+  case_name: Dirichlet_Unet4_ks3_rf400_3D
+  model_dir: 'C:/Codigos/poissonSolverCNN/3D/training/trained_models/Dirichlet_Unet4_ks3_rf400_3D.pth'
+
+arch:
+    arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf400.yml'
+    type: 'UNet4'
+
+
+
+mesh:
+  xmin: 0
+  ymin: 0
+  zmin: 0
+  xmax: 5
+  ymax: 5
+  zmax: 5
+  nnx: 51
+  nny: 51
+  nnz: 51
+
+  
+
+
