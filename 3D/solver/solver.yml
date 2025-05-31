@@ -1,9 +1,9 @@
 general:
-  case_name: 3D_Unet4_ks3_rf300.pth
-  model_dir: 'C:/Codigos/poissonSolverCNN/3D/training/trained_models/3D_Unet4_ks3_rf300.pth.pth'
+  case_name: 3D_Unet4_ks3_rf200+test
+  model_dir: 'C:/Codigos/poissonSolverCNN/3D/training/trained_models/Unet4_ks3_rf200.pth_epoch_50.pth'
 
 arch:
-    arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf300.yml'
+    arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf200.yml'
     type: 'UNet4'
 
 init:
@@ -11,19 +11,19 @@ init:
   # args : [1.0e+2, 2.3, 2.3, 1.0, 1.0,
   #              1.0e+2, 2.6,  2.6, 1.0, 1.0,
   #              1.0e+11, 2.0, 2.4, 1.0, 1.0]
-  args : [1.8e+2, 2.5, 2.5, 2.5, 0.75, 0.75, 0.75]   
+  args : [1.0e+1, 0.5, 0.5, 0.5, 0.25, 0.25, 0.25]   
 
 
 mesh:
   xmin: 0
   ymin: 0
-  xmax: 5
-  ymax: 5
   zmin: 0
-  zmax: 5
-  nnx: 51
-  nny: 51
-  nnz: 51
+  xmax: 1.0
+  ymax: 1.0
+  zmax: 1.0
+  nnx: 71
+  nny: 71
+  nnz: 71
 
   
 

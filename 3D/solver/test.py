@@ -39,7 +39,6 @@ y_1d = np.linspace(ymin, ymax, nny)
 z_1d = np.linspace(zmin, zmax, nnz)
 Z, Y, X = np.meshgrid(z_1d, y_1d, x_1d, indexing='ij')
 
-
 # Crear directorios
 plots_dir = 'results'
 errors_file = os.path.join(plots_dir, 'errors_log.txt')
@@ -59,14 +58,16 @@ def gaussians(x, y, z, params):
 
 def poisson_punctual_solution(x, y, z, charges):
     solution = np.zeros_like(x)
-    eps = 1e-8  # Precaución contra división por cero
+    eps = 1e-8
     for A, x0, y0, z0 in charges:
         distance = np.sqrt((x - x0)**2 + (y - y0)**2 + (z - z0)**2)
         distance = np.where(distance < eps, eps, distance)
         solution += A / (4 * np.pi * distance)
     return solution
 
-
+# Función para recortar bordes
+def crop_edges(array, n=13):
+    return array[n:-n, n:-n, n:-n]
 
 # Extraer parámetros de cargas puntuales
 ngauss = int(len(params) / 7)
@@ -101,17 +102,22 @@ model.eval()
 output = model(input_data)
 output_array = output.detach().numpy()[0, 0, :, :, :] * ratio_max
 
+# Recortar bordes
+cropped_output = crop_edges(output_array)
+cropped_resolution = crop_edges(resolution_data)
+
 # Cálculo de errores
 eps = 1e-8
-relative_error = np.abs(output_array - resolution_data) / (resolution_data) * 100
+denominator = np.where(np.abs(cropped_resolution) < eps, eps, np.abs(cropped_resolution))
+relative_error = np.abs(cropped_output - cropped_resolution) / denominator * 100
 max_error = np.max(relative_error)
-avg_error = np.average(relative_error)
+avg_error = np.mean(relative_error)
 
 # R2
 def calculate_r2(y_true, y_pred):
     return r2_score(y_true.flatten(), y_pred.flatten())
 
-r2_value = calculate_r2(resolution_data, output_array)
+r2_value = calculate_r2(cropped_resolution, cropped_output)
 
 print(f'Max Error: {max_error:.2f}%, Avg Error: {avg_error:.2f}%, R² Variance: {r2_value:.4f}')
 
@@ -120,38 +126,36 @@ def log_case_error(case_name, max_error, avg_error, r2_value):
     if not os.path.exists(errors_file):
         with open(errors_file, 'w') as f:
             f.write("Case Name, Max Error (%), Avg Error (%), R^2 Variance\n")
-
     with open(errors_file, 'r') as f:
         lines = f.readlines()
-
     if not any(case_name in line for line in lines):
         with open(errors_file, 'a') as f:
             f.write(f"{case_name}, {max_error:.2f}, {avg_error:.2f}, {r2_value:.4f}\n")
 
 log_case_error(case_name, max_error, avg_error, r2_value)
 
-# Visualización: Corte en el centro del dominio Z
-mid_z = nnz // 2
+# Visualización: Corte en el centro del dominio Z (recortado)
+mid_z_cropped = cropped_output.shape[2] // 2
 fig, axs = plt.subplots(1, 3, figsize=(15, 5))
 
-vmin, vmax = np.min(output_array), np.max(output_array)
+vmin, vmax = np.min(cropped_output), np.max(cropped_output)
 
 # Output
-img_output = axs[0].imshow(output_array[:, :, mid_z], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)
+img_output = axs[0].imshow(cropped_output[:, :, mid_z_cropped], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)
 axs[0].set_title('NN Output (Z Mid Slice)')
 axs[0].set_xlabel('X')
 axs[0].set_ylabel('Y')
 plt.colorbar(img_output, ax=axs[0])
 
 # Solución Analítica
-img_res = axs[1].imshow(resolution_data[:, :, mid_z], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)
+img_res = axs[1].imshow(cropped_resolution[:, :, mid_z_cropped], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)
 axs[1].set_title('Analytical Solution')
 axs[1].set_xlabel('X')
 axs[1].set_ylabel('Y')
 plt.colorbar(img_res, ax=axs[1])
 
 # Error Relativo
-img_err = axs[2].imshow(relative_error[:, :, mid_z], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+img_err = axs[2].imshow(relative_error[:, :, mid_z_cropped], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
 axs[2].set_title('Relative Error (%)')
 axs[2].set_xlabel('X')
 axs[2].set_ylabel('Y')
