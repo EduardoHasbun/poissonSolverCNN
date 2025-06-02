@@ -78,7 +78,7 @@ inner_mask = interface_mask
 outer_mask = ~interface_mask | interface_boundary
 
 # Load Data
-data = np.load(data_dir) 
+data = np.load(data_dir) * ratio_max
 target = np.load(target_dir) 
 dataset_tensor = torch.tensor(data, dtype=torch.float)  
 target_tensor = torch.tensor(target, dtype=torch.float)
@@ -93,7 +93,7 @@ laplacian_loss = LaplacianLossInterface(cfg, lapl_weight = lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 interface_loss = InterfaceBoundaryLoss(interface_weight, interface_boundary, interface_center, interface_radius,\
                                         epsilon_inside, epsilon_outside, dx, dy, dz)
-inside_loss = InsideLossInterface(cfg, inside_weight)
+# inside_loss = InsideLossInterface(cfg, inside_weight)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
 # Initialize lists to store losses
@@ -126,7 +126,7 @@ for epoch in range (num_epochs):
         # Loss
         laplacian_loss_in_value = laplacian_loss(subdomain_in, data, data_norm, inner_mask)
         laplacian_loss_out_value = laplacian_loss(subdomain_out, data, data_norm, outer_mask)
-        interface_loss_value = interface_loss(subdomain_in, subdomain_out)
+        interface_loss_value = interface_loss(subdomain_in, subdomain_out, data_norm)
         dirichlet_loss_value = dirichlet_loss(subdomain_out)
         loss = laplacian_loss_in_value + laplacian_loss_out_value + dirichlet_loss_value + interface_loss_value
 
@@ -155,8 +155,6 @@ for epoch in range (num_epochs):
     epoch_losses.append(total_loss / len(dataloader))
     print(f"Epoch [{epoch + 1}/{num_epochs}] - Total Loss: {total_loss / len(dataloader)}")
     torch.save(model.state_dict(), os.path.join(save_dir, case_name))
-    if epoch % 10 == 0:
-        torch.save(model.state_dict(), os.path.join(save_dir, case_name + f'_epoch_{epoch}'))
 
 
 # Save losses to a .txt file

@@ -80,7 +80,7 @@ resolution_data = poisson_punctual_solution(X, Y, Z, punctual_charges)
 def ratio_potrhs(alpha, Lx, Ly, Lz):
     return alpha / (np.pi**2 / 8)**2 / (1 / Lx**2 + 1 / Ly**2 + 1 / Lz**2)
 
-alpha = 0.12
+alpha = 0.13
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 # Generar entrada
@@ -129,33 +129,58 @@ def log_case_error(case_name, max_error, avg_error, r2_value):
             f.write(f"{case_name}, {max_error:.2f}, {avg_error:.2f}, {r2_value:.4f}\n")
 
 log_case_error(case_name, max_error, avg_error, r2_value)
+vmin, vmax = np.min(output_array), np.max(output_array)
 
 # Visualización: Corte en el centro del dominio Z
 mid_z = nnz // 2
-fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+fig, axs = plt.subplots(3, 3, figsize=(15, 13))
+
 
 vmin, vmax = np.min(output_array), np.max(output_array)
 
 # Output
-img_output = axs[0].imshow(output_array[:, :, mid_z], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)
-axs[0].set_title('NN Output (Z Mid Slice)')
-axs[0].set_xlabel('X')
-axs[0].set_ylabel('Y')
-plt.colorbar(img_output, ax=axs[0])
 
-# Solución Analítica
-img_res = axs[1].imshow(resolution_data[:, :, mid_z], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)
-axs[1].set_title('Analytical Solution')
-axs[1].set_xlabel('X')
-axs[1].set_ylabel('Y')
-plt.colorbar(img_res, ax=axs[1])
+from matplotlib.ticker import FuncFormatter
 
-# Error Relativo
-img_err = axs[2].imshow(relative_error[:, :, mid_z], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-axs[2].set_title('Relative Error (%)')
-axs[2].set_xlabel('X')
-axs[2].set_ylabel('Y')
-plt.colorbar(img_err, ax=axs[2])
+
+mid_x = output_array.shape[0] // 2
+mid_y = output_array.shape[1] // 2
+mid_z = output_array.shape[2] // 2
+
+titles = ['Z Slice (XY)', 'Y Slice (XZ)', 'X Slice (YZ)']
+
+for i, (title, data_fn) in enumerate(zip(
+    titles,
+    [
+        lambda arr: arr[:, :, mid_z],  # Z slice → plano XY
+        lambda arr: arr[:, mid_y, :],  # Y slice → plano XZ
+        lambda arr: arr[mid_x, :, :],  # X slice → plano YZ
+    ]
+)):
+    # NN Output
+    img0 = axs[0, i].imshow(data_fn(output_array).T, origin='lower', cmap='viridis',
+                            vmin=vmin, vmax=vmax, aspect='auto')
+    axs[0, i].set_title(f'NN Output - {title}')
+    plt.colorbar(img0, ax=axs[0, i])
+
+    # Analytical Solution
+    img1 = axs[1, i].imshow(data_fn(resolution_data).T, origin='lower', cmap='viridis',
+                            vmin=vmin, vmax=vmax, aspect='auto')
+    axs[1, i].set_title(f'Analytical - {title}')
+    plt.colorbar(img1, ax=axs[1, i])
+
+    # Relative Error
+    img2 = axs[2, i].imshow(data_fn(relative_error).T, origin='lower', cmap='viridis',
+                            aspect='auto')
+    axs[2, i].set_title(f'Error Relativo (%) - {title}')
+    plt.colorbar(img2, ax=axs[2, i])
+
+# Etiquetas de ejes
+for row in range(3):
+    axs[row, 0].set_ylabel(['NN Output', 'Analytical', 'Error Relativo (%)'][row])
+
+for col in range(3):
+    axs[2, col].set_xlabel(['X vs Y', 'X vs Z', 'Y vs Z'][col])
 
 plt.tight_layout()
 plt.savefig(os.path.join(plots_dir, f'{case_name}.png'))

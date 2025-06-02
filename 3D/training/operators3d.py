@@ -181,8 +181,8 @@ class InterfaceBoundaryLoss(nn.Module):
         back_outer = subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx - 1]
 
         gradients_z_boundary_inner[:, 0, self.x_idx, self.y_idx, self.z_idx] = torch.where(self.normal_z > 0, 
-            (subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx] - back_inner) / self.dy, 
-            (front_inner - subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx]) / self.dy)
+            (subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx] - back_inner) / self.dz, 
+            (front_inner - subdomain_in[:, 0, self.x_idx, self.y_idx, self.z_idx]) / self.dz)
         
         gradients_z_boundary_outer[:, 0, self.x_idx, self.y_idx, self.z_idx] = torch.where(self.normal_z > 0, 
             (-subdomain_out[:, 0, self.x_idx, self.y_idx, self.z_idx] + front_outer) / self.dz, 

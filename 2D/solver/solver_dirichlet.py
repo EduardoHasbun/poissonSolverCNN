@@ -55,7 +55,7 @@ def ratio_potrhs(alpha, Lx, Ly):
 
 
 # Set parameters
-alpha = 0.095
+alpha = 0.1
 ratio_max = op.ratio_potrhs(alpha, Lx, Ly)
 
 

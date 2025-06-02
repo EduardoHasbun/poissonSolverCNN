@@ -1,6 +1,6 @@
 general:
-  case_name: interface3d_8_epoch_30
-  model_dir: 'C:\Codigos\poissonSolverCNN\3D\training\trained_models\interface3d_7'
+  case_name: interface3d_8
+  model_dir: 'C:\Codigos\poissonSolverCNN\3D\training\trained_models\interface3d_8'
 
 arch:
     arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf300.yml'
@@ -38,4 +38,46 @@ spherical_harmonics:
   N: 10
   
 
+
+
+
+# general:
+#   case_name: interface3d_1
+#   model_dir: 'C:\Codigos\poissonSolverCNN\3D\training\trained_models\interface3d_8'
+
+# arch:
+#     arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf300.yml'
+#     type: 'UNet4'
+
+# init:
+#   func: 'gaussians'
+#   # args : [1.0e+2, 2.3, 2.3, 1.0, 1.0,
+#   #              1.0e+2, 2.6,  2.6, 1.0, 1.0,
+#   #              1.0e+11, 2.0, 2.4, 1.0, 1.0]
+#   charges : [1.0]
+#   locations : [[0.1, 0.1, 0.0]]   
+
+
+# domain:
+#   xmin: -2.5
+#   ymin: -2.5
+#   zmin: -2.5
+#   xmax: 2.5
+#   ymax: 2.5
+#   zmax: 2.5
+#   nnx: 51
+#   nny: 51
+#   nnz: 51
+#   interface_center:
+#     x: 0
+#     y: 0
+#     z: 0
+#   R: 1
+
+# spherical_harmonics:
+#   E_1: 1
+#   E_2: 80
+#   kappa: 0.1
+#   N: 6
+  
 

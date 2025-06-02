@@ -66,7 +66,7 @@ def poisson_punctual_solution(x, y, z, charges):
     return solution
 
 # Función para recortar bordes
-def crop_edges(array, n=5):
+def crop_edges(array, n=13):
     return array[n:-n, n:-n, n:-n]
 
 # Extraer parámetros de cargas puntuales
@@ -81,7 +81,7 @@ resolution_data = poisson_punctual_solution(X, Y, Z, punctual_charges)
 def ratio_potrhs(alpha, Lx, Ly, Lz):
     return alpha / (np.pi**2 / 8)**2 / (1 / Lx**2 + 1 / Ly**2 + 1 / Lz**2)
 
-alpha = 5.0
+alpha = 0.12
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 # Generar entrada
@@ -121,45 +121,45 @@ r2_value = calculate_r2(cropped_resolution, cropped_output)
 
 print(f'Max Error: {max_error:.2f}%, Avg Error: {avg_error:.2f}%, R² Variance: {r2_value:.4f}')
 
-# Guardar errores
-def log_case_error(case_name, max_error, avg_error, r2_value):
-    if not os.path.exists(errors_file):
-        with open(errors_file, 'w') as f:
-            f.write("Case Name, Max Error (%), Avg Error (%), R^2 Variance\n")
-    with open(errors_file, 'r') as f:
-        lines = f.readlines()
-    if not any(case_name in line for line in lines):
-        with open(errors_file, 'a') as f:
-            f.write(f"{case_name}, {max_error:.2f}, {avg_error:.2f}, {r2_value:.4f}\n")
+# # Guardar errores
+# def log_case_error(case_name, max_error, avg_error, r2_value):
+#     if not os.path.exists(errors_file):
+#         with open(errors_file, 'w') as f:
+#             f.write("Case Name, Max Error (%), Avg Error (%), R^2 Variance\n")
+#     with open(errors_file, 'r') as f:
+#         lines = f.readlines()
+#     if not any(case_name in line for line in lines):
+#         with open(errors_file, 'a') as f:
+#             f.write(f"{case_name}, {max_error:.2f}, {avg_error:.2f}, {r2_value:.4f}\n")
 
-log_case_error(case_name, max_error, avg_error, r2_value)
+# log_case_error(case_name, max_error, avg_error, r2_value)
 
-# Visualización: Corte en el centro del dominio Z (recortado)
-mid_z_cropped = cropped_output.shape[2] // 2
-fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+# # Visualización: Corte en el centro del dominio Z (recortado)
+# mid_z_cropped = cropped_output.shape[2] // 2
+# fig, axs = plt.subplots(1, 3, figsize=(15, 5))
 
-vmin, vmax = np.min(cropped_output), np.max(cropped_output)
+# vmin, vmax = np.min(cropped_output), np.max(cropped_output)
 
-# Output
-img_output = axs[0].imshow(cropped_output[:, :, mid_z_cropped], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)
-axs[0].set_title('NN Output (Z Mid Slice)')
-axs[0].set_xlabel('X')
-axs[0].set_ylabel('Y')
-plt.colorbar(img_output, ax=axs[0])
+# # Output
+# img_output = axs[0].imshow(cropped_output[:, :, mid_z_cropped], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)
+# axs[0].set_title('NN Output (Z Mid Slice)')
+# axs[0].set_xlabel('X')
+# axs[0].set_ylabel('Y')
+# plt.colorbar(img_output, ax=axs[0])
 
-# Solución Analítica
-img_res = axs[1].imshow(cropped_resolution[:, :, mid_z_cropped], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)
-axs[1].set_title('Analytical Solution')
-axs[1].set_xlabel('X')
-axs[1].set_ylabel('Y')
-plt.colorbar(img_res, ax=axs[1])
+# # Solución Analítica
+# img_res = axs[1].imshow(cropped_resolution[:, :, mid_z_cropped], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=vmin, vmax=vmax)
+# axs[1].set_title('Analytical Solution')
+# axs[1].set_xlabel('X')
+# axs[1].set_ylabel('Y')
+# plt.colorbar(img_res, ax=axs[1])
 
-# Error Relativo
-img_err = axs[2].imshow(relative_error[:, :, mid_z_cropped], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
-axs[2].set_title('Relative Error (%)')
-axs[2].set_xlabel('X')
-axs[2].set_ylabel('Y')
-plt.colorbar(img_err, ax=axs[2])
+# # Error Relativo
+# img_err = axs[2].imshow(relative_error[:, :, mid_z_cropped], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis')
+# axs[2].set_title('Relative Error (%)')
+# axs[2].set_xlabel('X')
+# axs[2].set_ylabel('Y')
+# plt.colorbar(img_err, ax=axs[2])
 
-plt.tight_layout()
-plt.savefig(os.path.join(plots_dir, f'{case_name}.png'))
+# plt.tight_layout()
+# plt.savefig(os.path.join(plots_dir, f'{case_name}.png'))
