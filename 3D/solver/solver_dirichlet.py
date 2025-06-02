@@ -57,7 +57,7 @@ def ratio_potrhs(alpha, Lx, Ly, Lz):
     return alpha / (np.pi**2 / 4)**2 / (1 / Lx**2 + 1 / Ly**2 + 1 / Lz**2)
 
 # Set parameters
-alpha = 0.035
+alpha = 0.1
 ratio_max = op.ratio_potrhs(alpha, Lx, Ly, Lz)
 
 # Create input data and resolution data for the error

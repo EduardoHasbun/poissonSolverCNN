@@ -66,7 +66,7 @@ def poisson_punctual_solution(x, y, z, charges):
     return solution
 
 # Función para recortar bordes
-def crop_edges(array, n=13):
+def crop_edges(array, n=5):
     return array[n:-n, n:-n, n:-n]
 
 # Extraer parámetros de cargas puntuales

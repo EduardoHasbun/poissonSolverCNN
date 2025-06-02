@@ -1,11 +1,11 @@
 general:
-    name_case: '3D_Unet4_ks3_rf200'
+    name_case: '3D_Unet4_ks3_rf300'
     data_dir: 'dataset/generated/random.npy' 
 
 
 arch:
     model: "UNet"
-    arch_dir: 'Archs/Unet_ks3_rf200.yml'
+    arch_dir: 'Archs/Unet_ks3_rf300.yml'
     type: 'UNet4'
 
 
@@ -14,11 +14,11 @@ globals:                                   # Domain sizes and others, used to co
     nny: 71                                # Number of points in y direction
     nnz: 71                                # Number of points in z direction
     xmin: 0.0
-    xmax: 1.0
+    xmax: 5.0
     ymin: 0.0
-    ymax: 1.0
+    ymax: 5.0
     zmin: 0.0
-    zmax: 1.0
+    zmax: 5.0
 
 
 
