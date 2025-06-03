@@ -14,17 +14,17 @@ globals:                                    # Domain sizes and others, used to c
     nnx: 71                                # Number of points in x direction
     nny: 71                                # Number of points in y direction
     nnz: 71
-    xmin: -2.5
-    xmax: 2.5
-    ymin: -2.5
-    ymax: 2.5
-    zmin: -2.5
-    zmax: 2.5
+    xmin: -5
+    xmax: 5
+    ymin: -5
+    ymax: 5
+    zmin: -5
+    zmax: 5
     interface_center:
         x: 0.0
         y: 0.0
         z: 0.0
-    interface_radius: 1.0
+    interface_radius: 4.0
     epsilon_inside: 1.0
     epsilon_outside: 80.0
 
