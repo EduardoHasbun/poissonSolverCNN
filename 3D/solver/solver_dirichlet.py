@@ -116,7 +116,6 @@ mid_y = nny // 2
 mid_z = nnz // 2
 
 fig, axs = plt.subplots(3, 3, figsize=(15, 15))
-fig.suptitle(case_name + " (Central Slices)", fontsize=16)
 
 # X-slice (y-z plane at x=mid_x)
 vmin, vmax = np.min(output_array), np.max(output_array)
@@ -158,5 +157,5 @@ for i in range(3):
         axs[i, j].set_ylabel('Y' if i == 0 else ('X' if i == 1 else 'X'))
 
 plt.tight_layout(rect=[0, 0.03, 1, 0.97])
-plt.savefig(os.path.join(plots_dir, f'{case_name}_3D_slices.png'))
+plt.savefig(os.path.join(plots_dir, f'{case_name}.png'))
 
