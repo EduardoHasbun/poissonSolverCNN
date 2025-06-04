@@ -3,6 +3,7 @@ env/
 2D/training/trained_models
 3D/dataset/generated/
 3D/training/trained_models1
+3D/training/trained_models
 results/
 test/dataset/generated/
 test/training/trained_models

@@ -15,6 +15,7 @@ def spherical_to_cartesian(radius, zenith, azimuth):
     z = radius * np.cos(zenith)
     return np.array([x, y, z])
 
+# Functions
 def G(X, q, xq, epsilon):
     r_vec_expanded = np.expand_dims(X, axis=1)  # Shape: (n, 1, 3)
     x_qs_expanded = np.expand_dims(xq, axis=0)  # Shape: (1, m, 3)
@@ -80,7 +81,8 @@ def Spherical_Harmonics(x, y, z, q, xq, E_1, E_2, kappa, R, labels, points, N):
 
     # Final adjustment for solvent
     is_solvent = labels[ix, iy, iz] == "solvent"
-    PHI[is_solvent] -= G(points[is_solvent], q, xq, E_1)
+    # PHI[is_solvent] -= G(points[is_solvent], q, xq, E_1)
+    PHI += G(points, q, xq, E_1)
 
     return np.real(PHI)
 
@@ -97,6 +99,7 @@ def get_K(x, n):
             * x**s
         )
     return K
+
 
 def generate_random(args):
     cfg, i = args

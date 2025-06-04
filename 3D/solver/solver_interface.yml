@@ -1,6 +1,6 @@
 general:
-  case_name: 3D_interface_Unet4_ks3_rf200_2
-  model_dir: 'C:\Codigos\poissonSolverCNN\3D\training\trained_models\3D_interface_Unet4_ks3_rf200_2'
+  case_name: 3D_interface_Unet4_ks3_rf200
+  model_dir: 'C:\Codigos\poissonSolverCNN\3D\training\trained_models\3D_interface_Unet4_ks3_rf200'
 
 arch:
     arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf200.yml'
@@ -18,20 +18,20 @@ args:
 
 
 domain:
-  xmin: -2.5
-  ymin: -2.5
-  zmin: -2.5
-  xmax: 2.5
-  ymax: 2.5
-  zmax: 2.5
-  nnx: 61
-  nny: 61
-  nnz: 61
+  xmin: -5
+  ymin: -5
+  zmin: -5
+  xmax: 5
+  ymax: 5
+  zmax: 5
+  nnx: 71
+  nny: 71
+  nnz: 71
   interface_center:
     x: 0
     y: 0
     z: 0
-  R: 1
+  R: 4
 
 spherical_harmonics:
   E_1: 1

@@ -1,9 +1,45 @@
+# general:
+#   case_name: testtt
+#   model_dir: 'C:/Codigos/poissonSolverCNN/3D/training/trained_models/3D_Unet4_ks3_rf400.pth.pth'
+
+# arch:
+#     arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf400.yml'
+#     type: 'UNet4'
+
+# init:
+#   func: 'gaussians'
+#   # args : [1.0e+2, 2.3, 2.3, 1.0, 1.0,
+#   #              1.0e+2, 2.6,  2.6, 1.0, 1.0,
+#   #              1.0e+11, 2.0, 2.4, 1.0, 1.0]
+#   args: [
+#     2.0e+1, 6.0, 6.0, 6.0, 0.4, 0.4, 0.4
+#   ]
+
+
+
+
+
+# mesh:
+#   xmin: 0
+#   ymin: 0
+#   zmin: 0
+#   xmax: 12.0
+#   ymax: 12.0
+#   zmax: 12.0
+#   nnx: 71
+#   nny: 71
+#   nnz: 71
+
+  
+
+
+
 general:
-  case_name: 3d_Unet200_domain_12
-  model_dir: 'C:/Codigos/poissonSolverCNN/3D/training/trained_models/3D_Unet4_ks3_rf400.pth.pth'
+  case_name: testtt
+  model_dir: 'C:/Codigos/poissonSolverCNN/3D/training/trained_models/3D_Unet4_ks3_rf300.pth.pth'
 
 arch:
-    arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf400.yml'
+    arch_dir: 'C:/Codigos/poissonSolverCNN/Archs/Unet_ks3_rf300.yml'
     type: 'UNet4'
 
 init:
@@ -12,7 +48,7 @@ init:
   #              1.0e+2, 2.6,  2.6, 1.0, 1.0,
   #              1.0e+11, 2.0, 2.4, 1.0, 1.0]
   args: [
-    2.0e+1, 6.0, 6.0, 6.0, 0.4, 0.4, 0.4
+    10.0, 0.1, 0.1, 0, 0.1, 0.1, 0.1
   ]
 
 
@@ -20,16 +56,15 @@ init:
 
 
 mesh:
-  xmin: 0
-  ymin: 0
-  zmin: 0
-  xmax: 12.0
-  ymax: 12.0
-  zmax: 12.0
+  xmin: -6
+  ymin: -6
+  zmin: -6
+  xmax: 6.0
+  ymax: 6.0
+  zmax: 6.0
   nnx: 71
   nny: 71
   nnz: 71
 
   
-
 

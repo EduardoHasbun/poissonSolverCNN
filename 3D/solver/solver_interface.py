@@ -188,10 +188,10 @@ model = model.float()
 for param in model.parameters():
     param.data = param.data.float()
 model.eval() 
-alpha = 2.8
+alpha = 0.8
 ratio = ratio_potrhs(alpha, Lx, Ly, Lz)
 
-sigma = 0.4
+sigma = 0.9
 
 # Create input data and solution data
 input_data = gaussians(X, Y, Z, [1.0, 0.1, 0.1, 0, sigma, sigma, sigma])
