@@ -1,6 +1,6 @@
 general:
     name_case: '3D_interface_Unet4_ks3_rf200'
-    data_dir: 'dataset/generated/random.npy' 
+    data_dir: 'dataset/generated/rhs_data.npy' 
     target_dir: 'dataset/generated/potentials_data.npy'
 
 
@@ -11,9 +11,9 @@ arch:
 
 
 globals:                                    # Domain sizes and others, used to compute global attributes
-    nnx: 71                                # Number of points in x direction
-    nny: 71                                # Number of points in y direction
-    nnz: 71
+    nnx: 51                                # Number of points in x direction
+    nny: 51                                # Number of points in y direction
+    nnz: 51
     xmin: -5
     xmax: 5
     ymin: -5
@@ -24,7 +24,7 @@ globals:                                    # Domain sizes and others, used to c
         x: 0.0
         y: 0.0
         z: 0.0
-    interface_radius: 4.0
+    interface_radius: 3.0
     epsilon_inside: 1.0
     epsilon_outside: 80.0
 
@@ -41,7 +41,7 @@ loss:
         bound_weight: 1.0e+0              # Weighting of the loss on the boundaries (float)
         interface_weight: 1.0e+5             # Weighting of the loss on the boundaries (float)
         lapl_weight: 1.0e+5               # Weighting of the loss on the Laplacian (float)
-        inside_weight: 5.0e+9
+        inside_weight: 5.0e+4
         optimizer_lr: 1.e-4 
 
 trainer:

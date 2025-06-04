@@ -79,12 +79,12 @@ outer_mask = ~interface_mask | interface_boundary
 
 # Load Data
 data = np.load(data_dir) * ratio_max
-# target = np.load(target_dir) 
+target = np.load(target_dir) 
 dataset_tensor = torch.tensor(data, dtype=torch.float)  
 dataloader = DataLoader(dataset_tensor, batch_size=batch_size, shuffle=True)
-# target_tensor = torch.tensor(target, dtype=torch.float)
-# dataset = TensorDataset(dataset_tensor, target_tensor)
-# dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+target_tensor = torch.tensor(target, dtype=torch.float)
+dataset = TensorDataset(dataset_tensor, target_tensor)
+dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
 # Create models and losses
@@ -94,7 +94,7 @@ laplacian_loss = LaplacianLossInterface(cfg, lapl_weight = lapl_weight)
 dirichlet_loss = DirichletBoundaryLoss(bound_weight)
 interface_loss = InterfaceBoundaryLoss(interface_weight, interface_boundary, interface_center, interface_radius,\
                                         epsilon_inside, epsilon_outside, dx, dy, dz)
-# inside_loss = InsideLossInterface(cfg, inside_weight)
+inside_loss = InsideLossInterface(cfg, inside_weight)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
 # Initialize lists to store losses
@@ -115,40 +115,43 @@ for epoch in range (num_epochs):
     epoch_dirichlet_loss = 0
     epoch_interface_loss = 0
     for batch_idx, batch in enumerate(dataloader):
-        # data, target = batch
-        # data = data.unsqueeze(1)
-        data = batch.unsqueeze(1)
-        # target = target.unsqueeze(1)
+        data, target = batch
+        data = data.unsqueeze(1)
+        target = target.unsqueeze(1)
         optimizer.zero_grad()
         data_norm = torch.ones((data.size(0), data.size(1), 1, 1, 1)) / ratio_max
+        output = torch.zeros_like(data)
 
         # Getting Outputs
         subdomain_in, subdomain_out = model(data)
+        output[0, 0, interface_mask] = subdomain_in[0, 0, interface_mask]
+        output[0, 0, ~interface_mask] = subdomain_out[0, 0, ~interface_mask]
 
-        # Loss
-        laplacian_loss_in_value = laplacian_loss(subdomain_in, data, data_norm, inner_mask)
-        laplacian_loss_out_value = laplacian_loss(subdomain_out, data, data_norm, outer_mask)
-        interface_loss_value = interface_loss(subdomain_in, subdomain_out, data_norm)
-        dirichlet_loss_value = dirichlet_loss(subdomain_out)
-        loss = laplacian_loss_in_value + laplacian_loss_out_value + dirichlet_loss_value + interface_loss_value
+        # # Loss
+        loss = inside_loss(output, target)
+        # laplacian_loss_in_value = laplacian_loss(subdomain_in, data, data_norm, inner_mask)
+        # laplacian_loss_out_value = laplacian_loss(subdomain_out, data, data_norm, outer_mask)
+        # interface_loss_value = interface_loss(subdomain_in, subdomain_out, data_norm)
+        # dirichlet_loss_value = dirichlet_loss(subdomain_out)
+        # loss = laplacian_loss_in_value + laplacian_loss_out_value + dirichlet_loss_value + interface_loss_value
 
         # Backpropagation
         loss.backward()
         optimizer.step()
 
-        # Update total loss
-        total_loss += loss.item()
-        epoch_laplacian_loss_in += laplacian_loss_in_value.item()
-        epoch_laplacian_loss_out += laplacian_loss_out_value.item()
-        epoch_dirichlet_loss += dirichlet_loss_value.item()
-        epoch_interface_loss += interface_loss_value.item()
+        # # Update total loss
+        # total_loss += loss.item()
+        # epoch_laplacian_loss_in += laplacian_loss_in_value.item()
+        # epoch_laplacian_loss_out += laplacian_loss_out_value.item()
+        # epoch_dirichlet_loss += dirichlet_loss_value.item()
+        # epoch_interface_loss += interface_loss_value.item()
 
-        # Save batch losses
-        batch_losses.append(loss.item())
-        laplacian_losses_in.append(laplacian_loss_in_value.item())
-        laplacian_losses_out.append(laplacian_loss_out_value.item())
-        interface_losses.append(interface_loss_value.item())
-        dirichlet_losses.append(dirichlet_loss_value.item())
+        # # Save batch losses
+        # batch_losses.append(loss.item())
+        # laplacian_losses_in.append(laplacian_loss_in_value.item())
+        # laplacian_losses_out.append(laplacian_loss_out_value.item())
+        # interface_losses.append(interface_loss_value.item())
+        # dirichlet_losses.append(dirichlet_loss_value.item())
 
         if batch_idx % 20 ==0:
             print(f"Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}")
