@@ -3,48 +3,60 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-###########################        UNet      ##############################################################
+# ===================================================================
+#                           UNet
+# ===================================================================
+
 class CustomPadLayer(nn.Module):
+    """Custom padding layer with replicate + constant padding."""
     def __init__(self, kernel_size):
-        super(CustomPadLayer, self).__init__()
-        self.padx = int((kernel_size[1] - 1) / 2)
-        self.pady = int((kernel_size[0] - 1) / 2)
+        super().__init__()
+        self.padx = (kernel_size[1] - 1) // 2
+        self.pady = (kernel_size[0] - 1) // 2
 
     def forward(self, x):
-        x = F.pad(x, (0, 0, self.pady, 0), "replicate")
-        x = F.pad(x, (self.padx, self.padx, 0, self.pady), "constant", 0)
+        x = F.pad(x, (0, 0, self.pady, 0), mode="replicate")
+        x = F.pad(x, (self.padx, self.padx, 0, self.pady), mode="constant", value=0)
         return x
 
-class ConvBlock(nn.Module):
-    def __init__(self, fmaps, block_type, kernel_size, padding_mode='zeros', upsample_mode='nearest', out_size=None):
-        super(ConvBlock, self).__init__()
-        layers = list()
 
-        # Apply pooling on down and bottom blocks
-        if block_type == 'down' or block_type == 'bottom':
+class ConvBlock(nn.Module):
+    """Generic convolutional block for UNet with optional pooling and upsampling."""
+    def __init__(self, fmaps, block_type, kernel_size,
+                 padding_mode="zeros", upsample_mode="nearest", out_size=None):
+        super().__init__()
+        layers = []
+
+        # Downsampling with pooling
+        if block_type in {"down", "bottom"}:
             layers.append(nn.MaxPool2d(2))
 
-        # Append all the specified layers
+        # Convolution + activation layers
         for i in range(len(fmaps) - 1):
-            if padding_mode == 'custom':
+            if padding_mode == "custom":
                 layers.append(CustomPadLayer(kernel_size))
-                layers.append(nn.Conv2d(fmaps[i], fmaps[i + 1], 
-                    kernel_size=kernel_size, padding=0, 
-                    padding_mode='zeros'))
+                layers.append(nn.Conv2d(
+                    fmaps[i], fmaps[i + 1],
+                    kernel_size=kernel_size,
+                    padding=0,
+                    padding_mode="zeros"
+                ))
             else:
-                layers.append(nn.Conv2d(fmaps[i], fmaps[i + 1], 
-                    kernel_size=kernel_size, 
-                    padding=(int((kernel_size - 1) / 2), int((kernel_size - 1) / 2)), 
-                    padding_mode=padding_mode))
-            # No ReLu at the very last layer
-            if i != len(fmaps) - 2 or block_type != 'out':
+                layers.append(nn.Conv2d(
+                    fmaps[i], fmaps[i + 1],
+                    kernel_size=kernel_size,
+                    padding=(kernel_size - 1) // 2,
+                    padding_mode=padding_mode
+                ))
+
+            # Add ReLU except for last layer of "out" block
+            if i != len(fmaps) - 2 or block_type != "out":
                 layers.append(nn.ReLU())
 
-        # Apply either Upsample or deconvolution
-        if block_type == 'up' or block_type == 'bottom':
+        # Upsampling in up or bottom blocks
+        if block_type in {"up", "bottom"}:
             layers.append(nn.Upsample(out_size, mode=upsample_mode))
 
-        # Build the sequence of layers
         self.encode = nn.Sequential(*layers)
 
     def forward(self, x):
@@ -52,111 +64,111 @@ class ConvBlock(nn.Module):
 
 
 class UNet(nn.Module):
-
-    def __init__(self, scales, kernel_sizes, input_res, 
-                    padding_mode='zeros', upsample_mode='nearest'):
-        super(UNet, self).__init__()
+    """Classic UNet architecture with customizable scales and kernel sizes."""
+    def __init__(self, scales, kernel_sizes, input_res,
+                 padding_mode="zeros", upsample_mode="nearest"):
+        super().__init__()
         self.scales = scales
         self.max_scale = len(scales) - 1
-        if isinstance(kernel_sizes, int):   
-            self.kernel_sizes = [kernel_sizes] * len(scales)
-        else:   
-            self.kernel_sizes = kernel_sizes
-        
-        # create down_blocks, bottom_fmaps and up_blocks
-        in_fmaps = self.scales[0][0]
 
-        down_blocks = list()
-        for local_depth in range(1, self.max_scale):
-            down_blocks.append(self.scales[local_depth][0])
-        
-        bottom_fmaps = self.scales[self.max_scale]
+        # Normalize kernel sizes into a list
+        self.kernel_sizes = (
+            [kernel_sizes] * len(scales) if isinstance(kernel_sizes, int) else kernel_sizes
+        )
 
-        up_blocks = list()
-        for local_depth in range(self.max_scale - 1, 0, -1):
-            up_blocks.append(self.scales[local_depth][1])
-        
-        out_fmaps = self.scales[0][1]
-        
-        # For upsample the list of resolution is needed when 
-        # the number of points is not a power of 2
+        # Build block configurations
+        in_fmaps = scales[0][0]
+        down_blocks = [scales[d][0] for d in range(1, self.max_scale)]
+        bottom_fmaps = scales[self.max_scale]
+        up_blocks = [scales[d][1] for d in range(self.max_scale - 1, 0, -1)]
+        out_fmaps = scales[0][1]
+
+        # Compute resolutions (handle non power-of-2 cases)
         if isinstance(input_res, list):
             self.input_res = tuple(input_res)
-            list_res = [(int(input_res[0] / 2**i), int(input_res[1] / 2**i)) for i in range(self.max_scale)]
+            list_res = [(input_res[0] // 2**i, input_res[1] // 2**i) for i in range(self.max_scale)]
         else:
-            self.input_res = tuple([input_res, input_res])
-            list_res = [int(input_res / 2**i) for i in range(self.max_scale)]
+            self.input_res = (input_res, input_res)
+            list_res = [input_res // 2**i for i in range(self.max_scale)]
 
-        # Entry layer
-        self.ConvsDown = nn.ModuleList()
-        self.ConvsDown.append(ConvBlock(in_fmaps, 'in', self.kernel_sizes[0],  padding_mode=padding_mode))
+        # Entry block
+        self.ConvsDown = nn.ModuleList([
+            ConvBlock(in_fmaps, "in", self.kernel_sizes[0], padding_mode=padding_mode)
+        ])
 
-        # Intermediate down layers (with MaxPool at the beginning)
-        for idown, down_fmaps in enumerate(down_blocks):
-            self.ConvsDown.append(ConvBlock(down_fmaps, 'down', self.kernel_sizes[idown + 1],
-                padding_mode=padding_mode))
+        # Downsampling blocks
+        for idx, down_fmaps in enumerate(down_blocks):
+            self.ConvsDown.append(ConvBlock(
+                down_fmaps, "down", self.kernel_sizes[idx + 1], padding_mode=padding_mode
+            ))
 
-        # Bottom layer (MaxPool at the beginning and Upsample/Deconv at the end)
-        self.ConvBottom = ConvBlock(bottom_fmaps, 'bottom', self.kernel_sizes[-1],
-                padding_mode=padding_mode, upsample_mode=upsample_mode, out_size=list_res.pop())
+        # Bottom block
+        self.ConvBottom = ConvBlock(
+            bottom_fmaps, "bottom", self.kernel_sizes[-1],
+            padding_mode=padding_mode, upsample_mode=upsample_mode,
+            out_size=list_res.pop()
+        )
 
-        # Intemediate layers up (UpSample/Deconv at the end)
+        # Upsampling blocks
         self.ConvsUp = nn.ModuleList()
-        for iup, up_fmaps in enumerate(up_blocks):
-            self.ConvsUp.append(ConvBlock(up_fmaps, 'up', self.kernel_sizes[-2 - iup], 
-                padding_mode=padding_mode, upsample_mode=upsample_mode, out_size=list_res.pop()))
-        
-        # Out layer
-        self.ConvsUp.append(ConvBlock(out_fmaps, 'out', self.kernel_sizes[0],
-                padding_mode=padding_mode))
+        for idx, up_fmaps in enumerate(up_blocks):
+            self.ConvsUp.append(ConvBlock(
+                up_fmaps, "up", self.kernel_sizes[-2 - idx],
+                padding_mode=padding_mode, upsample_mode=upsample_mode,
+                out_size=list_res.pop()
+            ))
+
+        # Output block
+        self.ConvsUp.append(ConvBlock(
+            out_fmaps, "out", self.kernel_sizes[0], padding_mode=padding_mode
+        ))
 
     def forward(self, x):
-        # List of the temporary x that are used for linking with the up branch
-        inputs_down = list()
-
-        # Apply the down loop
-        for ConvDown in self.ConvsDown:
-            x = ConvDown(x)
+        # Down path
+        inputs_down = []
+        for conv in self.ConvsDown:
+            x = conv(x)
             inputs_down.append(x)
-        
-        # Bottom part of the U
+
+        # Bottom
         x = self.ConvBottom(x)
-        
-        # Apply the up loop
-        for ConvUp in self.ConvsUp:
-            input_tmp = inputs_down.pop()
-            x = ConvUp(torch.cat((x, input_tmp), dim=1))
-                
+
+        # Up path
+        for conv in self.ConvsUp:
+            skip = inputs_down.pop()
+            x = conv(torch.cat((x, skip), dim=1))
+
         return x
-    
 
 
-
-################################  MSNet  ######################################
-
-
+# ===================================================================
+#                           MSNet
+# ===================================================================
 
 class _ConvBlockMSNnet(nn.Module):
-    def __init__(self, fmaps, out_size, block_type, kernel_size, 
-                 padding_mode='zeros', upsample_mode='bilinear'):  # Cambia a 'bilinear' para 2D
-        super(_ConvBlockMSNnet, self).__init__()
-        layers = list()
-        # Añadir las capas especificadas
+    """Convolutional block for MSNet with optional upsampling."""
+    def __init__(self, fmaps, out_size, block_type, kernel_size,
+                 padding_mode="zeros", upsample_mode="bilinear"):
+        super().__init__()
+        layers = []
+
+        # Convolution layers
         for i in range(len(fmaps) - 1):
-            # Usar Conv2d en lugar de Conv3d
-            layers.append(nn.Conv2d(fmaps[i], fmaps[i + 1], 
-                                    kernel_size=kernel_size, 
-                                    padding=int((kernel_size[0] - 1) / 2),  # Ajustar padding para 2D
-                                    padding_mode=padding_mode, stride=1))  
-            # No usar ReLU en la última capa
-            if i != len(fmaps) - 2 or block_type != 'out':
+            layers.append(nn.Conv2d(
+                fmaps[i], fmaps[i + 1],
+                kernel_size=kernel_size,
+                padding=(kernel_size[0] - 1) // 2,
+                padding_mode=padding_mode, stride=1
+            ))
+
+            # Add ReLU except for last layer of "out" block
+            if i != len(fmaps) - 2 or block_type != "out":
                 layers.append(nn.ReLU())
 
-        # Aplicar Upsample o deconvolución
-        if block_type == 'middle':
+        # Optional upsampling
+        if block_type == "middle":
             layers.append(nn.Upsample(out_size, mode=upsample_mode))
 
-        # Crear la secuencia de capas
         self.encode = nn.Sequential(*layers)
 
     def forward(self, x):
@@ -164,154 +176,139 @@ class _ConvBlockMSNnet(nn.Module):
 
 
 class MSNet(nn.Module):
-    def __init__(self, scales, kernel_sizes, input_res, padding_mode='zeros',
-                 upsample_mode='bilinear'):
-        super(MSNet, self).__init__()
+    """Multi-scale network (MSNet) with hierarchical upsampling and concatenation."""
+    def __init__(self, scales, kernel_sizes, input_res,
+                 padding_mode="zeros", upsample_mode="bilinear"):
+        super().__init__()
         self.scales = scales
         self.n_scales = len(scales)
         self.max_scale = self.n_scales - 1
-        self.input_res = tuple([input_res, input_res, input_res])
-        self.list_res = [int(input_res / 2**i) for i in range(self.n_scales)]
+        self.input_res = (input_res, input_res, input_res)
+        self.list_res = [input_res // 2**i for i in range(self.n_scales)]
+
+        # Normalize kernel sizes
         if isinstance(kernel_sizes, int):
-            self.kernel_sizes = [(kernel_sizes, kernel_sizes)] * len(scales) 
+            self.kernel_sizes = [(kernel_sizes, kernel_sizes)] * len(scales)
         elif isinstance(kernel_sizes, list):
             if isinstance(kernel_sizes[0], list):
-                self.kernel_sizes = [tuple(ks) for ks in kernel_sizes]  
+                self.kernel_sizes = [tuple(ks) for ks in kernel_sizes]
             else:
-                # Convert the list of integers to a list of tuples
-                self.kernel_sizes = [(ks, ks, ks) for ks in kernel_sizes]  
+                self.kernel_sizes = [(ks, ks, ks) for ks in kernel_sizes]
 
-        # create down_blocks, bottom_fmaps and up_blocks
-        middle_blocks = list()
-        for local_depth in range(self.n_scales):
-            middle_blocks.append(self.scales[self.max_scale - local_depth])
-        out_fmaps = self.scales[0]
+        # Middle and output blocks
+        middle_blocks = [scales[self.max_scale - d] for d in range(self.n_scales)]
+        out_fmaps = scales[0]
 
-        # Intemediate layers up (UpSample/Deconv at the end)
         self.ConvsUp = nn.ModuleList()
-        for imiddle, middle_fmaps in enumerate(middle_blocks):
-            self.ConvsUp.append(_ConvBlockMSNnet(middle_fmaps, 
-                out_size=self.list_res[-1 - imiddle], 
-                block_type='middle', kernel_size=self.kernel_sizes[-1 - imiddle],
-                padding_mode=padding_mode, upsample_mode=upsample_mode))
-        
-        # Out layer
-        self.ConvsUp.append(_ConvBlockMSNnet(out_fmaps, 
-            out_size=self.list_res[0],
-            block_type='out', kernel_size=self.kernel_sizes[0], padding_mode=padding_mode))
+        for idx, fmaps in enumerate(middle_blocks):
+            self.ConvsUp.append(_ConvBlockMSNnet(
+                fmaps, out_size=self.list_res[-1 - idx],
+                block_type="middle", kernel_size=self.kernel_sizes[-1 - idx],
+                padding_mode=padding_mode, upsample_mode=upsample_mode
+            ))
+
+        self.ConvsUp.append(_ConvBlockMSNnet(
+            out_fmaps, out_size=self.list_res[0],
+            block_type="out", kernel_size=self.kernel_sizes[0],
+            padding_mode=padding_mode
+        ))
 
     def forward(self, x):
         initial_map = x
-        # Apply the up loop
-        for iconv, ConvUp in enumerate(self.ConvsUp):
-            # First layer of convolution doesn't need concatenation
-            if iconv == 0:
-                x = ConvUp(x)
+        for idx, conv in enumerate(self.ConvsUp):
+            if idx == 0:
+                x = conv(x)
             else:
-                tmp_map = F.interpolate(initial_map, x[0, 0].shape, mode='bilinear', align_corners=False)
-                x = ConvUp(torch.cat((x, tmp_map), dim=1))
-                
+                tmp = F.interpolate(initial_map, x[0, 0].shape, mode="bilinear", align_corners=False)
+                x = conv(torch.cat((x, tmp), dim=1))
         return x
 
 
-
-################   Unet Interface   ###############################
-
+# ===================================================================
+#                       UNet Interface
+# ===================================================================
 
 class UNet_Submodel(nn.Module):
-    def __init__(self, scales, kernel_sizes, input_res, 
-                    padding_mode='zeros', upsample_mode='nearest'):
-        super(UNet_Submodel, self).__init__()
+    """UNet submodel used for interface networks."""
+    def __init__(self, scales, kernel_sizes, input_res,
+                 padding_mode="zeros", upsample_mode="nearest"):
+        super().__init__()
         self.scales = scales
         self.max_scale = len(scales) - 1
-        if isinstance(kernel_sizes, int):   
-            self.kernel_sizes = [kernel_sizes] * len(scales)
-        else:   
-            self.kernel_sizes = kernel_sizes
-        
-        # create down_blocks, bottom_fmaps and up_blocks
-        in_fmaps = self.scales[0][0]
+        self.kernel_sizes = (
+            [kernel_sizes] * len(scales) if isinstance(kernel_sizes, int) else kernel_sizes
+        )
 
-        down_blocks = list()
-        for local_depth in range(1, self.max_scale):
-            down_blocks.append(self.scales[local_depth][0])
-        
-        bottom_fmaps = self.scales[self.max_scale]
+        in_fmaps = scales[0][0]
+        down_blocks = [scales[d][0] for d in range(1, self.max_scale)]
+        bottom_fmaps = scales[self.max_scale]
+        up_blocks = [scales[d][1] for d in range(self.max_scale - 1, 0, -1)]
+        out_fmaps = scales[0][1]
 
-        up_blocks = list()
-        for local_depth in range(self.max_scale - 1, 0, -1):
-            up_blocks.append(self.scales[local_depth][1])
-        
-        out_fmaps = self.scales[0][1]
-        
-        # For upsample the list of resolution is needed when 
-        # the number of points is not a power of 2
         if isinstance(input_res, list):
             self.input_res = tuple(input_res)
-            list_res = [(int(input_res[0] / 2**i), int(input_res[1] / 2**i)) for i in range(self.max_scale)]
+            list_res = [(input_res[0] // 2**i, input_res[1] // 2**i) for i in range(self.max_scale)]
         else:
-            self.input_res = tuple([input_res, input_res])
-            list_res = [int(input_res / 2**i) for i in range(self.max_scale)]
+            self.input_res = (input_res, input_res)
+            list_res = [input_res // 2**i for i in range(self.max_scale)]
 
-        # Entry layer
-        self.ConvsDown = nn.ModuleList()
-        self.ConvsDown.append(ConvBlock(in_fmaps, 'in', self.kernel_sizes[0],  padding_mode=padding_mode))
+        self.ConvsDown = nn.ModuleList([
+            ConvBlock(in_fmaps, "in", self.kernel_sizes[0], padding_mode=padding_mode)
+        ])
 
-        # Intermediate down layers (with MaxPool at the beginning)
-        for idown, down_fmaps in enumerate(down_blocks):
-            self.ConvsDown.append(ConvBlock(down_fmaps, 'down', self.kernel_sizes[idown + 1],
-                padding_mode=padding_mode))
+        for idx, down_fmaps in enumerate(down_blocks):
+            self.ConvsDown.append(ConvBlock(
+                down_fmaps, "down", self.kernel_sizes[idx + 1], padding_mode=padding_mode
+            ))
 
-        # Bottom layer (MaxPool at the beginning and Upsample/Deconv at the end)
-        self.ConvBottom = ConvBlock(bottom_fmaps, 'bottom', self.kernel_sizes[-1],
-                padding_mode=padding_mode, upsample_mode=upsample_mode, out_size=list_res.pop())
+        self.ConvBottom = ConvBlock(
+            bottom_fmaps, "bottom", self.kernel_sizes[-1],
+            padding_mode=padding_mode, upsample_mode=upsample_mode,
+            out_size=list_res.pop()
+        )
 
-        # Intemediate layers up (UpSample/Deconv at the end)
         self.ConvsUp = nn.ModuleList()
-        for iup, up_fmaps in enumerate(up_blocks):
-            self.ConvsUp.append(ConvBlock(up_fmaps, 'up', self.kernel_sizes[-2 - iup], 
-                padding_mode=padding_mode, upsample_mode=upsample_mode, out_size=list_res.pop()))
-        
-        # Out layer
-        self.ConvsUp.append(ConvBlock(out_fmaps, 'out', self.kernel_sizes[0],
-                padding_mode=padding_mode))
+        for idx, up_fmaps in enumerate(up_blocks):
+            self.ConvsUp.append(ConvBlock(
+                up_fmaps, "up", self.kernel_sizes[-2 - idx],
+                padding_mode=padding_mode, upsample_mode=upsample_mode,
+                out_size=list_res.pop()
+            ))
+
+        self.ConvsUp.append(ConvBlock(
+            out_fmaps, "out", self.kernel_sizes[0], padding_mode=padding_mode
+        ))
 
     def forward(self, x):
-        # List of the temporary x that are used for linking with the up branch
-        inputs_down = list()
-
-        # Apply the down loop
-        for ConvDown in self.ConvsDown:
-            x = ConvDown(x)
+        inputs_down = []
+        for conv in self.ConvsDown:
+            x = conv(x)
             inputs_down.append(x)
-        
-        # Bottom part of the U
+
         x = self.ConvBottom(x)
-        
-        # Apply the up loop
-        for ConvUp in self.ConvsUp:
-            input_tmp = inputs_down.pop()
-            x = ConvUp(torch.cat((x, input_tmp), dim=1))
-                
+
+        for conv in self.ConvsUp:
+            skip = inputs_down.pop()
+            x = conv(torch.cat((x, skip), dim=1))
+
         return x
 
+
 class UNetInterface(nn.Module):
+    """Interface model combining two UNet submodels on masked domains."""
     def __init__(self, scales, kernel_sizes, input_res, inner_mask, outer_mask,
-                    padding_mode='zeros', upsample_mode='nearest'):
-        super(UNetInterface, self).__init__()
+                 padding_mode="zeros", upsample_mode="nearest"):
+        super().__init__()
         self.inner_mask = inner_mask
         self.outer_mask = outer_mask
 
-        # Create the 2 submodels for each subdomain
-        self.submodel1 = UNet_Submodel(scales, kernel_sizes, input_res, 
-                                         padding_mode, upsample_mode)
-        self.submodel2 = UNet_Submodel(scales, kernel_sizes, input_res, 
-                                         padding_mode, upsample_mode)
+        self.submodel1 = UNet_Submodel(scales, kernel_sizes, input_res, padding_mode, upsample_mode)
+        self.submodel2 = UNet_Submodel(scales, kernel_sizes, input_res, padding_mode, upsample_mode)
 
     def forward(self, x):
-        x1, x2 = x * self.inner_mask, x * (self.outer_mask) # Divide the domain into 2 parts
+        x1 = x * self.inner_mask
+        x2 = x * self.outer_mask
 
         out1 = self.submodel1(x1)
         out2 = self.submodel2(x2)
-
         return out1, out2

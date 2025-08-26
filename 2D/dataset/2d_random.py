@@ -1,81 +1,92 @@
-import numpy as np
 import os
-import yaml
-import matplotlib.pyplot as plt
 import argparse
+import yaml
+import numpy as np
+import matplotlib.pyplot as plt
 from scipy.interpolate import RegularGridInterpolator as rgi
-from tqdm import tqdm as log_progress
+from tqdm import tqdm
 from multiprocessing import Pool, cpu_count
 
 
-# Specific arguments
-parser = argparse.ArgumentParser(description='RHS random dataset')
-parser.add_argument('-c', '--cfg', type=str, default=None, help='Config filename')
-args = parser.parse_args()
-with open(args.cfg, 'r') as yaml_stream:
-    cfg = yaml.safe_load(yaml_stream)
-nits = cfg['n_it']
-name = cfg['name']
-ploting = False
-
-# Parameters for data generation
-xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
-nny, ymin, ymax = cfg['domain']['nny'], cfg['domain']['ymin'], cfg['domain']['ymax']
-n_res_factor = cfg['n_res_factor']
+def load_config(cfg_path: str) -> dict:
+    """Load YAML configuration file."""
+    with open(cfg_path, "r") as yaml_stream:
+        return yaml.safe_load(yaml_stream)
 
 
-# Create a grid
-x, y= np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
-X, Y = np.meshgrid(x,y)
+def generate_random(cfg: dict, seed: int = None) -> np.ndarray:
+    """
+    Generate a random dataset sample using interpolation from a lower-resolution grid.
+    """
+    if seed is not None:
+        np.random.seed(seed)
 
-def generate_random(i):
-    # Parameters for data generation
-    xmin, xmax, nnx = cfg['domain']['xmin'], cfg['domain']['xmax'], cfg['domain']['nnx']
-    nny, ymin, ymax = cfg['domain']['nny'], cfg['domain']['ymin'], cfg['domain']['ymax']
-    n_res_factor = 16
+    # Extract domain parameters
+    xmin, xmax, nnx = cfg["domain"]["xmin"], cfg["domain"]["xmax"], cfg["domain"]["nnx"]
+    ymin, ymax, nny = cfg["domain"]["ymin"], cfg["domain"]["ymax"], cfg["domain"]["nny"]
+    n_res_factor = cfg.get("n_res_factor", 16)
 
-    # Create a grid
-    x, y= np.linspace(xmin, xmax, nnx), np.linspace(ymin, ymax, nny)
+    # Coarse grid
+    nnx_low, nny_low = nnx // n_res_factor, nny // n_res_factor
+    x_low = np.linspace(xmin, xmax, nnx_low)
+    y_low = np.linspace(ymin, ymax, nny_low)
 
-    # Factor to divide the grid by to generate the random grid
-    nnx_lower = int(nnx / n_res_factor)
-    nny_lower = int(nny / n_res_factor)
-    x_lower, y_lower = np.linspace(xmin, xmax, nnx_lower), np.linspace(ymin, ymax, nny_lower)
-    points = np.array(np.meshgrid(x, y, indexing='ij')).T.reshape(-1, 2)
+    # Full-resolution grid
+    x = np.linspace(xmin, xmax, nnx)
+    y = np.linspace(ymin, ymax, nny)
+    points = np.array(np.meshgrid(x, y, indexing="ij")).T.reshape(-1, 2)
 
-    z_lower = 2 * np.random.random((nnx_lower, nny_lower)) - 1
-    f= rgi((x_lower, y_lower,), z_lower, method='cubic')
-    return f(points).reshape((nnx, nny))
+    # Random field on coarse grid
+    z_low = 2 * np.random.random((nnx_low, nny_low)) - 1
+
+    # Interpolate to fine grid
+    interpolator = rgi((x_low, y_low), z_low, method="cubic")
+    return interpolator(points).reshape((nnx, nny))
 
 
-if __name__ == '__main__':
-    pool = Pool(processes=cpu_count())
+def plot_sample(data: np.ndarray, save_path: str) -> None:
+    """Plot a single data sample and save it as an image."""
+    plt.figure(figsize=(8, 6))
+    plt.imshow(data, origin="lower", cmap="bwr")
+    plt.xticks([])
+    plt.yticks([])
+    plt.savefig(save_path, bbox_inches="tight")
+    plt.close()
 
-    plots_dir = os.path.join('generated', 'plots')
-    if not os.path.exists(plots_dir):
-        os.makedirs(plots_dir)
 
-    print('nnx: ', cfg['domain']['nnx'], 'nny: ', cfg['domain']['nny'], 'xmax: ', cfg['domain']['xmax'], 'ymax: ', cfg['domain']['ymax'])
+def main(cfg_path: str, plot: bool = False) -> None:
+    cfg = load_config(cfg_path)
 
-    # Generate random data samples
-    data_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny']))
-    inside_domain_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny']))
-    outside_domain_array = np.empty((nits, cfg['domain']['nnx'], cfg['domain']['nny']))
-    for idx, data in log_progress(enumerate(pool.imap(generate_random, range(nits))), total=nits, desc="Processing"):
+    nits = cfg["n_it"]
+    name = cfg["name"]
+    nnx, nny = cfg["domain"]["nnx"], cfg["domain"]["nny"]
 
-        data_array[idx] = data
-        if ploting and idx%1==0:
-            plt.figure(figsize=(8, 6))
-            plt.imshow(data_array[idx], origin='lower', cmap='bwr')
-            plt.xticks([])
-            plt.yticks([])
-            # plt.colorbar(label='Random Data')
-            # plt.title(f'Random Data Sample {idx}')
-            # plt.xlabel('X')
-            # plt.ylabel('Y') 
-            plt.savefig(os.path.join(plots_dir, f'random_data_plot_{idx}.png'))
-            plt.close()
+    # Prepare directories
+    os.makedirs("generated", exist_ok=True)
+    plots_dir = os.path.join("generated", "plots")
+    if plot:
+        os.makedirs(plots_dir, exist_ok=True)
 
-    file_path_domain = os.path.join('generated', name)
-    os.makedirs('generated', exist_ok=True)
-    np.save(file_path_domain, data_array)
+    print(f"Grid size: {nnx} x {nny}, xmax: {cfg['domain']['xmax']}, ymax: {cfg['domain']['ymax']}")
+
+    # Generate data
+    data_array = np.empty((nits, nnx, nny))
+
+    with Pool(processes=cpu_count()) as pool:
+        for idx, data in tqdm(enumerate(pool.imap(lambda i: generate_random(cfg), range(nits))),
+                              total=nits, desc="Processing"):
+            data_array[idx] = data
+            if plot:
+                plot_sample(data, os.path.join(plots_dir, f"random_data_plot_{idx}.png"))
+
+    # Save dataset
+    np.save(os.path.join("generated", name), data_array)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="RHS random dataset generator")
+    parser.add_argument("-c", "--cfg", type=str, required=True, help="Path to config YAML file")
+    parser.add_argument("--plot", action="store_true", help="Enable plotting of samples")
+    args = parser.parse_args()
+
+    main(args.cfg, args.plot)

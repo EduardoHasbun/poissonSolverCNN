@@ -3,7 +3,7 @@ from models import UNet, MSNet
 import yaml
 from torch.utils.data import DataLoader
 import numpy as np
-from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLoss, DirichletBoundaryLossFunction
+from operators import ratio_potrhs, LaplacianLoss, DirichletBoundaryLossFunction
 import torch.optim as optim
 import os
 import argparse

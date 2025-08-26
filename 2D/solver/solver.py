@@ -161,3 +161,8 @@ plt.colorbar(img_error, ax=axs[2], label='Error %')
 # Save and show the plot
 plt.tight_layout()
 plt.savefig(os.path.join(plots_dir, f'{case_name}.png'))
+
+
+
+
+

@@ -4,12 +4,6 @@ import torch.nn.functional as F
 import numpy as np
 
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import numpy as np
-
-
 class LaplacianLossInterface(nn.Module):
     def __init__(self, cfg, lapl_weight):
         super().__init__()

@@ -80,7 +80,7 @@ resolution_data = poisson_punctual_solution(X, Y, Z, punctual_charges)
 def ratio_potrhs(alpha, Lx, Ly, Lz):
     return alpha / (np.pi**2 / 8)**2 / (1 / Lx**2 + 1 / Ly**2 + 1 / Lz**2)
 
-alpha = 0.13
+alpha = 0.1
 ratio_max = ratio_potrhs(alpha, Lx, Ly, Lz)
 
 # Generar entrada

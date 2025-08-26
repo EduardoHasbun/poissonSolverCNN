@@ -188,13 +188,15 @@ model = model.float()
 for param in model.parameters():
     param.data = param.data.float()
 model.eval() 
-alpha = 0.8
+alpha = 0.13
 ratio = ratio_potrhs(alpha, Lx, Ly, Lz)
-
-sigma = 0.9
+sigma = 0.6
 
 # Create input data and solution data
-input_data = gaussians(X, Y, Z, [1.0, 0.1, 0.1, 0, sigma, sigma, sigma])
+input_data = gaussians(X, Y, Z, (1.0, 0.5, 0.5, 0, sigma, sigma, sigma, 
+                                2.0, -0.5, -0.5, 0, sigma, sigma, sigma,
+                                1.0, 0., 0., 0.5, sigma, sigma, sigma,
+                                -1.0, 1.0, 0., -0.5, sigma, sigma, sigma))
 input_data = input_data.reshape(nnx, nny, nnz)
 input_data = input_data[np.newaxis, np.newaxis, :, :, :]
 input_data = torch.from_numpy(input_data).float()
@@ -216,7 +218,7 @@ out_in, out_out = model(input_data)
 output = torch.zeros_like(out_in)
 output[0, 0, interface_mask] = out_in[0, 0, interface_mask]
 output[0, 0, ~interface_mask] = out_out[0, 0, ~interface_mask]
-output_array = output.detach().numpy()[0, 0, :, :] * -ratio
+output_array = output.detach().numpy()[0, 0, :, :] * ratio
 
 # Plots
 relative_error = (
@@ -272,26 +274,70 @@ axs[2,1].set_xlabel('X')
 axs[2,1].set_ylabel('Y')
 plt.colorbar(img_resolution, ax=axs[2,1], label='Magnitude')
 
+# # Relative Error Mid_x
+# img_error = axs[0,2].imshow(relative_error[mid_x], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=0, vmax=1000)
+# axs[0,2].set_title('Relative Error (x-slice)')
+# axs[0,2].set_xlabel('X')
+# axs[0,2].set_ylabel('Y')
+# cbar_output = plt.colorbar(img_error, ax=axs[0,2], label='Relative Error %')
+
+# # Relative Error Mid_y
+# img_error = axs[1,2].imshow(relative_error[mid_y], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=0, vmax=1000)
+# axs[1,2].set_title('Relative Error (y-slice)')
+# axs[1,2].set_xlabel('X')
+# axs[1,2].set_ylabel('Y')
+# cbar_output = plt.colorbar(img_error, ax=axs[1,2], label='Relative Error %')
+
+# # Relative Error Mid_z
+# img_error = axs[2,2].imshow(relative_error[mid_z], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=0, vmax=1000)
+# axs[2,2].set_title('Relative Error (z-slice)')
+# axs[2,2].set_xlabel('X')
+# axs[2,2].set_ylabel('Y')
+# cbar_output = plt.colorbar(img_error, ax=axs[2,2], label='Relative Error %')
+
+
+
+
+
 # Relative Error Mid_x
-img_error = axs[0,2].imshow(relative_error[mid_x], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=0, vmax=1000)
+img_error = axs[0,2].imshow(relative_error[mid_x], extent=(xmin, xmax, ymin, ymax),
+                            origin='lower', cmap='viridis')
 axs[0,2].set_title('Relative Error (x-slice)')
 axs[0,2].set_xlabel('X')
 axs[0,2].set_ylabel('Y')
-cbar_output = plt.colorbar(img_error, ax=axs[0,2], label='Relative Error %')
+cbar_output = plt.colorbar(img_error, ax=axs[0,2])
+cbar_output.set_label('Relative Error (%)')
+ticks = np.linspace(0, 1000, 6)
+cbar_output.set_ticks(ticks)
+cbar_output.set_ticklabels((ticks * 0.01).astype(int))
 
 # Relative Error Mid_y
-img_error = axs[1,2].imshow(relative_error[mid_y], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=0, vmax=1000)
+img_error = axs[1,2].imshow(relative_error[mid_y], extent=(xmin, xmax, ymin, ymax),
+                            origin='lower', cmap='viridis')
 axs[1,2].set_title('Relative Error (y-slice)')
 axs[1,2].set_xlabel('X')
 axs[1,2].set_ylabel('Y')
-cbar_output = plt.colorbar(img_error, ax=axs[1,2], label='Relative Error %')
+cbar_output = plt.colorbar(img_error, ax=axs[1,2])
+cbar_output.set_label('Relative Error (%)')
+cbar_output.set_ticks(ticks)
+cbar_output.set_ticklabels((ticks * 0.01).astype(int))
 
 # Relative Error Mid_z
-img_error = axs[2,2].imshow(relative_error[mid_z], extent=(xmin, xmax, ymin, ymax), origin='lower', cmap='viridis', vmin=0, vmax=1000)
+img_error = axs[2,2].imshow(relative_error[mid_z], extent=(xmin, xmax, ymin, ymax),
+                            origin='lower', cmap='viridis')
 axs[2,2].set_title('Relative Error (z-slice)')
 axs[2,2].set_xlabel('X')
 axs[2,2].set_ylabel('Y')
-cbar_output = plt.colorbar(img_error, ax=axs[2,2], label='Relative Error %')
+cbar_output = plt.colorbar(img_error, ax=axs[2,2])
+cbar_output.set_label('Relative Error (%)')
+cbar_output.set_ticks(ticks)
+cbar_output.set_ticklabels((ticks * 0.01).astype(int))
+
+
+
+
+
+
 
 
 plt.tight_layout()

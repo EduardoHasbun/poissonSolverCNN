@@ -1,5 +1,5 @@
 general:
-  case_name: 3D_interface_Unet4_ks3_rf200
+  case_name: Case_5_Interface_3d
   model_dir: 'C:\Codigos\poissonSolverCNN\3D\training\trained_models\3D_interface_Unet4_ks3_rf200'
 
 arch:
@@ -7,9 +7,12 @@ arch:
     type: 'UNet4'
 
 args:
-  charges: [1.0]
+  charges: [1.0, 2.0, 1.0, -1.0]
   locations:
-    [[0.1, 0.1, 0.0]]
+    [[0.5, 0.5, 0.0], 
+    [-0.5, -0.5, 0.0],
+    [0.0, 0.0, 0.5] ,
+    [1.0, 0.0, -0.5]]
 
 
 
@@ -24,14 +27,14 @@ domain:
   xmax: 5
   ymax: 5
   zmax: 5
-  nnx: 71
-  nny: 71
-  nnz: 71
+  nnx: 51
+  nny: 51
+  nnz: 51
   interface_center:
     x: 0
     y: 0
     z: 0
-  R: 4
+  R: 3
 
 spherical_harmonics:
   E_1: 1

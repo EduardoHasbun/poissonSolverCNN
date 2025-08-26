@@ -1,5 +1,5 @@
 general:
-  case_name: Dirichlet_Unet4_ks3_rf200_3D
+  case_name: Case_1_Interface_3d
   model_dir: 'C:/Codigos/poissonSolverCNN/3D/training/trained_models/Dirichlet_Unet4_ks3_rf200_3D.pth'
 
 arch:
